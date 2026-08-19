@@ -1,0 +1,359 @@
+<meta charset="utf-8">
+<title>BSC 訓練課程</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+             system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+      --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+      --rule:#2A3336; --rule-soft:#222A2D;
+      --human:#E4A75C; --human-bg:#241C11; --human-rule:#6E5124;
+      --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+    --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+    --rule:#2A3336; --rule-soft:#222A2D;
+    --human:#E4A75C; --human-bg:#241C11; --human-rule:#6E5124;
+    --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 58rem; margin: 0 auto; padding: 0 1.5rem 6rem; }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible { outline: 2px solid var(--agent); outline-offset: 3px; border-radius: 2px; }
+  code { font-family: var(--mono); font-size: .86em; background: var(--surface-2); padding: .12em .38em; border-radius: 3px; }
+  strong { font-weight: 600; }
+
+  /* ---------- 開場 ---------- */
+  .masthead {
+    padding: 5.5rem 0 3rem; border-bottom: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem); line-height: 1.08;
+    letter-spacing: -.015em; margin: 0; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.12rem; color: var(--ink-soft); max-width: 40rem; margin: 0; }
+
+  /* ---------- 課程說明 ---------- */
+  .about {
+    margin: 3rem 0 0; padding: 1.6rem 1.7rem;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+    max-width: 40rem;
+  }
+  .about h2 {
+    margin: 0 0 .9rem; font-family: var(--mono); font-size: .72rem;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--ink-faint); font-weight: 500;
+  }
+  .about p { margin: 0 0 .9rem; color: var(--ink-soft); }
+  .about p:last-child { margin-bottom: 0; }
+  .about b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- 三種產出的圖例 ---------- */
+  .legend {
+    margin: 2rem 0 0; display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    max-width: 40rem;
+  }
+  .legend-item { display: flex; gap: .8rem; align-items: flex-start; font-size: .92rem; line-height: 1.6; color: var(--ink-soft); }
+  .swatch { width: 3px; align-self: stretch; min-height: 2.6rem; border-radius: 2px; flex: none; }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b { display: block; color: var(--ink); font-weight: 600; }
+
+  /* ---------- 集數卡 ---------- */
+  .episodes { margin-top: 3.5rem; display: flex; flex-direction: column; gap: 1.6rem; }
+  .ep {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 6px;
+    box-shadow: var(--shadow); overflow: hidden;
+    display: grid; grid-template-columns: 1fr 17rem;
+  }
+  .ep-body { padding: 1.9rem 2rem 1.7rem; display: flex; flex-direction: column; }
+  .ep-num {
+    font-family: var(--mono); font-size: .78rem; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: .6rem;
+  }
+  .ep h2 {
+    font-family: var(--serif); font-weight: 600; margin: 0 0 .7rem;
+    font-size: clamp(1.45rem, 3vw, 1.85rem); line-height: 1.2; letter-spacing: -.01em; text-wrap: balance;
+  }
+  .ep h2 a { color: inherit; text-decoration: none; }
+  .ep h2 a:hover { color: var(--agent); }
+  .ep .blurb { margin: 0 0 1.2rem; color: var(--ink-soft); }
+  .ep .meta {
+    display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; margin: 0 0 1.4rem;
+    font-family: var(--mono); font-size: .76rem; color: var(--ink-faint);
+  }
+  .ep .links { margin-top: auto; display: flex; flex-wrap: wrap; gap: .6rem; }
+  .ep .links a {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .55rem 1rem; border-radius: 4px; text-decoration: none;
+    font-size: .93rem; font-weight: 600; border: 1px solid var(--rule);
+    color: var(--ink); background: var(--surface); transition: border-color .15s, background .15s;
+  }
+  .ep .links a.primary { background: var(--agent); color: var(--paper); border-color: var(--agent); }
+  .ep .links a.primary:hover { opacity: .88; }
+  .ep .links a:not(.primary):hover { border-color: var(--agent-rule); background: var(--agent-bg); }
+  .ep .links .k {
+    font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; opacity: .7;
+  }
+  .ep-poster { position: relative; background: #0d1113; border-left: 1px solid var(--rule); }
+  .ep-poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ep-poster .dur {
+    position: absolute; right: .7rem; bottom: .7rem;
+    font-family: var(--mono); font-size: .72rem; color: #fff;
+    background: rgba(8,12,14,.72); padding: .2rem .5rem; border-radius: 3px;
+  }
+  .ep.soon { opacity: .62; box-shadow: none; }
+  .ep.soon .ep-poster { background: var(--surface-2); border-left-color: var(--rule-soft); }
+  .ep.soon .ep-poster::after {
+    content: "製作中"; position: absolute; inset: 0; display: grid; place-items: center;
+    font-family: var(--mono); font-size: .8rem; letter-spacing: .16em; color: var(--ink-faint);
+  }
+
+  /* ---------- 學習路徑 ---------- */
+  .path { margin-top: 3.5rem; padding-top: 2.5rem; border-top: 1px solid var(--rule-soft); max-width: 40rem; }
+  .path h2 { font-family: var(--serif); font-size: 1.35rem; font-weight: 600; margin: 0 0 1rem; }
+  .path ol { margin: 0; padding-left: 1.3rem; color: var(--ink-soft); }
+  .path li { margin-bottom: .5rem; }
+  .path li b { color: var(--ink); font-weight: 600; }
+
+  footer.colophon {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--rule-soft);
+    font-family: var(--mono); font-size: .74rem; color: var(--ink-faint);
+    display: flex; flex-wrap: wrap; gap: .4rem 1.6rem;
+  }
+
+  @media (max-width: 44rem) {
+    body { font-size: 16px; }
+    .masthead { padding-top: 3.5rem; }
+    .ep { grid-template-columns: 1fr; }
+    .ep-poster { aspect-ratio: 16/9; border-left: 0; border-bottom: 1px solid var(--rule); order: -1; }
+    .ep-body { padding: 1.5rem 1.2rem 1.4rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  .lang-switch { position:absolute; top:1.2rem; right:0; font-family:var(--mono, monospace); font-size:.85rem; }
+  .lang-switch a { color:var(--ink-soft,#576063); text-decoration:none; border:1px solid var(--rule,#DCE1DF); border-radius:20px; padding:.35rem .9rem; }
+  .lang-switch a:hover { color:var(--ink,#16171A); border-color:var(--ink-faint,#8A9496); }
+  .masthead { position:relative; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="lang-switch"><a href="index-en.html" lang="en">English edition →</a></div>
+    <div class="eyebrow">BSC Tutorial</div>
+    <h1>BSC 訓練課程</h1>
+    <p class="standfirst">
+      每一集都是一次真實的工作紀錄——每一步的指令、Agent 當下怎麼想怎麼做、
+      以及當時的畫面，包括中間失敗的地方。
+    </p>
+  </header>
+
+  <section class="about">
+    <h2>這門課在做什麼</h2>
+    <p>示範<strong>怎麼跟 AI Agent 一起做研究工作</strong>。五集是同一條真實的工作線：
+    先把一批研究論文交給 Agent，建成一座有規則、可維護、會成長的知識庫（EP01–03）；
+    然後反過來用這座知識庫——把主題頁變成一門課（EP04）、把論文條目當規格，讓 Agent 復刻出論文的程式（EP05）。</p>
+    <p>每一集都是真實工作階段的紀錄：每一步的指令、Agent 怎麼想怎麼做、撞了什麼牆、哪些方案被否決——
+    包括做壞被退回重做的部分。素材恰好是神經科學的論文，但方法不綁定領域：
+    你可以拿自己領域的文獻，照同樣的流程走一遍。</p>
+    <p>要學的不是某個工具的操作，是<strong>分工</strong>：規格、邊界、驗收是人的；執行的迴圈是 Agent 的。
+    五集看完，你會知道哪些決定不該交出去，以及交出去的部分要怎麼驗收。</p>
+  </section>
+
+  <section class="legend">
+    <div class="legend-item">
+      <span class="swatch h"></span>
+      <span><b>教材網頁</b>可回頭查的完整紀錄。每一步的指令、Agent 動作、截圖與教學重點。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch a"></span>
+      <span><b>教學影片</b>十來分鐘的敘事版，只講骨幹與為什麼。建議先看影片再讀網頁。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>隨堂測驗</b>十題單選，答完立刻看對錯與理由。自我練習，不記分。</span>
+    </div>
+  </section>
+
+  <section class="episodes">
+
+    <!-- ============ EP01 ============ -->
+    <article class="ep">
+      <div class="ep-body">
+        <div class="ep-num">EP01</div>
+        <h2><a href="ep01/ep01.html" data-remote="https://claude.ai/code/artifact/ef9d86a2-133d-4fa8-af64-c57192d0cddd">建置 LLM Wiki 的第一步</a></h2>
+        <p class="blurb">從一份 gist 到第一篇論文筆記。認識三層架構、看 Agent 自己解決工具問題、
+        學會在它做錯的時候喊停——那句「作廢」是全集最該學的一步。</p>
+        <div class="meta">
+          <span>12 個步驟</span><span>影片 8 分 57 秒</span><span>10 題測驗</span>
+        </div>
+        <div class="links">
+          <a class="primary" href="ep01/ep01.html" data-remote="https://claude.ai/code/artifact/ef9d86a2-133d-4fa8-af64-c57192d0cddd"><span class="k">教材</span>開始閱讀</a>
+          <a href="https://youtu.be/IFVuw6xEMj8" target="_blank" rel="noopener"><span class="k">影片</span>YouTube ↗</a>
+          <a href="ep01/ep01-quiz.html" data-remote="https://claude.ai/code/artifact/ee78e0d7-be77-42bf-a601-4e135366e611"><span class="k">測驗</span>檢驗一下</a>
+        </div>
+      </div>
+      <a class="ep-poster" href="https://youtu.be/IFVuw6xEMj8" target="_blank" rel="noopener" aria-label="EP01 教學影片">
+        <img src="ep01/assets/video-poster.jpg" alt="EP01 影片封面：建置 LLM Wiki 的第一步">
+        <span class="dur">8:57</span>
+      </a>
+    </article>
+
+    <!-- ============ EP02 ============ -->
+    <article class="ep">
+      <div class="ep-body">
+        <div class="ep-num">EP02</div>
+        <h2><a href="ep02/ep02.html" data-remote="EP02_ARTIFACT_URL">寫下第一份規則書</a></h2>
+        <p class="blurb"><code>CLAUDE.md</code> 到底是什麼、規則怎麼從摩擦裡長出來、放 CLAUDE.md 還是 skill 怎麼分——
+        然後拿五篇論文去測試，看規則書撐不撐得住。</p>
+        <div class="meta">
+          <span>16 個步驟</span><span>影片 10 分 07 秒</span><span>10 題測驗</span>
+        </div>
+        <div class="links">
+          <a class="primary" href="ep02/ep02.html" data-remote="EP02_ARTIFACT_URL"><span class="k">教材</span>開始閱讀</a>
+          <a href="https://youtu.be/RfqH0zFA3jY" target="_blank" rel="noopener"><span class="k">影片</span>YouTube ↗</a>
+          <a href="ep02/ep02-quiz.html" data-remote="EP02_QUIZ_ARTIFACT_URL"><span class="k">測驗</span>檢驗一下</a>
+        </div>
+      </div>
+      <a class="ep-poster" href="https://youtu.be/RfqH0zFA3jY" target="_blank" rel="noopener" aria-label="EP02 教學影片">
+        <img src="ep02/assets/video-poster.jpg" alt="EP02 影片封面：寫下第一份規則書">
+        <span class="dur">10:07</span>
+      </a>
+    </article>
+
+    <!-- ============ EP03 ============ -->
+    <article class="ep">
+      <div class="ep-body">
+        <div class="ep-num">EP03</div>
+        <h2><a href="ep03/ep03.html" data-remote="EP03_ARTIFACT_URL">把條目倉庫變成知識庫</a></h2>
+        <p class="blurb">六篇條目寫好了，但六個檔案放在資料夾裡不叫知識庫。這一集長出主題層、定義「更新」——
+        新論文丟進收件匣就能被吸收——再把頁面之間的連結做完整，從「一堆檔案」變成「一座 wiki」。</p>
+        <div class="meta">
+          <span>12 個步驟</span><span>影片 11 分 36 秒</span><span>10 題測驗</span>
+        </div>
+        <div class="links">
+          <a class="primary" href="ep03/ep03.html" data-remote="EP03_ARTIFACT_URL"><span class="k">教材</span>開始閱讀</a>
+          <a href="https://youtu.be/HvZeFE9MWLY" target="_blank" rel="noopener"><span class="k">影片</span>YouTube ↗</a>
+          <a href="ep03/ep03-quiz.html" data-remote="EP03_QUIZ_ARTIFACT_URL"><span class="k">測驗</span>檢驗一下</a>
+        </div>
+      </div>
+      <a class="ep-poster" href="https://youtu.be/HvZeFE9MWLY" target="_blank" rel="noopener" aria-label="EP03 教學影片">
+        <img src="ep03/assets/video-poster.jpg" alt="EP03 影片封面：把條目倉庫變成知識庫">
+        <span class="dur">11:36</span>
+      </a>
+    </article>
+
+    <!-- ============ EP04 ============ -->
+    <article class="ep">
+      <div class="ep-body">
+        <div class="ep-num">EP04</div>
+        <h2><a href="ep04/ep04.html" data-remote="EP04_ARTIFACT_URL">從知識庫內容建立新課程</a></h2>
+        <p class="blurb">知識庫不只是拿來查的，也可以拿來教自己。這一集拿第一個主題「FlyCircuit 資料庫」示範：
+        主題頁的七節變成七堂課、條目變成講義、〈還沒解決的事〉變成思考題——Agent 攤開結構，人決定教什麼。</p>
+        <div class="meta">
+          <span>7 堂課</span><span>影片 11 分 49 秒</span><span>10 題測驗</span>
+        </div>
+        <div class="links">
+          <a class="primary" href="ep04/ep04.html" data-remote="EP04_ARTIFACT_URL"><span class="k">教材</span>開始閱讀</a>
+          <a href="https://youtu.be/7Utb9u4qRms" target="_blank" rel="noopener"><span class="k">影片</span>YouTube ↗</a>
+          <a href="ep04/ep04-quiz.html" data-remote="EP04_QUIZ_ARTIFACT_URL"><span class="k">測驗</span>檢驗一下</a>
+        </div>
+      </div>
+      <a class="ep-poster" href="https://youtu.be/7Utb9u4qRms" target="_blank" rel="noopener" aria-label="EP04 教學影片">
+        <img src="ep04/assets/video-poster.jpg" alt="EP04 影片封面：從知識庫內容建立新課程">
+        <span class="dur">11:49</span>
+      </a>
+    </article>
+
+    <!-- ============ EP05 ============ -->
+    <article class="ep">
+      <div class="ep-body">
+        <div class="ep-num">EP05</div>
+        <h2><a href="ep05/ep05.html" data-remote="EP05_ARTIFACT_URL">復刻 Kaleido</a></h2>
+        <p class="blurb">一篇論文、一百顆神經元、一句指令。講清楚 Kaleido 的兩招，讓 Agent 從零把程式寫出來——
+        三視圖、旋轉動畫、撞的牆都留著——再回頭講 agentic coding 是怎麼一回事。</p>
+        <div class="meta">
+          <span>13 步</span><span>影片 10 分 26 秒</span><span>10 題測驗</span>
+        </div>
+        <div class="links">
+          <a class="primary" href="ep05/ep05.html" data-remote="EP05_ARTIFACT_URL"><span class="k">教材</span>開始閱讀</a>
+          <a href="https://youtu.be/CsLOYgDzTfk" target="_blank" rel="noopener"><span class="k">影片</span>YouTube ↗</a>
+          <a href="ep05/ep05-quiz.html" data-remote="EP05_QUIZ_ARTIFACT_URL"><span class="k">測驗</span>檢驗一下</a>
+        </div>
+      </div>
+      <a class="ep-poster" href="https://youtu.be/CsLOYgDzTfk" target="_blank" rel="noopener" aria-label="EP05 教學影片">
+        <img src="ep05/assets/video-poster.jpg" alt="EP05 影片封面：復刻 Kaleido">
+        <span class="dur">10:26</span>
+      </a>
+    </article>
+
+  </section>
+
+  <section class="path">
+    <h2>建議的學習順序</h2>
+    <ol>
+      <li><b>先看影片</b>建立整體概念，十來分鐘。</li>
+      <li><b>再讀教材網頁</b>——影片只講骨幹，網頁才有每一步的完整指令與 Agent 的實際動作。</li>
+      <li><b>做測驗</b>。答錯的當下看理由，比最後看分數有用得多。</li>
+      <li>照著網頁末尾的練習<b>自己動手做一遍</b>。這門課的設計就是要你自己做決定。</li>
+    </ol>
+  </section>
+
+  <footer class="colophon">
+    <span>BSC Tutorial</span>
+    <span>Claude Code · Opus 5</span>
+    <span>教材、影片、測驗皆由真實工作階段製作</span>
+  </footer>
+
+</div>
+
+<script>
+// 發布在 claude.ai 時，同資料夾的相對連結不存在，改指向線上版本。
+(function () {
+  if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+  document.querySelectorAll('a[data-remote]').forEach(function (a) {
+    var r = a.getAttribute('data-remote');
+    if (!r || /^EP\d\d_/.test(r)) return;   // 尚未發布的集數，保留原連結
+    a.href = r; a.target = '_blank'; a.rel = 'noopener';
+  });
+})();
+</script>

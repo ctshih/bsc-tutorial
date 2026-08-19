@@ -1,0 +1,2195 @@
+<meta charset="utf-8">
+<title>First Steps with an LLM Wiki</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", serif;
+    --sans:  "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
+             "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- Edition note ---------- */
+
+  .edition {
+    margin: 2.2rem 0 0;
+    padding: 1.1rem 1.4rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .93rem;
+    line-height: 1.6;
+  }
+  .edition b { color: var(--ink); }
+  .edition p { margin: 0 0 .5rem; }
+  .edition p:last-child { margin-bottom: 0; }
+
+  /* ---------- General text ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* Digest blocks (paraphrased sources) */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+  .digest .layer {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .45rem 1rem;
+    margin: 0 0 .9rem;
+    font-size: .95rem;
+  }
+  .digest .layer dt { font-weight: 600; white-space: nowrap; }
+  .digest .layer dd { margin: 0; color: var(--ink-soft); }
+  .digest .src {
+    font-size: .85rem;
+    color: var(--ink-faint);
+    margin: 0 0 1rem;
+  }
+
+  /* Collapsible variant */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- Video ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- Legend ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- Table of contents ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- Steps ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* The three voices */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.62;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+  /* the original wording, verbatim */
+  .v-human .orig {
+    margin: .8rem 0 0;
+    padding-top: .65rem;
+    border-top: 1px dashed var(--human-rule);
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    white-space: pre-wrap;
+  }
+  .v-human .orig .orig-label {
+    display: block;
+    font-size: .62rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--human);
+    opacity: .85;
+    margin-bottom: .2rem;
+    font-weight: 600;
+  }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* Tools box */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+  }
+  .tag.install { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.wrote   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+
+  /* Screenshots */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  figure.shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* English transcript of a screenshot */
+
+  details.transcript {
+    max-width: 52rem;
+    margin: .9rem 0 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    font-size: .9rem;
+    line-height: 1.55;
+  }
+  details.transcript > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: .7rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  details.transcript > summary::-webkit-details-marker { display: none; }
+  details.transcript > summary::marker { content: ""; }
+  details.transcript > summary::before {
+    content: "\2212";
+    font-family: var(--mono);
+    font-size: .95rem;
+    line-height: 1;
+    width: 1.2rem; height: 1.2rem;
+    flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.transcript:not([open]) > summary::before { content: "+"; }
+  details.transcript > summary .hint {
+    margin-left: auto;
+    font-size: .64rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+    text-transform: none;
+  }
+  details.transcript[open] > summary { border-bottom: 1px solid var(--rule-soft); }
+  .tr-body { padding: 1rem 1.2rem 1.1rem; }
+  .tr-body > :last-child { margin-bottom: 0; }
+  .tr-body p { margin: 0 0 .55rem; }
+  .tr-body .tr-user {
+    /* the user's prompt: a bubble on the right, sized to its text, like the real UI */
+    display: block;
+    width: fit-content;
+    max-width: 78%;
+    margin: 0 0 .9rem auto;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: .55rem .9rem;
+    white-space: pre-wrap;
+    color: var(--ink);
+  }
+  .tr-tool {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    margin: .3rem 0 .6rem;
+  }
+  .tr-tool.fail { color: #B3341F; }
+  .tr-tool .diff-add { color: #2E7D32; }
+  .tr-tool .diff-del { color: #B3341F; }
+  .tr-h { font-weight: 600; margin: .85rem 0 .3rem; }
+  .tr-quote {
+    margin: .3rem 0 .7rem;
+    padding: .1rem 0 .1rem .9rem;
+    border-left: 2px solid var(--rule);
+    color: var(--ink-soft);
+  }
+  .tr-pane { border-top: 1px dashed var(--rule); padding-top: .8rem; margin-top: 1rem; }
+  .tr-pane:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+  .tr-pane-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--agent);
+    font-weight: 600;
+    margin-bottom: .45rem;
+  }
+  .tr-note { color: var(--ink-faint); font-size: .82rem; }
+  .tr-cut { color: var(--ink-faint); }
+  .tr-body table { min-width: 0; font-size: .85rem; margin: .3rem 0 .8rem; }
+  .tr-body th, .tr-body td { padding: .38rem .6rem; }
+  .tr-body td:first-child { font-family: var(--sans); font-size: .85rem; white-space: normal; }
+  .tr-body dl.kv {
+    margin: 0 0 .8rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .2rem .9rem;
+    font-size: .85rem;
+  }
+  .tr-body dl.kv dt { font-family: var(--mono); color: var(--ink-faint); font-size: .8rem; }
+  .tr-body dl.kv dd { margin: 0; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .tr-tool.fail, :root:not([data-theme="light"]) .tr-tool .diff-del { color: #F0907A; }
+    :root:not([data-theme="light"]) .tr-tool .diff-add { color: #7BC47F; }
+  }
+  :root[data-theme="dark"] .tr-tool.fail, :root[data-theme="dark"] .tr-tool .diff-del { color: #F0907A; }
+  :root[data-theme="dark"] .tr-tool .diff-add { color: #7BC47F; }
+
+  /* Takeaways */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- Closing ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+  .table-note {
+    font-size: .82rem;
+    color: var(--ink-faint);
+    margin: .5rem 0 0;
+  }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.6; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP01 · English edition</div>
+    <h1>First Steps with an LLM Wiki</h1>
+    <p class="standfirst">
+      From a single gist to the first paper note. This is the complete record of one real
+      working session — every prompt, how the Agent reasoned and acted at each step,
+      and what the screen looked like at the time.
+    </p>
+    <div class="meta-row">
+      <span>12 steps</span>
+      <span>Claude Code · Opus 5</span>
+      <span>Windows 11</span>
+      <span>Domain: neuroscience / connectome</span>
+    </div>
+  </header>
+
+  <aside class="edition">
+    <p><b>About this edition.</b> This is the English version of EP01. The session it records
+    was conducted in Traditional Chinese, so the screenshots are in Chinese. They are shown
+    exactly as captured — nothing has been retouched. <b>Under every Claude Code screenshot is
+    an English transcript</b> of what it says, laid out the way the screen was (your prompt on
+    the right, the Agent's reply full-width, tool calls as gray lines). The two Obsidian views
+    (steps 10 and 12) were re-taken from the <b>English edition of the wiki</b>, the same note
+    translated. Each prompt is also given in English translation with the original wording underneath.</p>
+  </aside>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/8z2T3cIhFVg" data-remote="https://youtu.be/8z2T3cIhFVg"
+       target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="Opening frame of the video: First Steps with an LLM Wiki">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">Play the tutorial video　·　10 min 38 s　·　watch on YouTube ↗</span>
+    </a>
+    <figcaption>
+      <b>Tutorial video</b>
+      <span>Watch the video first for the big picture, then read the twelve steps below for the details.</span>
+    </figcaption>
+  </figure>
+
+  <script>
+  // Video playback: embed inline when served from a web server, otherwise open in a new tab.
+  // YouTube refuses embeds from file:// (error 153) and claude.ai's CSP blocks external
+  // iframes, so both of those cases fall back to a plain link.
+  // The YouTube ID is filled in after upload; until then the card links to the local mp4.
+  (function () {
+    var ID = '8z2T3cIhFVg';       var box = document.querySelector('a.video-frame');
+    if (!box || !ID) return;
+
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;   // keep plain-link behavior
+
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = 'First Steps with an LLM Wiki';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; ' +
+                'gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.allowFullscreen = true;
+
+      var ok = false;
+      f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f);
+      box.classList.add('playing');
+
+      // Safety net: if the embed is blocked (unknown CSP), restore the poster and say so
+      setTimeout(function () {
+        if (ok) return;
+        f.remove();
+        box.classList.remove('playing');
+        var note = document.createElement('p');
+        note.className = 'video-note';
+        note.textContent = 'Inline playback is not allowed here — click the poster to watch on YouTube.';
+        box.parentNode.appendChild(note);
+      }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>How to read this page</h2>
+    <div class="legend-item">
+      <span class="swatch h"></span>
+      <span><b>Your prompt</b>Reproduced verbatim — typos included — in the original Chinese,
+      with an English translation above it.</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch a"></span>
+      <span><b>What the Agent did</b>Not just what it answered, but what it tried,
+      what failed, and what it switched to.</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>What the screen showed</b>Real screenshots of the original (Chinese) session, each
+      with an English transcript underneath — except the two Obsidian views, which are re-taken
+      from the English edition of the wiki. They capture only part of the story; the full account
+      is in the text above each one.</span>
+    </div>
+  </section>
+
+  <nav class="toc">
+    <h2>The twelve steps</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>Open a New Session</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>Hand the Article to the Agent</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>Fill In the Author's Background</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>Ask It to Turn the Article into Teaching Material</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>Ask for the Plan First</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>Ask What the Term Means</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>Give It the Domain and Real Data</span></a></li>
+      <li><a href="#s08"><span class="n">08</span><span>The Most Important Step: Overrule It</span></a></li>
+      <li><a href="#s09"><span class="n">09</span><span>The Agent Solves Its Own Tooling Problem</span></a></li>
+      <li><a href="#s10"><span class="n">10</span><span>Review the First Version in Obsidian</span></a></li>
+      <li><a href="#s11"><span class="n">11</span><span>Give Specific Revision Instructions</span></a></li>
+      <li><a href="#s12"><span class="n">12</span><span>The Second Version</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <h2>Open a New Session</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your action</span>
+      <p>In Claude Code, click <code>New</code>. A folder picker appears; choose
+      <code>EP01 什麼是 LLM-Wiki 知識庫</code> (“EP01 – What is an LLM Wiki knowledge base”)
+      as the working folder.</p>
+    </div>
+
+    <div class="prose">
+      <p>No prompt is typed in this step, but it decides everything that follows.</p>
+      <p><strong>This folder is the Agent's territory.</strong> Every file it can read or write
+      lives inside it. Pick the wrong folder, and every file it creates later ends up in the wrong place.</p>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/01-new-session.png"
+           alt="Claude Code starting a new session; the folder picker is open and the EP01 folder is being selected">
+      <figcaption><b>Note</b>On the left, the project groups; in the middle, the folder picker.
+      Look at the bottom-right corner: the model is Opus 5 with thinking effort set to High.
+      The bottom bar shows the folder currently bound to the session.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-note">The Claude Code interface itself is in English. Only the Windows folder picker
+          (title bar: “Select folder for local session”) is in Chinese:</p>
+          <dl class="kv">
+            <dt>Toolbar</dt><dd>Organize ▾ · New folder</dd>
+            <dt>Columns</dt><dd>Name · Date modified</dd>
+            <dt>List area</dt><dd>“No items match your search.”</dd>
+            <dt>Sidebar</dt><dd>OneDrive · CloudStation · Cowork · Desktop · Work · Downloads · Documents · Pictures</dd>
+            <dt>Folder:</dt><dd><code>EP01 什麼是 LLM-Wiki 知識庫</code> = “EP01 What is an LLM-Wiki knowledge base”</dd>
+            <dt>Buttons</dt><dd>[ Select Folder ]　[ Cancel ]</dd>
+          </dl>
+          <p class="tr-note">Bottom bar of Claude Code: <b>Local</b> · <b>EP01 什麼是 LLM-Wiki …</b> (the folder bound to
+          this session) · “Describe a task or ask a question” · <b>Opus 5</b> · <b>High</b>.</p>
+        </div>
+      </details>
+    </figure>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head">
+      <span class="step-num">02</span>
+      <h2>Hand the Article to the Agent</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Take a look at https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>看一下　https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Noticed it didn't have the web-fetch tool loaded, so it used <code>ToolSearch</code> to load <code>WebFetch</code> first.</li>
+        <li>Fetched the gist URL with <code>WebFetch</code> — and got back a <strong>summarized</strong> version of the page.</li>
+        <li>Judged that a summary risks distortion, so it <strong>fetched again</strong> — this time using the URL ending in <code>/raw</code>, which returns the complete original text.</li>
+        <li>Reorganized the content (in Chinese) into: the core claim, the three-layer architecture, the three operations, the two special files, and why it works.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/02-karpathy-gist.png"
+           alt="After fetching Karpathy's gist, the Agent summarizes the core claims in Chinese">
+      <figcaption><b>Note</b>The line <code>Browsed the web, used a tool</code> at the top can be expanded —
+      click it to see exactly which URL the Agent fetched and what came back. The summary below it
+      is in Chinese — transcript below; the digest that follows covers the whole post in English.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">Take a look at https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f</p>
+          <p class="tr-note">(A system notice in English follows — “Auto mode is now Claude Code's default
+          permission mode…” — not part of the conversation.)</p>
+          <p>I'll fetch that gist for you.</p>
+          <p class="tr-tool">Browsed the web, used a tool ›</p>
+          <p>Done reading. Karpathy's LLM Wiki post (April 2026) is a “concept spec” — it is designed for
+          you to copy and paste to your own agent (Claude Code, Codex, etc.) so the agent grows a concrete
+          implementation together with you.</p>
+          <p class="tr-h">Core claim</p>
+          <p>The difference from RAG: RAG re-assembles an answer from the raw documents on every query, and
+          nothing accumulates. An LLM Wiki has the LLM continuously build and maintain a <b>markdown wiki</b>
+          that sits between you and the raw sources. When new material arrives, the LLM doesn't just index
+          it — it reads it, extracts the key points, updates the existing pages, and flags where it
+          contradicts older claims.</p>
+          <p class="tr-quote">Knowledge is compiled once and then maintained — the wiki is a compounding asset.</p>
+          <p>You hardly write the wiki yourself; your job is finding sources, exploring, asking the right
+          questions. The LLM does the summarizing, cross-referencing, filing and bookkeeping. Karpathy's own
+          setup: agent on the left, Obsidian on the right, browsing the edited pages live. His analogy is
+          precise: Obsidian is the IDE, the LLM is the engineer<span class="tr-cut">… (cut off)</span></p>
+        </div>
+      </details>
+    </figure>
+
+    <details class="digest">
+      <summary>What Karpathy's post says<span class="hint">click to expand</span></summary>
+      <div class="digest-body">
+
+      <p class="src">A digest of the gist, in our own words. Read the original at
+      <a href="https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f" target="_blank" rel="noopener">gist.github.com/karpathy/…</a>.</p>
+
+      <h3>The core idea</h3>
+      <p>Most people's way of using an LLM on documents is RAG: upload a pile of files, and let the model
+      retrieve relevant chunks at query time to generate an answer. It works, but the model
+      <strong>rediscovers the knowledge from scratch every time</strong> — nothing accumulates. Ask a subtle
+      question that needs five documents synthesized, and it has to find and stitch them together again
+      each time. NotebookLM, file uploads in ChatGPT, and most RAG systems work this way.</p>
+      <p>The post proposes something different: instead of only retrieving from raw documents at query time,
+      have the LLM <strong>incrementally build and maintain a persistent wiki</strong> — a set of structured,
+      interlinked markdown files that sits between you and the raw sources. When a new source arrives, the LLM
+      doesn't just index it for later retrieval; it reads it, extracts what matters, and integrates it into the
+      existing wiki: updating entity pages, revising topic summaries, flagging where the new material contradicts
+      older claims, strengthening or challenging the synthesis that is taking shape. Knowledge is
+      <strong>compiled once and then kept current</strong>, not re-derived on every query.</p>
+      <blockquote>The key difference is that the wiki is a persistent, compounding artifact. The cross-references
+      are already there, the contradictions are already flagged, and the synthesis already reflects everything
+      you've read. Every source added and every question asked makes it a little richer.</blockquote>
+
+      <h3>Division of labor</h3>
+      <p>You rarely, if ever, write the wiki yourself — the LLM writes and maintains all of it. Your job is
+      <strong>finding sources, exploring, and asking good questions</strong>. The LLM does the grunt work:
+      summarizing, cross-referencing, filing, and the bookkeeping that keeps a knowledge base genuinely useful
+      over time.</p>
+      <p>Karpathy's own setup is an LLM agent open on one side and Obsidian on the other. The LLM edits as the
+      conversation goes; he browses the results live — clicking links, looking at the graph view, reading updated
+      pages. His analogy: <strong>Obsidian is the IDE, the LLM is the engineer, the wiki is the codebase</strong>.</p>
+
+      <h3>Where it applies</h3>
+      <ul>
+        <li><strong>Personal</strong>: tracking your own goals, health, mindset, self-improvement — filing journal
+        entries, articles, podcast notes, gradually building a structured picture of yourself.</li>
+        <li><strong>Research</strong>: weeks or months deep in one topic — papers, articles, reports — building a
+        full wiki and an evolving argument.</li>
+        <li><strong>Reading a book</strong>: file each chapter as you read; build pages for characters, themes and
+        plot lines and the links between them, and finish with a rich companion wiki. Compare fan wikis such as
+        Tolkien Gateway — thousands of interlinked pages built by volunteers over years; you can build something
+        like it personally, as you read, with the cross-referencing and upkeep handed to the LLM.</li>
+        <li><strong>Companies and teams</strong>: an internal wiki maintained by the LLM, fed with Slack threads,
+        meeting transcripts, project docs and customer calls, perhaps with humans reviewing the updates. It stays
+        current because the LLM takes on the maintenance nobody on the team wants to do.</li>
+        <li><strong>Anything else</strong>: competitive analysis, due diligence, trip planning, course notes,
+        hobbies — anywhere you accumulate knowledge over time and want it organized rather than scattered.</li>
+      </ul>
+
+      <h3>The three layers</h3>
+      <dl class="layer">
+        <dt>Raw sources</dt>
+        <dd>Your curated collection of original documents: articles, papers, images, data files.
+        <strong>Immutable</strong> — the LLM only reads from it, never modifies it. This is your source of truth.</dd>
+        <dt>The wiki</dt>
+        <dd>A directory of LLM-generated markdown: summaries, entity pages, concept pages, comparisons, overviews,
+        syntheses. The LLM <strong>owns this layer entirely</strong>: it creates pages, updates them when new
+        sources come in, maintains cross-references, keeps things consistent. You read it; the LLM writes it.</dd>
+        <dt>The schema</dt>
+        <dd>A document (for example <code>CLAUDE.md</code> in Claude Code, or <code>AGENTS.md</code> in Codex)
+        that tells the LLM how the wiki is organized, what the conventions are, and what workflow to follow when
+        ingesting sources, answering questions and maintaining the wiki. This is <strong>the key configuration
+        file</strong> — it turns the LLM into a disciplined wiki maintainer instead of a general-purpose chatbot.
+        You and the LLM co-evolve it over time.</dd>
+      </dl>
+
+      <h3>The three operations</h3>
+      <p><strong>Ingest.</strong> You drop a new source into the raw collection and tell the LLM to process it.
+      One example workflow: the LLM reads the source, discusses the key points with you, writes a summary page
+      in the wiki, updates the index, updates the entity and concept pages affected elsewhere in the wiki, and
+      appends an entry to the log. A single source can touch 10 to 15 wiki pages. Karpathy prefers ingesting one
+      source at a time and staying involved — reading the summary, checking the updates, steering what the LLM
+      should emphasize — but you can also batch several sources with less supervision. Develop a workflow that
+      suits your style and write it into the schema for future sessions.</p>
+      <p><strong>Query.</strong> You ask the wiki a question. The LLM finds the relevant pages, reads them, and
+      synthesizes an answer with citations. Answers can take different forms: a markdown page, a comparison table,
+      a slide deck (Marp), a chart (matplotlib), a canvas. The important insight: <strong>good answers can be filed
+      back into the wiki as new pages</strong>. The comparison you asked for, the analysis, the connection you
+      discovered — all of it is valuable and shouldn't vanish into the chat history. That way your exploration
+      compounds in the knowledge base just as ingested sources do.</p>
+      <p><strong>Lint.</strong> Periodically ask the LLM to run a health check on the wiki, looking for:
+      contradictions between pages, stale claims overturned by newer sources, orphan pages with no inbound links,
+      important concepts that are mentioned but lack a page of their own, missing cross-references, and data gaps
+      that a single web search could fill. The LLM is good at suggesting new questions to investigate and new
+      sources to look for. This keeps the wiki healthy as it grows.</p>
+
+      <h3>Index and log</h3>
+      <p>Two special files help the LLM (and you) navigate as the wiki grows. They serve different purposes:</p>
+      <p><strong>index.md</strong> is content-oriented. It is a table of contents for everything in the wiki —
+      every page with a link, a one-line summary, and optionally metadata such as dates or source counts,
+      organized by category (entities, concepts, sources, and so on). The LLM updates it on every ingest. When
+      answering a query, the LLM reads the index first to find the relevant pages, then drills in. This works
+      surprisingly well at moderate scale (around 100 sources, a few hundred pages) and removes the need for
+      embedding-based RAG infrastructure.</p>
+      <p><strong>log.md</strong> is chronological. It is an append-only record of what happened when — ingests,
+      queries, lints. A useful trick: if every entry starts with a consistent prefix (for example
+      <code>## [2026-04-02] ingest | Article Title</code>), the log can be parsed with simple unix tools —
+      <code>grep "^## \[" log.md | tail -5</code> gives the last five entries. The log gives you a timeline of
+      the wiki's evolution and helps the LLM see what was done recently.</p>
+
+      <h3>Optional: CLI tools</h3>
+      <p>At some point you may want small tools that let the LLM operate on the wiki more efficiently. The
+      obvious one is a search engine for the wiki — the index file is enough at small scale, but as the wiki grows
+      you'll want real search. <strong>qmd</strong> is a good option: a local search engine for markdown files
+      with hybrid BM25 / vector search and LLM re-ranking, all running on-device. It has both a CLI (which the LLM
+      can call directly) and an MCP server (so the LLM can use it as a native tool). Or build something simpler —
+      have the LLM write a bare-bones search script when you need one.</p>
+
+      <h3>Tips and tricks</h3>
+      <ul>
+        <li><strong>Obsidian Web Clipper</strong> is a browser extension that turns web articles into markdown.
+        Very handy for getting sources into the raw collection quickly.</li>
+        <li><strong>Download images locally.</strong> In Obsidian's Settings → Files and links, set the
+        “attachment folder path” to a fixed directory (for example <code>raw/assets/</code>). Then in
+        Settings → Hotkeys, search “Download”, find “Download attachments for current file” and bind a hotkey
+        (for example Ctrl+Shift+D). Clip an article, press the hotkey, and all its images land on local disk.
+        Optional but useful — it lets the LLM view and reference the images directly instead of depending on URLs
+        that may die. Note that an LLM can't natively read markdown with embedded images in one pass; the
+        workaround is to have it read the text first, then separately view some or all of the referenced images
+        for extra context. Clunky, but good enough.</li>
+        <li><strong>Obsidian's graph view</strong> is the best way to see the shape of the wiki — what links to
+        what, which pages are hubs, which are orphans.</li>
+        <li><strong>Marp</strong> is a markdown-based slide format with an Obsidian plugin. Slides can be generated
+        straight from wiki content.</li>
+        <li><strong>Dataview</strong> is an Obsidian plugin that runs queries over page frontmatter. If your LLM
+        adds YAML frontmatter (tags, dates, source counts) to wiki pages, Dataview can produce dynamic tables and
+        lists.</li>
+        <li>The wiki is just a git repo full of markdown files. Version history, branching and collaboration come
+        for free.</li>
+      </ul>
+
+      <h3>Why it works</h3>
+      <p>The tedious part of maintaining a knowledge base isn't the reading, and it isn't the thinking — it's the
+      <strong>bookkeeping</strong>: updating cross-references, keeping summaries current, noting when new data
+      contradicts old claims, keeping dozens of pages consistent. People abandon wikis because the maintenance
+      burden grows faster than the value. An LLM doesn't get bored, doesn't forget to update a cross-reference, and
+      can handle 15 files in one turn. The wiki stays alive because the cost of maintaining it drops toward zero.</p>
+      <p>The human's job is to curate sources, direct the analysis, ask good questions and think about what it all
+      means. The LLM's job is everything else.</p>
+      <p>The idea is related in spirit to Vannevar Bush's <strong>Memex</strong> (1945) — a personal, curated
+      store of knowledge with associative trails between documents. Bush's vision was closer to this than the web
+      that came later: private, actively curated, with the links between documents as valuable as the documents
+      themselves. The part he couldn't solve was <strong>who does the maintenance</strong> — and the LLM takes
+      care of that.</p>
+
+      <h3>Deliberately abstract</h3>
+      <p>The post is deliberately abstract. It describes an idea, not a specific implementation. The exact directory
+      structure, schema conventions, page formats and tools all depend on your domain, your preferences and the
+      LLM you use. Everything above is optional and modular: take what's useful, ignore the rest. Your sources may
+      be text-only, so no image handling; your wiki may be small enough that an index file is all you need, no
+      search engine; you may not care about slides, only markdown pages. The right way to use it is to share it
+      with your LLM agent and build the version that fits your needs together. The post's only job is to convey
+      the pattern.</p>
+      </div>
+    </details>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>The Agent doesn't “look something up once and answer”. It judges whether what it got the first time is
+      good enough, and if not, it fetches again a different way. You never had to ask for this self-correction.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head">
+      <span class="step-num">03</span>
+      <h2>Fill In the Author's Background</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Who is Karparthy</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>誰是 Karparthy</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ul>
+        <li>Quietly corrected the spelling (it's Karpathy, one <em>r</em> fewer) without dwelling on it.</li>
+        <li>Laid out his career: Stanford PhD, the CS231n course, OpenAI founding member, Senior Director of AI at Tesla, founder of Eureka Labs.</li>
+        <li>Explained where his influence comes from — teaching complex things through the smallest runnable code: micrograd, nanoGPT, llm.c.</li>
+        <li>Listed the terms he coined: Software 2.0, vibe coding, LLM OS.</li>
+        <li>Finally tied the background back to the topic: the LLM Wiki post fits his usual style — no implementation, only the pattern.</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/03-who-is-karpathy.png"
+           alt="The Agent describes Andrej Karpathy's career and influence">
+      <figcaption><b>Note</b>A typo in the prompt is no problem. The Agent corrects it and keeps answering,
+      instead of stopping to make you retype.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">Who is Karparthy</p>
+          <p><b>Andrej Karpathy</b> (spelled Karpathy — one <em>r</em> fewer), one of the most influential
+          educator-engineers in AI.</p>
+          <p class="tr-h">Career</p>
+          <ul>
+            <li>Born 1986 in Bratislava, Slovakia; moved to Canada as a teenager</li>
+            <li>University of Toronto (CS + physics) → master's at UBC → PhD at Stanford under Fei-Fei Li,
+            on combining vision and language (image captioning with CNN + RNN)</li>
+            <li>Created <b>CS231n</b> (Convolutional Neural Networks for Visual Recognition) at Stanford —
+            among the first, and the most classic, deep-learning courses in the world</li>
+            <li><b>Founding member of OpenAI</b> (2015–2017)</li>
+            <li><b>Senior Director of AI at Tesla</b> (2017–2022); led the Autopilot vision system, pushed
+            the “vision-only” approach</li>
+            <li>Briefly back at OpenAI in 2023; left February 2024</li>
+            <li>Founded <b>Eureka Labs</b> in July 2024, building AI-native education products</li>
+          </ul>
+          <p class="tr-h">Why his writing is worth reading</p>
+          <p>His real influence is in explaining complex things clearly — with the smallest runnable code:</p>
+          <ul>
+            <li><b>micrograd</b> — backpropagation in a hundred-odd lines</li>
+            <li><b>nanoGPT / llm.c</b> — minimal GPT training code <span class="tr-cut">… (cut off)</span></li>
+          </ul>
+        </div>
+      </details>
+    </figure>
+
+    <details class="digest">
+      <summary>Who is Andrej Karpathy<span class="hint">click to expand</span></summary>
+      <div class="digest-body">
+
+      <p>One of the most influential <strong>educator-engineers</strong> in AI. What sets him apart is not that
+      he invented a particular model architecture, but that he got tens of thousands of people to genuinely
+      understand how deep learning works.</p>
+
+      <h3>Career</h3>
+      <ul>
+        <li>Born 1986 in Bratislava, Slovakia; moved to Canada as a teenager.</li>
+        <li>University of Toronto (computer science + physics) → master's at UBC → <strong>PhD at Stanford</strong>
+        under Fei-Fei Li, working on combining vision and language (image captioning with CNN + RNN).</li>
+        <li>Created <strong>CS231n</strong> (Convolutional Neural Networks for Visual Recognition) at Stanford —
+        one of the first deep-learning courses in the world, and still one of the classics. Its lecture notes are
+        widely used as introductory material to this day.</li>
+        <li><strong>Founding member of OpenAI</strong> (2015–2017).</li>
+        <li><strong>Senior Director of AI at Tesla</strong> (2017–2022), leading the Autopilot vision system and
+        pushing the move away from lidar toward a “vision-only” approach.</li>
+        <li>Briefly returned to OpenAI in 2023; left in February 2024.</li>
+        <li>Founded <strong>Eureka Labs</strong> in July 2024, building AI-native education products.
+        The LLM Wiki gist (April 2026) was written in this period.</li>
+        <li><strong>Joined Anthropic on 19 May 2026</strong>, ending the twenty-two-month Eureka Labs chapter,
+        to lead a team “using Claude to accelerate pretraining research”, reporting to pretraining lead Nick Joseph.
+        He said the next few years of work at the LLM frontier would be especially critical, and made clear he had
+        not given up on education and would return to it.</li>
+      </ul>
+      <p style="font-size:.88rem;color:var(--ink-faint);margin-top:-.3rem;">
+        Verified in August 2026. People's circumstances change — check the latest before citing.
+        <strong>This is itself the problem a knowledge base has to solve</strong>: written facts go stale,
+        so every claim should carry a source and a date.
+      </p>
+
+      <h3>His method: explain it with the smallest runnable code</h3>
+      <p>His influence comes mainly from a specific way of teaching — not explaining principles with slides,
+      but writing a program small enough to read in full that actually runs.</p>
+      <ul>
+        <li><strong>micrograd</strong> — backpropagation in a hundred-odd lines. Read it and you understand how gradients flow.</li>
+        <li><strong>nanoGPT / llm.c</strong> — minimal GPT training code, stripping the Transformer training loop down to its skeleton.</li>
+        <li><strong>nanochat</strong> (2025) — the complete ChatGPT-style training pipeline for roughly 100 US dollars.</li>
+        <li><strong>Neural Networks: Zero to Hero</strong> — a YouTube course that builds from scratch all the way to GPT.</li>
+      </ul>
+
+      <h3>Terms he coined</h3>
+      <ul>
+        <li><strong>Software 2.0</strong> (2017) — code is no longer human-written logic but weights trained from data.</li>
+        <li><strong>vibe coding</strong> (2025) — developing purely by feel, forgetting the code exists. The term is everywhere now.</li>
+        <li><strong>LLM OS</strong> — a framework for imagining the LLM as the kernel of a new kind of operating system.</li>
+      </ul>
+
+      <h3>Why this matters for this course</h3>
+      <p>Knowing who the author is changes how you read what he wrote.</p>
+      <p>Karpathy's consistent style is to <strong>give you the pattern, not the product</strong> — he believes
+      the process of building it yourself is where understanding happens. The LLM Wiki post fits this exactly:
+      it deliberately provides no installable tool, only a pattern, and tells you to paste it to your own agent
+      and grow your own version with it.</p>
+      <p>So don't read it expecting results from following instructions. <strong>It is designed to make you
+      make your own decisions.</strong></p>
+      </div>
+    </details>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>Before reading a document, find out who wrote it and where they stand. That decides how much trust
+      to read with, and whether to take it all at face value.</p>
+      <p><strong>But note that the answer in the screenshot is already out of date.</strong> At the time, the
+      Agent answered from memory, and its training data stops in May 2026 — just missing Karpathy joining
+      Anthropic on 19 May. The expanded content above is the version re-verified afterward.</p>
+      <p>That is why <strong>time-sensitive questions must be sent to the Agent to look up, not answered from
+      memory</strong> — and why every claim in a knowledge base should carry a source and a date.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head">
+      <span class="step-num">04</span>
+      <h2>Ask It to Turn the Article into Teaching Material</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Teach me how to build a knowledge base like this. First, translate his LLM Wiki article.</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>教我如何建立這樣的知識庫。請先翻譯他寫的 LLM Wiki 這篇文章</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li><strong>Declined to do a sentence-by-sentence translation</strong>, on the grounds that a one-to-one
+        translation of the whole piece amounts to reproducing someone else's work.</li>
+        <li>But it didn't stop and wait for instructions — it proposed an alternative and carried it out:
+        rewrite with its own structure, covering every concept in the original.</li>
+        <li>Wrote the file <code>01-核心觀念導讀.md</code> (“Core Concepts: A Reader's Guide”), nine sections.
+        The English edition of that file is <code>01-core-concepts.md</code> in this folder.</li>
+        <li>Added three things the original doesn't have but teaching material needs: <strong>common
+        misconceptions</strong>, a <strong>checkpoint for the hands-on exercise</strong>, and a
+        <strong>RAG vs. LLM Wiki comparison table</strong>.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/04-material-structure.png"
+           alt="The Agent's structure table for the teaching material, listing learning objectives and nine sections">
+      <figcaption><b>Note</b>After delivering, the Agent explains the structure on its own initiative
+      (the table lists the learning objectives and the nine sections), so you can judge at a glance whether
+      to adjust it — without reading the whole file first.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-h" style="margin-top:0;">Structure of this teaching material</p>
+          <table>
+            <thead><tr><th>Section</th><th>Content</th></tr></thead>
+            <tbody>
+              <tr><td>Learning objectives</td><td>Five checkable abilities</td></tr>
+              <tr><td>1. The problem first</td><td>Start from the pain of RAG, build motivation</td></tr>
+              <tr><td>2. A different approach</td><td>The core shift + a comparison table</td></tr>
+              <tr><td>3. Three-layer architecture</td><td>ASCII diagram, responsibilities layer by layer</td></tr>
+              <tr><td>4. Three operations</td><td>Ingest / Query / Lint</td></tr>
+              <tr><td>5. Two special files</td><td>Why index.md and log.md are kept separate</td></tr>
+              <tr><td>6. Tooling</td><td>Essential vs. nice-to-have, plus two pitfalls with images</td></tr>
+              <tr><td>7. Why it works</td><td>The “maintenance cost” argument + the Memex prehistory</td></tr>
+              <tr><td>8. Common misconceptions</td><td>Four places beginners most often get stuck</td></tr>
+              <tr><td>9. Hands-on exercise</td><td>Directory skeleton + eight steps + a checkpoint</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>The Agent will push back on an instruction, but <strong>it doesn't stop because of that</strong>.
+      It states its reason, then hands over what it thinks is better.</p>
+      <p>You can overrule it at any time — the steps that follow show how.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head">
+      <span class="step-num">05</span>
+      <h2>Ask for the Plan First</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did (continuing from the previous step)</span>
+      <p>After handing over the reader's guide, the Agent volunteered a suggestion for the next step:</p>
+      <blockquote style="margin:.6rem 0 0;padding:.1rem 0 .1rem 1rem;border-left:2px solid var(--agent-rule);color:var(--ink-soft);">
+        The options for the next step are the same as before. My recommendation is to do the
+        <code>CLAUDE.md</code> template first — after reading the guide, what students want most is
+        “so what do I paste to the AI now?”, and without a template a lot of people will get stuck here.
+      </blockquote>
+    </div>
+
+    <div class="prose">
+      <p>That suggestion is where the next prompt comes from. <strong>The Agent proposes a next step after
+      finishing a task.</strong> You can accept it, overrule it, or first ask exactly what it intends to do —
+      this step takes the third option.</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">What kind of CLAUDE.md template are you planning to make?</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>你打算做什麼 CLAUDE.md 範本</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ul>
+        <li>Started with the core judgment: <strong>short is what works</strong>. The most common beginner
+        failure is a 300-line specification: students can't finish reading it so they don't dare change it,
+        and the AI reads it but the key points get diluted, so it obeys less.</li>
+        <li>Proposed two versions: Minimal, about 40 lines (paste and go); Full, about 150 lines
+        (every rule with a “why”).</li>
+        <li>Explained three deliberate design choices: workflows written as checklists rather than prose;
+        a “definition of done”; a rule for flagging contradictions.</li>
+        <li>Ended by asking one question that would <strong>materially change the result</strong>:
+        should the template be domain-neutral, or tied to a demo topic?</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/05-claudemd-plan.png"
+           alt="The Agent explains the design thinking behind the CLAUDE.md template, comparing Minimal and Full versions">
+      <figcaption><b>Note</b>The Agent didn't start writing the file. It laid out its design thinking first
+      for you to inspect.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p><span class="tr-note">(end of the previous reply)</span> The options for the next step are the same
+          as before. My recommendation is to do the <code>CLAUDE.md</code> template first — after reading the
+          guide, what students want most is “so what do I paste to the AI now?”, and without a template a lot
+          of people will get stuck here.</p>
+          <p class="tr-user">What kind of CLAUDE.md template are you planning to make?</p>
+          <p>Good question — a bad template is worse than none, so let me lay out the design thinking first.</p>
+          <p class="tr-h">Core judgment: short is what works</p>
+          <p>The most common failure when beginners write a schema is a 300-line specification. Everyone loses:
+          students can't finish reading it, so they don't dare change it; the AI reads it, but the key points
+          get diluted, and it obeys even less.</p>
+          <p>So I plan to make two versions:</p>
+          <table>
+            <thead><tr><th>Version</th><th>Length</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td>Minimal</td><td>about 40 lines</td><td>Paste and go; to close out EP01</td></tr>
+              <tr><td>Full</td><td>about 150 lines</td><td>Annotated — every rule with a “why”, for people who want to modify it</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>For tasks that will generate a lot of follow-on work, have the Agent state its plan first.</p>
+      <p><strong>Changing a plan is cheap. Changing a finished product is expensive.</strong></p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head">
+      <span class="step-num">06</span>
+      <h2>Ask What the Term Means</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Explain what CLAUDE.md is</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>解釋什麼是 CLAUDE.md</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ul>
+        <li>Started with what it is: a plain-text markdown file kept in the project. <strong>Claude Code reads
+        it automatically at every startup</strong> and treats the contents as standing instructions for that
+        project. The only special thing about it is the filename.</li>
+        <li>Gave an analogy: think of the AI as an employee who arrives at work every day with amnesia.
+        Without the file, you re-explain the rules at the start of every conversation; with it, the rules are
+        written on the wall and the employee sees them the moment they walk in.</li>
+        <li>Listed the three places it can live: global <code>~/.claude/CLAUDE.md</code>, the project root,
+        and subdirectories. The layers stack; the project layer wins.</li>
+        <li>Added the equivalents in other tools: Codex uses <code>AGENTS.md</code>, Cursor uses <code>.cursorrules</code>.</li>
+        <li>Two reminders: don't try to write it perfectly in one go, and don't make it long.</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/06-claudemd-explained.png"
+           alt="The Agent explains CLAUDE.md with the analogy of an employee who arrives every day with amnesia">
+      <figcaption><b>Note</b>“It is the project's constitution, not a memo” — that one sentence decides
+      what belongs in CLAUDE.md and what doesn't.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">Explain what CLAUDE.md is</p>
+          <p><code>CLAUDE.md</code> is a markdown file kept in the project. <b>Claude Code</b> reads it
+          automatically at every startup and treats the contents as standing instructions for this project.</p>
+          <p>It isn't a special format — just plain text. The only special thing is the filename: Claude Code
+          recognizes the name and loads it automatically when it sees it.</p>
+          <p class="tr-h">An analogy</p>
+          <p>Think of the AI as an employee who arrives at work every day with amnesia.</p>
+          <p>Without <code>CLAUDE.md</code>: every time you open a new conversation, you re-explain “what the
+          rules of this project are, where the files go, how things are named”. Until you want to give up.</p>
+          <p>With <code>CLAUDE.md</code>: the rules are written on the wall; the employee sees them the moment
+          they walk in. You just say what needs doing today.</p>
+          <p>It is the project's constitution, not a memo.</p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>If you don't understand something, ask. Asking what a term means costs far less than building a whole
+      design on a wrong understanding and then tearing it down.</p>
+    </aside>
+
+    <div class="digest" style="margin-top:1.6rem;">
+      <span class="voice-label">Design principles for CLAUDE.md</span>
+
+      <p>Once you know what it is, the next question is <strong>how to write one that works</strong>.
+      The six principles below come up again and again in this course.</p>
+
+      <h3>1. Short is what works</h3>
+      <p>The most common failure is turning it into a 300-line specification. Everyone loses: you can't finish
+      reading it, so you don't dare change it; the AI reads it, but the key points get diluted, so it obeys less.
+      <strong>Better forty lines that all get followed.</strong></p>
+
+      <h3>2. Write workflows as checklists, not prose</h3>
+      <p>“When processing a new source, please read it carefully and integrate it into the existing pages” —
+      written like that, the AI does half the job. Numbered steps, one verb per step, each step checkable:
+      the execution rate is very different.</p>
+
+      <h3>3. Write down the “definition of done” explicitly</h3>
+      <p>What conditions must one ingest satisfy to count as finished? Pin them down: the summary page exists,
+      the index is updated, at least two links are created, one entry is appended to the log. Without this line
+      the AI will almost certainly skip the log — because it's the step that looks least like “work”.</p>
+
+      <h3>4. Only write down things that recur</h3>
+      <p>The schema is read by <strong>every</strong> session. One-off requests belong in the conversation;
+      putting them in the schema just spends attention. The test is simple: will this happen again next week?</p>
+
+      <h3>5. “Don't do” matters as much as “do”</h3>
+      <p>For example: “the raw folder is read-only, never modify it”; “don't guess content that no source
+      supports — mark it as speculation”. Prohibitions usually prevent disasters better than positive
+      instructions, because they target the mistakes you would only discover afterward.</p>
+
+      <h3>6. Rules grow out of failures, not out of foresight</h3>
+      <p>The most counter-intuitive principle, and the most important. You cannot know which rules are necessary
+      before you start. The right order is: do it, hit a wall, turn the wall into a rule.</p>
+      <p>Steps 07 and 08, coming up next, are a complete demonstration of this principle — first see what
+      “legislating in advance” looks like, then see why it gets overturned.</p>
+    </div>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head">
+      <span class="step-num">07</span>
+      <h2>Give It the Domain and Real Data</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">My field is neuroscience, centered on the “connectome”. To start, build it from a few of my own papers, which are in “C:\Users\USER\Work\BSC Tutorial\Papers”. Based on Karpathy's concept and my field, first draft an outline of the CLAUDE.md for this seesion.</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>我的領域是神經科學，以「connectome」為核心，一開始先用我自己的幾篇論文來建，放在「C:\Users\USER\Work\BSC Tutorial\Papers」，你根據 Karpathy 的概念以及我的領域，先擬這個 seesion 的 CLAUDE.md 的概要</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li><strong>Ran a command to look at the actual folder contents first</strong> — no designing in a
+        vacuum. This is the key move.</li>
+        <li>Read six PDF filenames and organized them into a “year / paper / type” table.</li>
+        <li>From the filenames alone, inferred a thirteen-year research trajectory: 2011 build the dataset →
+        2015 information-flow analysis → 2018 visualization → 2019 community structure → 2021 retrieval →
+        2024 automatic segmentation.</li>
+        <li>Judged that this batch of papers follows the light-microscopy route, not electron microscopy.</li>
+        <li>On that basis, drafted a nine-section CLAUDE.md outline, including four “domain hard rules” —
+        and stated explicitly that <strong>all of these inferences came from filenames; it had not read the
+        papers</strong>.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/07-papers-listed.png"
+           alt="The Agent lists the Papers folder, then arranges the six papers into a table">
+      <figcaption><b>Note</b><code>Listed the Papers directory</code> is an expandable tool-call record.
+      Every time the Agent uses a tool, it leaves a line like this. Below it, the six papers are laid out
+      as a table with year, title and type.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">My field is neuroscience, centered on the “connectome”. To start, build it from a few of my own papers, which are in “C:\Users\USER\Work\BSC Tutorial\Papers”. Based on Karpathy's concept and my field, first draft an outline of the CLAUDE.md for this seesion.</p>
+          <p>Let me look at your papers folder first, so the design follows the actual files.</p>
+          <p class="tr-tool">Listed the Papers directory ›</p>
+          <p>I can see all six files. The titles alone show what kind of papers these are; here is what I read
+          from them — the following is inferred from the filenames, I have not read the contents yet.</p>
+          <p class="tr-h">The structure of this batch of papers</p>
+          <table>
+            <thead><tr><th>Year</th><th>Paper</th><th>Type</th></tr></thead>
+            <tbody>
+              <tr><td>2011</td><td>Three-Dimensional Reconstruction of Brain-wide Wiring Networks (Current Biology)</td><td>dataset foundation</td></tr>
+              <tr><td>2015</td><td>Connectomics-based analysis of information flow (Current Biology)</td><td>analysis</td></tr>
+              <tr><td>2018</td><td>Kaleido: Visualizing Big Brain Data (Neuroinformatics)</td><td>tool</td></tr>
+              <tr><td>2019</td><td>Diverse Community Structures in the Neuronal-Level Connectome (Neuroinformatics)</td><td>analysis</td></tr>
+              <tr><td>2021</td><td>NeuroRetriever (Frontiers Syst. Neurosci.)</td><td>tool</td></tr>
+              <tr><td colspan="3" class="tr-cut">… (the sixth row, 2024, is below the visible area)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <div class="voice v-agent">
+      <span class="voice-label">The plan the Agent delivered (overturned in the next step)</span>
+      <p>It then drafted a nine-section <code>CLAUDE.md</code> outline. <strong>Read carefully what it wrote —
+      otherwise you won't know what is being overturned in the next step.</strong></p>
+      <ol>
+        <li><strong>Role and goal</strong> — a connectome knowledge-base maintainer, scoped to the whole-brain
+        connectome of the fruit fly (<em>Drosophila</em>).</li>
+        <li><strong>Directory structure</strong> — eight subdirectories cut by domain: <code>papers/</code>,
+        <code>datasets/</code>, <code>neuropils/</code>, <code>circuits/</code>, <code>methods/</code>,
+        <code>tools/</code>, <code>metrics/</code>, <code>concepts/</code>.</li>
+        <li><strong>Four domain hard rules</strong> — the section it considered most valuable:
+          <ul>
+            <li>The data-source type must be labeled (light microscopy vs. EM vs. mesoscale); numbers must never
+            be compared directly across types</li>
+            <li>Brain-region names must state which nomenclature they follow; maintain an old-vs-new name mapping</li>
+            <li>Graph-theory metrics must be recorded together with their computation parameters</li>
+            <li>Dataset versions must be labeled</li>
+          </ul>
+        </li>
+        <li><strong>Page format</strong> — a paper-page skeleton, three-level figure records, tables converted
+        to markdown, formulas in LaTeX.</li>
+        <li><strong>Special handling for the user's own papers</strong> — tag them <code>own_work</code>;
+        allowed to record things not written in the paper.</li>
+        <li><strong>Three workflows</strong> — Ingest / Query / Lint, each written as a numbered checklist.</li>
+        <li><strong>Lint checks</strong> — four generic plus four domain-specific.</li>
+        <li><strong>Definition of done</strong> — five conditions one ingest must satisfy.</li>
+        <li><strong>Log format</strong> — a fixed prefix, easy to search from the command line.</li>
+      </ol>
+      <p>It closed with three questions: which brain-region nomenclature to use as the standard, whether to
+      reserve a place for EM datasets now, and where the wiki should live.</p>
+    </div>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>The Agent looks at real files before designing — a good habit.</p>
+      <p>But notice: it <strong>looked at only six filenames</strong> and from them derived eight subdirectories,
+      four hard rules and nine sections — with the hard rules all bound to one specific domain: fruit flies,
+      connectomes.</p>
+      <p>The plan looks very professional. The next step exists because of that.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="step" id="s08">
+    <div class="step-head">
+      <span class="step-num">08</span>
+      <h2>The Most Important Step: Overrule It</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">You've written this far too rigidly. This knowledge base isn't limited to this field — in the future it's the reference library for my research. Scrap the plan above. We'll fix things as we go: don't write CLAUDE.md yet; when we run into a rule that fits during the work, we'll add it then.</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>你寫得太死了，這個知識庫不限於這個領域，未來是我研究的參考文獻資料庫。前面這個計畫作廢，我們邊做邊修，先不寫 CLAUDE.md，做的過程中碰到適合的規則再來加進去</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Admitted the problem in one sentence: deriving a whole set of hard rules from six filenames is
+        writing laws for a knowledge base that doesn't exist yet.</li>
+        <li><strong>Scrapped it outright — no defending, no bargaining.</strong></li>
+        <li>Switched to the smallest possible structure: create one <code>Wiki/</code> folder, no subdirectories for now.</li>
+        <li>While at it, scanned the neighboring folders and found a <code>Papers-2</code> — containing FFN, LICONN,
+        LSD and Integrated Neurophotonics: EM segmentation, mammalian light-microscopy connectomics, neurophotonics.</li>
+        <li>Pointed out that this in turn confirmed the user's correction: the fruit-fly-only hard rules would have
+        hit a wall within a week.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/08-plan-scrapped.png"
+           alt="The user asks to scrap the plan; the Agent agrees and switches to a minimal structure">
+      <figcaption><b>Note</b><code>Ran 2 commands</code> is the pair of commands it ran to scan the
+      folders and discover Papers-2.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">You've written this far too rigidly. This knowledge base isn't limited to this field — in the future it's the reference library for my research. Scrap the plan above. We'll fix things as we go: don't write CLAUDE.md yet; when we run into a rule that fits during the work, we'll add it then.</p>
+          <p>You're right — I derived a whole set of hard rules from six filenames; that is legislating for
+          a knowledge base that doesn't exist yet. <b>Scrapped.</b></p>
+          <p>Instead: do one paper first; you look at it and say what's wrong; only what's wrong becomes the
+          first rule.</p>
+          <p>I'll set up the minimal structure and start from the 2011 paper (the later ones all build on it).</p>
+          <p class="tr-tool">Ran 2 commands ›</p>
+          <p>Papers-2 contains FFN, LICONN, LSD, Integrated Neurophotonics — EM segmentation, mammalian
+          light-microscopy connectomics, neurophotonics, all of it. That confirms your correction even more:
+          my fruit-fly-only hard rules would have hit a wall within a week.</p>
+          <p>Reading the 2011 paper first.</p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">If you remember one thing, remember this</span>
+      <p>This is exactly what Karpathy means by “the schema co-evolves with the AI”.</p>
+      <p><strong>Rules should grow out of friction during implementation, not be legislated up front.</strong>
+      Steps 05 and 07 looked productive — two versions designed, a nine-section outline, four hard rules —
+      but all of it rested on guesses from six filenames. That one word, “scrap”, saved dozens of pages of
+      rework later.</p>
+      <p>Overruling the Agent is not a failure. It's how this method is supposed to work.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section class="step" id="s09">
+    <div class="step-head">
+      <span class="step-num">09</span>
+      <h2>The Agent Solves Its Own Tooling Problem</h2>
+    </div>
+
+    <div class="prose">
+      <p><strong>No new prompt in this step</strong> — it's a continuation of the previous one. But it's the
+      part of this whole tutorial most worth studying closely, because it shows in full what the Agent does
+      when it hits an obstacle.</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did (in order)</span>
+      <ol>
+        <li>Tried to read the PDF with the built-in <code>Read</code> tool. <strong>Failed</strong> — the
+        environment lacked a component called poppler.</li>
+        <li>Didn't report “can't do it” and stop. Instead it <strong>checked the environment first</strong>:
+        the Python version, the installed PDF packages. Result: Python 3.10 present, zero PDF packages.</li>
+        <li>Chose and installed <strong>PyMuPDF</strong>. Reason: one package handles both text extraction and
+        image extraction, which it would need later for the figures.</li>
+        <li>Tried to print the PDF text directly. <strong>Failed again</strong> — Windows' cp950 encoding can't
+        output certain special characters.</li>
+        <li>Changed strategy: <strong>wrote a small program of its own</strong>, <code>pdftxt.py</code>, which
+        writes the text to a UTF-8 file and reads that back — sidestepping the terminal's encoding limit.</li>
+        <li>Successfully read 40 pages (11 pages of main text plus supplementary material).</li>
+        <li>Wrote the first page, <code>2011-Chiang-FlyCircuit.md</code>, and <code>log.md</code>.</li>
+        <li>Logged the three friction points it met along the way: <code>Read</code> can't open PDFs; the cp950
+        encoding problem; the PDF text layer extracts <code>±</code> as <code>6</code> and <code>µm</code> as <code>mm</code>.</li>
+      </ol>
+    </div>
+
+    <div class="tools">
+      <h3>Software and programs used in this step</h3>
+      <dl>
+        <dt><span class="tag install">Installed</span>PyMuPDF</dt>
+        <dd>Installed with <code>pip install pymupdf</code>. Extracts text and embedded images from PDFs.</dd>
+        <dt><span class="tag wrote">Wrote</span>pdftxt.py</dt>
+        <dd>Writes each page's text to a UTF-8 text file with page-number separators. Sidesteps the Windows
+        terminal's encoding limit.</dd>
+      </dl>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/09-first-page.png"
+           alt="After failing to read the PDF, the Agent installs PyMuPDF, works around the encoding problem, and writes the first page">
+      <figcaption><b>Note</b>The red <code>Failed to read</code> is the first failure. Further down, the
+      <code>+9 -0</code> after <code>Created a file, ran a command, read a file</code> means nine lines were
+      added — that's <code>pdftxt.py</code>.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p>Reading the 2011 paper first.</p>
+          <p class="tr-tool fail">Failed to read CurrentBiology2011_Three-Dimensional Reconstruction of Brain-wide Wiring Networks in Drosoph… ›</p>
+          <p>Reading PDFs needs tool support; let me see what the environment has.</p>
+          <p class="tr-tool">Checked Python and PDF libraries ›</p>
+          <p>No PDF libraries at all. Installing PyMuPDF — one package that does both text and image extraction;
+          it'll be useful later for pulling out the figures and captions too.</p>
+          <p class="tr-tool fail">Ran 2 commands ›</p>
+          <p>Encoding problem (Windows cp950) — switching to writing a file and reading it back.</p>
+          <p class="tr-tool">Created a file, ran a command, read a file <span class="diff-add">+9</span> <span class="diff-del">-0</span> ›</p>
+          <p>The PDF is read (40 pages, including supplementary material). Writing the first page now; the
+          structure is deliberately kept loose — you look at it and say what's wrong.</p>
+          <p class="tr-tool">Created 2 files <span class="diff-add">+86</span> <span class="diff-del">-0</span> ›</p>
+          <p>The first page is written: <code>2011-Chiang-FlyCircuit.md</code>, plus <code>log.md</code>.</p>
+          <p><code>Wiki/</code> is flat for now, no subdirectories — we'll split it when there are enough pages
+          to get messy.</p>
+          <p class="tr-h">Three things I ran into along the way (already logged)</p>
+          <p>1. The Read tool can't read PDFs (the environment lacks poppler); switched to PyMuPDF, now
+          installed <span class="tr-cut">… (cut off)</span></p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>This is the fundamental difference between an Agent and an ordinary chatbot. It tries, fails, inspects
+      the environment, installs things, writes its own tools, changes strategy. Through all of it,
+      <strong>you said not one word</strong>.</p>
+      <p>Even more important is the last step: it recorded the friction in <code>log.md</code>. That friction
+      later becomes the source of the rules.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="step" id="s10">
+    <div class="step-head">
+      <span class="step-num">10</span>
+      <h2>Review the First Version in Obsidian</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your action</span>
+      <p>Open Obsidian and look at the <code>2011-Chiang-FlyCircuit.md</code> the Agent has just written.</p>
+    </div>
+
+    <div class="prose">
+      <p>This is what Karpathy's analogy looks like in practice — <strong>Obsidian is the IDE, the LLM is the
+      engineer, the wiki is the codebase</strong>. The Agent writes on the left; you read on the right.</p>
+      <p>Three things on screen are worth noticing:</p>
+      <ul>
+        <li>The frontmatter at the top of the file has become a “Properties” panel, and <code>tags</code> are
+        now clickable tags.</li>
+        <li><code>[[2015-information-flow-analysis]]</code> shows as a link even though that page doesn't
+        exist yet — that's normal; it marks “to be written”.</li>
+        <li>The markdown tables render as proper tables.</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · English edition of the wiki</span>
+      <img loading="lazy" decoding="async" src="screenshots/10-obsidian-v1.png"
+           alt="The first version of the note in Obsidian: properties panel and opening on the left, methods and registration-accuracy tables on the right">
+      <figcaption><b>Note</b>Left: the properties panel and the opening paragraphs. Right: the tables for
+      methods and for registration accuracy. At this point there are no figures, no abstract and no
+      general-audience article yet. This view is of the <strong>English edition of the wiki</strong>
+      (<code>Wiki_Eng/</code>, the same note translated); the original session's note was in Chinese.
+      The two labels 屬性 / 新增屬性 are Obsidian's own interface (Properties / Add property).</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section class="step" id="s11">
+    <div class="step-head">
+      <span class="step-num">11</span>
+      <h2>Give Specific Revision Instructions</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Revise:
+
+1. Include the paper's full title
+2. After “Why it matters”, the full original abstract plus a Chinese translation
+3. After the abstract, write a general-audience article of about 2,000 characters, aimed at high-school level. The language should be concise and natural, with substantial content; avoid adjectives, exclamations and other embellishment unless necessary, but analogies are fine where they aid understanding
+4. After the general-audience article, a technical article (3,000+ characters) aimed at graduate students in the same field. Follow a formal paper structure: “Overview (main question, significance, state of the field at publication)”, “Methods”, “Results”, “Discussion”, “Problems and limitations”, “Future work”.
+5. Insert the paper's original figures and tables at the appropriate places (for flowcharts and similar diagrams you may redraw them yourself with mermaid or a similar tool); each must include a translated caption and your own further interpretation</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>修改：
+
+1. 要有論文完整標題
+2. 「為什麼重要」之後，論文摘要全文＋中文翻譯
+3. 摘要之後，寫一篇約 2000 字的「科普文」，讀者定位是高中生程度。用語要簡潔自然，實質內容豐富，如非必要盡量少用形容詞、感嘆詞等修飾，但可以適當使用比喻以增進理解
+4. 「科普文」之後則是「專業文」（3000 字以上），讀者定位為該論文同領域之研究生程度。需依正式論文結構書寫，包含「概述（主要問題、重要性、發表時之領域現狀）」、「方法」、「結果」、「討論」、「問題與限制」、「未來」。
+5. 將論文原圖與表格（如果是流程圖這類圖表、你可以用 mermaid 或類似工具自行繪製）插入適當位置，必須包含圖說翻譯、與你的進一步解讀</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>First completed the material — read the rest of the PDF, not just the first few pages.</li>
+        <li><strong>Wrote another new program</strong>, <code>pdfimg.py</code>, to extract the PDF's embedded
+        images. It added a “minimum edge length” parameter to filter out small images such as logos and icons.</li>
+        <li>Extracted 8 images, whose positions matched Figure 1 through Figure 8.</li>
+        <li>Renamed them <code>fig1</code> through <code>fig8</code>.</li>
+        <li><strong>Actually opened the images to check their content</strong> and confirm the mapping,
+        rather than guessing from page positions alone.</li>
+        <li>Rewrote the whole page against the five requirements — and while writing “Problems and limitations”,
+        noticed an inconsistent number in the original paper and flagged it for verification on its own initiative.</li>
+      </ol>
+    </div>
+
+    <div class="tools">
+      <h3>Programs used in this step</h3>
+      <dl>
+        <dt><span class="tag wrote">Wrote</span>pdfimg.py</dt>
+        <dd>Scans each PDF page for embedded images, filters them by minimum edge length, exports them as
+        separate files, and lists each image's page number and dimensions.</dd>
+      </dl>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/11-revision-request.png"
+           alt="The user gives five revision instructions; the Agent reads the full text and writes pdfimg.py to extract the figures">
+      <figcaption><b>Note</b>The <code>+37 -0</code> after <code>Created pdfimg.py, ran a command</code>
+      means the program is 37 lines long.</figcaption>
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">Revise:
+
+1. Include the paper's full title
+2. After “Why it matters”, the full original abstract plus a Chinese translation
+3. After the abstract, write a general-audience article of about 2,000 characters, aimed at high-school level. The language should be concise and natural, with substantial content; avoid adjectives, exclamations and other embellishment unless necessary, but analogies are fine where they aid understanding
+4. After the general-audience article, a technical article (3,000+ characters) aimed at graduate students in the same field. Follow a formal paper structure: “Overview (main question, significance, state of the field at publication)”, “Methods”, “Results”, “Discussion”, “Problems and limitations”, “Future work”.
+5. Insert the paper's original figures and tables at the appropriate places (for flowcharts and similar diagrams you may redraw them yourself with mermaid or a similar tool); each must include a translated caption and your own further interpretation</p>
+          <p>A big job. First get the materials ready: read the full text and extract the figures.</p>
+          <p class="tr-tool">Read 2011.txt ›</p>
+          <p>Materials ready. Extracting figures:</p>
+          <p class="tr-tool">Created pdfimg.py, ran a command <span class="diff-add">+37</span> <span class="diff-del">-0</span> ›</p>
+          <p>8 images extracted; their positions match Figures 1–8. I'll rename them to recognizable names
+          first, then actually look at the images to confirm the content.</p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>The more specific the instruction, the more usable the output.</strong></p>
+      <p>“Make it better” does nothing. “About 2,000 characters, high-school readers, few adjectives,
+      analogies allowed” works — because every one of those conditions can be checked.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 12 ============ -->
+  <section class="step" id="s12">
+    <div class="step-head">
+      <span class="step-num">12</span>
+      <h2>The Second Version</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your action</span>
+      <p>Back to Obsidian to review the rewritten version.</p>
+    </div>
+
+    <div class="prose">
+      <p>The same note now has the full title and citation, the original abstract, a general-audience article
+      for high-school readers, a technical article for graduate students, and the paper's eight original figures.
+      (In the original Chinese session the title and the abstract each also carried a Chinese translation.)</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Section</th><th>Content</th><th>Size · English edition</th><th>Size · Chinese original</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Title &amp; abstract</td><td>Paper title, citation, DOI; original abstract</td><td>—</td><td>— (plus translations)</td></tr>
+          <tr><td>General-audience article</td><td>High-school level, plain prose, no figures</td><td>1,758 words</td><td>2,516 characters</td></tr>
+          <tr><td>Technical article</td><td>Graduate level, six-section formal structure, all eight figures</td><td>5,434 words</td><td>6,748 characters</td></tr>
+          <tr><td>Figures</td><td>Figure 1–8, each with the original caption and an interpretation</td><td>8</td><td>8</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-note">The session produced the Chinese note; the English edition (<code>Wiki_Eng/</code>) is the same
+    note translated, which is what the screenshot below shows.</p>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · English edition of the wiki</span>
+      <img loading="lazy" decoding="async" src="screenshots/12-obsidian-v2.png"
+           alt="The second version of the note in Obsidian, four panes: title block with properties, abstract, opening of the general-audience article, and the Overview of the technical article">
+      <figcaption><b>Note</b>Four panes of the same note: the title block with its properties, the abstract,
+      the opening of the general-audience article, and “1. Overview” of the technical article. English edition
+      of the wiki (<code>Wiki_Eng/</code>); the original session's note was in Chinese.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ Closing ============ -->
+  <section class="closing">
+    <h2>What this episode teaches</h2>
+
+    <div class="prose">
+      <p>Looked at as a whole, the twelve steps aren't really about “how to write notes”. They're about
+      <strong>how to work with a tool that acts on its own</strong>.</p>
+    </div>
+
+    <h3>Three observations about the Agent</h3>
+    <ul class="obs">
+      <li><b>It finds its own tools</b>Can't read a PDF → inspects the environment, installs a package;
+      the package is awkward to use → writes a program. In this episode it installed one package and wrote
+      two programs, with nobody telling it to.</li>
+      <li><b>It changes strategy on error</b>Two failures, two different responses. The first time it switched
+      tools; the second time it switched approach — write to a file, then read it back, to get around the
+      encoding limit.</li>
+      <li><b>It writes the friction down</b>Every place it got stuck went into <code>log.md</code>.
+      Those records later become the source of the rules in <code>CLAUDE.md</code>.</li>
+    </ul>
+
+    <h3>About your role</h3>
+    <div class="prose">
+      <p>In the whole process you did only four things: <strong>set the direction</strong>,
+      <strong>provide real data</strong>, <strong>ask what a term means</strong>, and
+      <strong>overrule a wrong design</strong>.</p>
+      <p>You didn't write a single word of that note. That is the division of labor Karpathy describes —
+      you find sources, explore and ask the right questions; the AI summarizes, cross-references, files
+      and keeps the books.</p>
+      <p>Of these, <strong>the overrule in step 08 matters most</strong>. It looks like it threw away the
+      results of the two steps before it; what it actually saved was dozens of pages of rework later.</p>
+    </div>
+
+    <h3>All the tools used in this episode</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Type</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>PyMuPDF</td><td>Installed package</td><td>Extract text and embedded images from PDFs</td></tr>
+          <tr><td>pdftxt.py</td><td>Written by the Agent</td><td>PDF full text → UTF-8 text file, sidestepping the Windows encoding problem</td></tr>
+          <tr><td>pdfimg.py</td><td>Written by the Agent</td><td>Extract embedded images from PDFs, filtering out small junk images by size</td></tr>
+          <tr><td>WebFetch</td><td>Built-in tool</td><td>Fetch web content</td></tr>
+          <tr><td>Read / Write / Edit</td><td>Built-in tools</td><td>Read and write files, view images</td></tr>
+          <tr><td>Bash / PowerShell</td><td>Built-in tools</td><td>Run system commands, install packages</td></tr>
+          <tr><td>Obsidian</td><td>External software</td><td>Browse and review the wiki</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h3>Check yourself</h3>
+        <p>Ten multiple-choice questions. After each answer you immediately see whether you were right,
+        and why. Wrong answers cost nothing — the point is to understand the reasoning.</p>
+      </div>
+      <a class="cta-btn" href="ep01-quiz.html"
+         data-remote="EP01_ENG_QUIZ_ARTIFACT_URL">
+        Start the quiz →
+      </a>
+    </div>
+
+    <div class="next">
+      <b>Next episode</b>　This episode deliberately did not write a <code>CLAUDE.md</code>. EP02 turns the
+      friction and rules accumulated along the way into a real schema — and every rule written then has a
+      concrete failure as its reason.
+    </div>
+
+    <script>
+    // When published on claude.ai, same-folder relative links don't exist; point them at the online versions.
+    // Placeholders of the form EP01_ENG_… mean "not published yet" and are left alone.
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        var r = a.getAttribute('data-remote');
+        if (!r || /^EP\d\d_/.test(r)) return;
+        a.href = r;
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

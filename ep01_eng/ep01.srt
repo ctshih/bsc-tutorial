@@ -1,0 +1,1003 @@
+﻿1
+00:00:00,862 --> 00:00:03,099
+Most people use AI on their documents like
+
+2
+00:00:03,099 --> 00:00:05,312
+this: upload the files, then ask
+
+3
+00:00:05,312 --> 00:00:08,724
+questions. It works. But
+
+4
+00:00:08,724 --> 00:00:09,782
+there is a problem.
+
+5
+00:00:11,153 --> 00:00:13,553
+Every time you ask, the AI has to read the
+
+6
+00:00:13,553 --> 00:00:15,628
+material from scratch and piece the answer
+
+7
+00:00:15,628 --> 00:00:18,403
+together again. Whatever you learned from
+
+8
+00:00:18,403 --> 00:00:20,648
+your last question, it doesn't remember.
+
+9
+00:00:21,391 --> 00:00:23,598
+What you have read never becomes an asset.
+
+10
+00:00:24,341 --> 00:00:25,666
+It's just a pile of files
+
+11
+00:00:25,666 --> 00:00:26,761
+sitting in a folder.
+
+12
+00:00:28,141 --> 00:00:29,828
+In this episode we try a different
+
+13
+00:00:29,828 --> 00:00:33,161
+approach. We let the AI build you a wiki.
+
+14
+00:00:33,903 --> 00:00:36,003
+It reads the sources itself, writes the
+
+15
+00:00:36,003 --> 00:00:38,466
+pages itself, and flags the places where
+
+16
+00:00:38,466 --> 00:00:40,311
+new material contradicts old.
+
+17
+00:00:41,053 --> 00:00:43,041
+Your job is to find the sources and ask
+
+18
+00:00:43,041 --> 00:00:46,116
+the questions. And one more thing, the
+
+19
+00:00:46,116 --> 00:00:47,423
+most important of all:
+
+20
+00:00:47,491 --> 00:00:48,566
+to call a stop when it
+
+21
+00:00:48,566 --> 00:00:49,736
+gets something wrong.
+
+22
+00:00:51,104 --> 00:00:52,967
+What follows is the record of one real
+
+23
+00:00:52,967 --> 00:00:55,999
+working session. Twelve steps in all,
+
+24
+00:00:56,029 --> 00:00:58,199
+including the places where things failed.
+
+25
+00:00:59,572 --> 00:01:02,710
+Step one. Open a new session and choose a
+
+26
+00:01:02,710 --> 00:01:05,942
+folder. No prompt is typed in this step,
+
+27
+00:01:05,947 --> 00:01:08,155
+but it decides everything that follows.
+
+28
+00:01:08,897 --> 00:01:11,092
+This folder is the AI's territory.
+
+29
+00:01:11,835 --> 00:01:13,197
+Every file it can read or
+
+30
+00:01:13,197 --> 00:01:14,530
+write lives inside it.
+
+31
+00:01:15,912 --> 00:01:18,844
+Step two. Hand it the article.
+
+32
+00:01:19,587 --> 00:01:21,612
+It was written by Andrej Karpathy, and
+
+33
+00:01:21,612 --> 00:01:23,144
+it's called LLM Wiki.
+
+34
+00:01:23,887 --> 00:01:25,919
+The prompt is about as short as it gets:
+
+35
+00:01:25,949 --> 00:01:26,837
+three words and a
+
+36
+00:01:26,837 --> 00:01:29,032
+link. Take a look.
+
+37
+00:01:30,403 --> 00:01:31,711
+Now watch what it did.
+
+38
+00:01:32,453 --> 00:01:34,653
+It went and fetched the web page, and what
+
+39
+00:01:34,653 --> 00:01:36,136
+came back was a summary.
+
+40
+00:01:36,878 --> 00:01:38,816
+On its own, it judged that the summary
+
+41
+00:01:38,816 --> 00:01:41,578
+might be distorted. So it switched to a
+
+42
+00:01:41,578 --> 00:01:44,016
+different URL, fetched again, and got the
+
+43
+00:01:44,016 --> 00:01:46,453
+complete original. This kind of
+
+44
+00:01:46,453 --> 00:01:48,786
+self-correction, you never asked for.
+
+45
+00:01:50,151 --> 00:01:52,001
+The heart of the article is a three-layer
+
+46
+00:01:52,001 --> 00:01:54,776
+architecture. At the bottom are the raw
+
+47
+00:01:54,776 --> 00:01:57,651
+sources: the papers, articles and reports
+
+48
+00:01:57,651 --> 00:01:58,933
+you collect yourself.
+
+49
+00:01:59,676 --> 00:02:01,233
+This layer is read-only.
+
+50
+00:02:01,976 --> 00:02:04,471
+The AI may look, but never modify.
+
+51
+00:02:05,213 --> 00:02:07,101
+In the middle is the wiki, written and
+
+52
+00:02:07,101 --> 00:02:09,133
+maintained entirely by the AI.
+
+53
+00:02:09,876 --> 00:02:12,601
+You only read it. At the top is the
+
+54
+00:02:12,601 --> 00:02:15,088
+rulebook, which tells the AI how this wiki
+
+55
+00:02:15,088 --> 00:02:17,176
+is organized, and what to do when new
+
+56
+00:02:17,176 --> 00:02:18,471
+material comes in.
+
+57
+00:02:19,858 --> 00:02:21,871
+Karpathy's own way of working is to keep
+
+58
+00:02:21,871 --> 00:02:24,246
+the AI open on one side and Obsidian on
+
+59
+00:02:24,246 --> 00:02:26,246
+the other, watching in real time as it
+
+60
+00:02:26,246 --> 00:02:29,403
+edits. His analogy is precise.
+
+61
+00:02:30,146 --> 00:02:32,358
+Obsidian is the editor, the AI is the
+
+62
+00:02:32,358 --> 00:02:34,591
+engineer, and the wiki is the code.
+
+63
+00:02:35,958 --> 00:02:39,233
+Step four. Ask it to turn the article into
+
+64
+00:02:39,233 --> 00:02:42,096
+teaching material. Something interesting
+
+65
+00:02:42,096 --> 00:02:44,933
+happened here. It declined to translate
+
+66
+00:02:44,933 --> 00:02:46,878
+the article sentence by sentence.
+
+67
+00:02:47,620 --> 00:02:49,833
+Its reason: a one-to-one translation of
+
+68
+00:02:49,833 --> 00:02:51,770
+the whole piece is just copying someone
+
+69
+00:02:51,770 --> 00:02:54,658
+else's work. But it didn't stop and wait
+
+70
+00:02:54,658 --> 00:02:57,883
+for you to answer. It gave its reason, and
+
+71
+00:02:57,883 --> 00:02:59,270
+then delivered what it thought was
+
+72
+00:02:59,270 --> 00:03:00,328
+the better version.
+
+73
+00:03:01,706 --> 00:03:04,018
+After delivering the material, it proposed
+
+74
+00:03:04,018 --> 00:03:05,551
+the next step on its own.
+
+75
+00:03:06,293 --> 00:03:07,906
+It said we should make a template for the
+
+76
+00:03:07,906 --> 00:03:10,143
+rulebook first, because what students most
+
+77
+00:03:10,143 --> 00:03:11,676
+want to know after reading is:
+
+78
+00:03:11,768 --> 00:03:13,701
+so what do I paste to the AI now?
+
+79
+00:03:15,069 --> 00:03:16,907
+At this point you could simply tell it to
+
+80
+00:03:16,907 --> 00:03:19,482
+go ahead. But let's ask a different
+
+81
+00:03:19,482 --> 00:03:22,307
+question instead. What are you planning to
+
+82
+00:03:22,307 --> 00:03:24,827
+do? This habit matters.
+
+83
+00:03:25,569 --> 00:03:27,644
+For any task that will generate a lot of
+
+84
+00:03:27,644 --> 00:03:30,082
+follow-on work, have the AI state its plan
+
+85
+00:03:30,082 --> 00:03:33,027
+first. Changing a plan is cheap.
+
+86
+00:03:33,769 --> 00:03:36,127
+Changing a finished product is expensive.
+
+87
+00:03:37,505 --> 00:03:39,787
+Its answer: short is what works.
+
+88
+00:03:40,530 --> 00:03:42,305
+The most common beginner mistake is
+
+89
+00:03:42,305 --> 00:03:44,367
+turning the rulebook into a long, long
+
+90
+00:03:44,367 --> 00:03:47,812
+specification. Then everybody loses.
+
+91
+00:03:48,555 --> 00:03:50,492
+You can't finish reading it, so you don't
+
+92
+00:03:50,492 --> 00:03:53,592
+dare change it. The AI reads it, but the
+
+93
+00:03:53,592 --> 00:03:55,180
+key points get diluted, and
+
+94
+00:03:55,180 --> 00:03:56,600
+it obeys even less.
+
+95
+00:03:57,972 --> 00:04:00,305
+So what is this rulebook, exactly?
+
+96
+00:04:01,047 --> 00:04:03,230
+The file is called Claude.md.
+
+97
+00:04:03,972 --> 00:04:06,297
+It's just a plain text file, kept inside
+
+98
+00:04:06,297 --> 00:04:09,360
+the project folder. The only special thing
+
+99
+00:04:09,360 --> 00:04:10,430
+about it is the name:
+
+100
+00:04:10,522 --> 00:04:12,672
+the AI reads it automatically every time
+
+101
+00:04:12,672 --> 00:04:15,680
+it starts. It offered an analogy.
+
+102
+00:04:16,422 --> 00:04:18,660
+Think of the AI as an employee who arrives
+
+103
+00:04:18,660 --> 00:04:20,417
+at work every day with amnesia.
+
+104
+00:04:21,160 --> 00:04:23,310
+Without the rulebook, you have to explain
+
+105
+00:04:23,310 --> 00:04:25,767
+the rules again in every new conversation,
+
+106
+00:04:25,922 --> 00:04:27,217
+until you want to give up.
+
+107
+00:04:27,960 --> 00:04:29,822
+With the rulebook, the rules are written
+
+108
+00:04:29,822 --> 00:04:31,835
+on the wall, and the employee sees them
+
+109
+00:04:31,835 --> 00:04:33,180
+the moment they walk in.
+
+110
+00:04:34,544 --> 00:04:37,414
+Step seven. Give it real data.
+
+111
+00:04:38,156 --> 00:04:40,464
+Here we tell it the field is neuroscience,
+
+112
+00:04:40,556 --> 00:04:42,081
+and give it the path to a folder of
+
+113
+00:04:42,081 --> 00:04:45,031
+papers. The first thing it did was run a
+
+114
+00:04:45,031 --> 00:04:46,881
+command to see what was actually in that
+
+115
+00:04:46,881 --> 00:04:49,889
+folder. No designing in a vacuum.
+
+116
+00:04:50,631 --> 00:04:51,851
+That's a good habit.
+
+117
+00:04:53,236 --> 00:04:54,773
+Then it drafted an outline for the
+
+118
+00:04:54,773 --> 00:04:57,811
+rulebook. Eight subdirectories, four
+
+119
+00:04:57,811 --> 00:05:00,593
+domain-specific hard rules, nine sections.
+
+120
+00:05:01,336 --> 00:05:03,573
+From data formats to workflows, very
+
+121
+00:05:03,573 --> 00:05:06,556
+thorough. It looked very professional.
+
+122
+00:05:07,943 --> 00:05:10,113
+But this plan had a fundamental problem.
+
+123
+00:05:11,491 --> 00:05:13,336
+It had looked at six filenames.
+
+124
+00:05:14,078 --> 00:05:17,361
+Six. It had not read a single paper.
+
+125
+00:05:18,103 --> 00:05:20,041
+And from those six filenames it derived
+
+126
+00:05:20,041 --> 00:05:22,478
+eight subdirectories, four hard rules, and
+
+127
+00:05:22,478 --> 00:05:26,016
+nine sections. Worse, all four hard rules
+
+128
+00:05:26,016 --> 00:05:27,748
+were bound to one narrow domain:
+
+129
+00:05:27,803 --> 00:05:29,661
+fruit flies and connectomes.
+
+130
+00:05:31,046 --> 00:05:32,554
+So the user said this.
+
+131
+00:05:33,296 --> 00:05:35,166
+You've written this far too rigidly.
+
+132
+00:05:35,909 --> 00:05:37,821
+This knowledge base isn't limited to this
+
+133
+00:05:37,821 --> 00:05:40,329
+field. Scrap the plan.
+
+134
+00:05:41,071 --> 00:05:42,716
+We'll fix things as we go.
+
+135
+00:05:43,459 --> 00:05:44,979
+Don't write the rulebook yet.
+
+136
+00:05:45,721 --> 00:05:47,109
+When a rule comes up during the
+
+137
+00:05:47,109 --> 00:05:48,441
+work, add it then.
+
+138
+00:05:49,810 --> 00:05:51,680
+The AI's response was clean.
+
+139
+00:05:52,422 --> 00:05:54,610
+It admitted: deriving a whole set of hard
+
+140
+00:05:54,610 --> 00:05:56,922
+rules from six filenames is writing laws
+
+141
+00:05:56,922 --> 00:05:58,747
+for a knowledge base that doesn't exist
+
+142
+00:05:58,747 --> 00:06:00,760
+yet. Then it scrapped the
+
+143
+00:06:00,760 --> 00:06:03,317
+plan. No defending it.
+
+144
+00:06:04,686 --> 00:06:07,373
+Next, it scanned the folder next door, and
+
+145
+00:06:07,373 --> 00:06:09,323
+found another batch of papers, with
+
+146
+00:06:09,323 --> 00:06:11,856
+electron-microscopy image segmentation,
+
+147
+00:06:11,973 --> 00:06:13,923
+and light-microscopy connectomics in
+
+148
+00:06:13,923 --> 00:06:16,611
+mammals. In other words, that
+
+149
+00:06:16,611 --> 00:06:18,373
+fruit-fly-only rulebook would have hit a
+
+150
+00:06:18,373 --> 00:06:21,448
+wall within a week. The user's correction
+
+151
+00:06:21,448 --> 00:06:22,706
+turned out to be right.
+
+152
+00:06:24,073 --> 00:06:25,623
+If you remember one thing from this
+
+153
+00:06:25,623 --> 00:06:27,556
+episode, remember this part.
+
+154
+00:06:28,298 --> 00:06:29,986
+Rules should grow out of the friction of
+
+155
+00:06:29,986 --> 00:06:32,556
+real work, not be legislated up front.
+
+156
+00:06:33,298 --> 00:06:35,618
+Those two earlier steps looked productive:
+
+157
+00:06:35,673 --> 00:06:37,836
+two versions designed, nine sections
+
+158
+00:06:37,836 --> 00:06:39,893
+outlined, four hard rules set.
+
+159
+00:06:40,636 --> 00:06:42,543
+But all of it rested on guesswork.
+
+160
+00:06:43,286 --> 00:06:45,723
+That one word, scrap, saved dozens of
+
+161
+00:06:45,723 --> 00:06:47,181
+pages of rework later.
+
+162
+00:06:47,923 --> 00:06:50,218
+Overruling the AI is not a failure.
+
+163
+00:06:50,961 --> 00:06:53,143
+It is how this method is supposed to work.
+
+164
+00:06:54,525 --> 00:06:56,682
+There is no new prompt in the next part,
+
+165
+00:06:56,737 --> 00:06:58,707
+but it's the part most worth watching,
+
+166
+00:06:58,850 --> 00:07:01,062
+because it shows exactly what the AI does
+
+167
+00:07:01,062 --> 00:07:02,457
+when it hits an obstacle.
+
+168
+00:07:03,200 --> 00:07:05,870
+First, it tried to read the paper's PDF.
+
+169
+00:07:06,612 --> 00:07:09,525
+It failed. The environment was missing a
+
+170
+00:07:09,525 --> 00:07:10,870
+required component.
+
+171
+00:07:12,256 --> 00:07:14,289
+It did not report failure and stop.
+
+172
+00:07:15,031 --> 00:07:16,789
+It checked the environment first:
+
+173
+00:07:16,856 --> 00:07:18,619
+the Python version, the installed
+
+174
+00:07:18,619 --> 00:07:21,481
+packages. Not one of them could handle
+
+175
+00:07:21,481 --> 00:07:24,969
+PDFs. So it chose a library and installed
+
+176
+00:07:24,969 --> 00:07:27,994
+it. Its reason: one package that can
+
+177
+00:07:27,994 --> 00:07:30,344
+extract both text and images, which it
+
+178
+00:07:30,344 --> 00:07:31,289
+would need later.
+
+179
+00:07:32,676 --> 00:07:34,651
+With the library installed, it tried to
+
+180
+00:07:34,651 --> 00:07:36,296
+print the PDF's text.
+
+181
+00:07:37,038 --> 00:07:40,051
+It failed again. This time, a Windows
+
+182
+00:07:40,051 --> 00:07:42,126
+encoding problem: special characters
+
+183
+00:07:42,126 --> 00:07:44,613
+couldn't be printed. So it changed
+
+184
+00:07:44,613 --> 00:07:47,458
+strategy. Don't print directly.
+
+185
+00:07:48,201 --> 00:07:50,746
+Write to a file, then read the file back.
+
+186
+00:07:52,112 --> 00:07:54,187
+For that, it wrote a small program of its
+
+187
+00:07:54,187 --> 00:07:57,194
+own. What the program does is simple:
+
+188
+00:07:57,349 --> 00:07:59,399
+write the text of every page of the PDF
+
+189
+00:07:59,399 --> 00:08:02,474
+into a file. That gets around the encoding
+
+190
+00:08:02,474 --> 00:08:04,744
+limit. And it worked.
+
+191
+00:08:05,487 --> 00:08:06,832
+Forty pages read.
+
+192
+00:08:08,211 --> 00:08:10,344
+Finally, it wrote the first note.
+
+193
+00:08:11,086 --> 00:08:12,594
+And it did one more thing.
+
+194
+00:08:13,336 --> 00:08:15,399
+It recorded the three places it got stuck
+
+195
+00:08:15,399 --> 00:08:17,949
+in the work log: couldn't read PDFs, the
+
+196
+00:08:17,949 --> 00:08:20,199
+encoding problem, and text extraction
+
+197
+00:08:20,199 --> 00:08:21,956
+garbling the plus-minus sign.
+
+198
+00:08:22,699 --> 00:08:24,211
+Those records later became the
+
+199
+00:08:24,211 --> 00:08:25,394
+source of the rules.
+
+200
+00:08:26,759 --> 00:08:28,571
+Through all of this, you said not one
+
+201
+00:08:28,571 --> 00:08:31,559
+word. This is the difference between an AI
+
+202
+00:08:31,559 --> 00:08:33,516
+agent and an ordinary chatbot.
+
+203
+00:08:34,259 --> 00:08:36,434
+It tries, it fails, it checks the
+
+204
+00:08:36,434 --> 00:08:38,834
+environment, it installs software, it
+
+205
+00:08:38,834 --> 00:08:40,354
+writes its own programs.
+
+206
+00:08:41,730 --> 00:08:43,650
+Let's look at the result in Obsidian.
+
+207
+00:08:44,393 --> 00:08:46,230
+The settings at the top of the file have
+
+208
+00:08:46,230 --> 00:08:48,188
+become a clickable properties panel.
+
+209
+00:08:48,930 --> 00:08:50,613
+The tables render properly.
+
+210
+00:08:51,355 --> 00:08:53,130
+And the links in double square brackets
+
+211
+00:08:53,130 --> 00:08:55,130
+show up even when the target page doesn't
+
+212
+00:08:55,130 --> 00:08:57,043
+exist yet. That
+
+213
+00:08:57,043 --> 00:08:58,475
+means: to be written.
+
+214
+00:08:59,846 --> 00:09:01,996
+After reviewing the first version, we give
+
+215
+00:09:01,996 --> 00:09:03,428
+revision instructions.
+
+216
+00:09:04,171 --> 00:09:06,091
+Five of them: the full title;
+
+217
+00:09:06,183 --> 00:09:08,016
+the abstract with a translation;
+
+218
+00:09:08,108 --> 00:09:09,846
+a two-thousand-character article for
+
+219
+00:09:09,846 --> 00:09:11,121
+high-school readers; a
+
+220
+00:09:11,121 --> 00:09:12,833
+three-thousand-character article for
+
+221
+00:09:12,833 --> 00:09:15,196
+graduate students; and the paper's figures
+
+222
+00:09:15,196 --> 00:09:17,641
+inserted, with translated captions.
+
+223
+00:09:19,018 --> 00:09:21,193
+To extract the figures, it wrote a second
+
+224
+00:09:21,193 --> 00:09:24,530
+program. And once extracted, it actually
+
+225
+00:09:24,530 --> 00:09:26,738
+opened each image to check its content,
+
+226
+00:09:26,868 --> 00:09:28,900
+rather than guessing from page numbers.
+
+227
+00:09:29,643 --> 00:09:31,755
+Eight images, matching figures one to
+
+228
+00:09:31,755 --> 00:09:32,763
+eight of the paper.
+
+229
+00:09:34,133 --> 00:09:35,641
+This is the second version.
+
+230
+00:09:36,383 --> 00:09:38,696
+The same note now has the full title, the
+
+231
+00:09:38,696 --> 00:09:41,008
+abstract with translation, a twenty-five
+
+232
+00:09:41,008 --> 00:09:43,071
+hundred character general article, a
+
+233
+00:09:43,071 --> 00:09:45,096
+sixty-seven hundred character technical
+
+234
+00:09:45,096 --> 00:09:47,028
+article, and eight figures.
+
+235
+00:09:48,409 --> 00:09:51,446
+Here is a key point. The more specific the
+
+236
+00:09:51,446 --> 00:09:53,929
+instruction, the more usable the output.
+
+237
+00:09:54,671 --> 00:09:56,716
+Make it better: that does nothing.
+
+238
+00:09:57,459 --> 00:09:59,434
+Two thousand characters, high-school
+
+239
+00:09:59,434 --> 00:10:01,179
+level, few adjectives:
+
+240
+00:10:01,234 --> 00:10:03,459
+that works. Because every
+
+241
+00:10:03,459 --> 00:10:04,954
+condition can be checked.
+
+242
+00:10:06,332 --> 00:10:08,382
+In the whole process, you did only four
+
+243
+00:10:08,382 --> 00:10:11,632
+things. Set the direction, provide real
+
+244
+00:10:11,632 --> 00:10:14,270
+data, ask what a term means, and overrule
+
+245
+00:10:14,270 --> 00:10:17,245
+a wrong design. That note, you didn't
+
+246
+00:10:17,245 --> 00:10:18,590
+write a single word of it.
+
+247
+00:10:19,960 --> 00:10:21,960
+Next episode, we take the friction
+
+248
+00:10:21,960 --> 00:10:24,285
+accumulated in this one, and turn it into
+
+249
+00:10:24,285 --> 00:10:27,210
+a real rulebook. Every rule written then
+
+250
+00:10:27,210 --> 00:10:28,872
+will have a concrete failure as its
+
+251
+00:10:28,872 --> 00:10:31,505
+reason. See you next time.

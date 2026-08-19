@@ -1,0 +1,513 @@
+<meta charset="utf-8">
+<title>EP01 隨堂測驗</title>
+<style>
+  :root {
+    --paper:#F7F8F7; --surface:#FFFFFF; --surface-2:#EFF2F1;
+    --ink:#16171A; --ink-soft:#576063; --ink-faint:#8A9496;
+    --rule:#DCE1DF; --rule-soft:#E9EDEB;
+    --human:#9A5B08; --human-bg:#FDF6EC;
+    --agent:#0C625F; --agent-bg:#EDF5F4; --agent-rule:#7FBAB6;
+    --wrong:#A8331E; --wrong-bg:#FCF1EE; --wrong-rule:#E0A797;
+    --shadow:0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+    --mono:"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+      --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+      --rule:#2A3336; --rule-soft:#222A2D;
+      --human:#E4A75C; --human-bg:#241C11;
+      --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+      --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+    --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+    --rule:#2A3336; --rule-soft:#222A2D;
+    --human:#E4A75C; --human-bg:#241C11;
+    --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+    --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:0 1.5rem 5rem;}
+
+  header.top{
+    padding:3.5rem 0 1.6rem; display:flex; flex-direction:column; gap:.7rem;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(1.9rem,5vw,2.7rem);
+    line-height:1.12; margin:0; letter-spacing:-.015em;
+  }
+  .sub{margin:0; color:var(--ink-soft); font-size:1rem;}
+
+  /* 進度 */
+  .bar{
+    display:flex; gap:.3rem; margin:1.8rem 0 2.2rem;
+  }
+  .bar i{
+    flex:1; height:5px; border-radius:3px; background:var(--rule);
+    transition:background .3s ease;
+  }
+  .bar i.done{background:var(--agent);}
+  .bar i.miss{background:var(--wrong);}
+  .bar i.now{background:var(--ink-faint);}
+
+  .meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--mono); font-size:.78rem; color:var(--ink-faint);
+    margin-bottom:1rem;
+  }
+
+  /* 題目 */
+  .q{
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; padding:1.8rem 1.9rem; box-shadow:var(--shadow);
+  }
+  .q h2{
+    font-family:var(--serif); font-size:1.35rem; line-height:1.45;
+    margin:0 0 1.5rem; font-weight:600; text-wrap:balance;
+  }
+  .opts{display:flex; flex-direction:column; gap:.6rem;}
+  .opt{
+    display:flex; gap:.9rem; align-items:flex-start; width:100%;
+    text-align:left; font:inherit; color:inherit;
+    background:var(--paper); border:1px solid var(--rule);
+    border-radius:5px; padding:.85rem 1rem; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .opt:hover:not(:disabled){border-color:var(--agent-rule); background:var(--surface-2);}
+  .opt:active:not(:disabled){transform:translateY(1px);}
+  .opt:disabled{cursor:default;}
+  .opt:focus-visible{outline:2px solid var(--agent); outline-offset:2px;}
+  .opt .key{
+    font-family:var(--mono); font-size:.78rem; font-weight:600;
+    color:var(--ink-faint); flex:none; padding-top:.22em;
+    min-width:1.1rem;
+  }
+  .opt.pick-right{background:var(--agent-bg); border-color:var(--agent);}
+  .opt.pick-right .key{color:var(--agent);}
+  .opt.pick-wrong{background:var(--wrong-bg); border-color:var(--wrong);}
+  .opt.pick-wrong .key{color:var(--wrong);}
+  .opt.reveal{border-color:var(--agent); border-style:dashed;}
+  .opt.dim{opacity:.45;}
+
+  /* 解說 */
+  .fb{
+    margin-top:1.4rem; padding:1.1rem 1.2rem; border-radius:5px;
+    border-left:3px solid var(--agent); background:var(--agent-bg);
+  }
+  .fb.no{border-left-color:var(--wrong); background:var(--wrong-bg);}
+  .fb .verdict{
+    font-family:var(--mono); font-size:.7rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; color:var(--agent);
+    display:block; margin-bottom:.55rem;
+  }
+  .fb.no .verdict{color:var(--wrong);}
+  .fb p{margin:0; font-size:.97rem; line-height:1.7;}
+
+  /* 按鈕 */
+  .actions{margin-top:1.6rem; display:flex; gap:.8rem; align-items:center; flex-wrap:wrap;}
+  button.go{
+    font:inherit; font-weight:600; font-size:.97rem;
+    background:var(--ink); color:var(--paper); border:0;
+    padding:.7rem 1.5rem; border-radius:5px; cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  button.go:hover{opacity:.86;}
+  button.go:focus-visible{outline:2px solid var(--agent); outline-offset:3px;}
+  button.ghost{
+    background:transparent; color:var(--ink-soft);
+    border:1px solid var(--rule);
+  }
+  .hint{font-family:var(--mono); font-size:.72rem; color:var(--ink-faint);}
+
+  /* 結果 */
+  .score{
+    text-align:center; padding:2.5rem 1.5rem 2rem;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; box-shadow:var(--shadow);
+  }
+  .score .n{
+    font-family:var(--serif); font-size:4.2rem; line-height:1;
+    font-weight:600; letter-spacing:-.03em;
+  }
+  .score .n b{color:var(--agent);}
+  .score .of{color:var(--ink-faint); font-size:1.6rem;}
+  .score .verdict{
+    margin:1rem 0 0; font-size:1.1rem; color:var(--ink-soft); text-wrap:balance;
+  }
+  .review{margin-top:2.2rem;}
+  .review h3{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+    margin:0 0 1rem;
+  }
+  .miss-item{
+    border:1px solid var(--rule); border-left:3px solid var(--wrong);
+    border-radius:5px; padding:1rem 1.2rem; margin-bottom:.8rem;
+    background:var(--surface);
+  }
+  .miss-item .qq{font-weight:600; margin:0 0 .5rem; line-height:1.5;}
+  .miss-item .ans{margin:0; font-size:.93rem; color:var(--ink-soft); line-height:1.65;}
+  .miss-item .ans b{color:var(--agent); font-weight:600;}
+  .allgood{
+    padding:1.2rem; border:1px dashed var(--agent-rule); border-radius:5px;
+    color:var(--agent); text-align:center; font-size:.97rem;
+  }
+  .backlink{
+    margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--rule-soft);
+    font-size:.9rem; color:var(--ink-faint);
+  }
+  .backlink a{color:var(--agent);}
+
+  @media (max-width:34rem){
+    body{font-size:16px;}
+    .q{padding:1.4rem 1.2rem;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">BSC Tutorial · EP01</div>
+    <h1>隨堂測驗</h1>
+    <p class="sub">十題單選。答完每一題會立刻告訴你對錯與理由，答錯不扣分，重點是看懂為什麼。</p>
+  </header>
+
+  <div class="bar" id="bar"></div>
+  <div class="meta">
+    <span id="counter">第 1 題 / 共 10 題</span>
+    <span class="hint">按 1–4 選答案　·　Enter 下一題</span>
+  </div>
+
+  <main id="stage"></main>
+
+  <p class="backlink">
+    忘記內容了？回去看
+    <a href="ep01.html"
+       data-remote="https://claude.ai/code/artifact/ef9d86a2-133d-4fa8-af64-c57192d0cddd">EP01 教材</a>，或重看
+    <a href="https://youtu.be/IFVuw6xEMj8" target="_blank" rel="noopener">教學影片 ↗</a>。
+  </p>
+
+</div>
+
+<script>
+// 發布在 claude.ai 時，同資料夾的相對連結不存在，改指向線上版本。
+(function () {
+  if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+  document.querySelectorAll('a[data-remote]').forEach(function (a) {
+    a.href = a.getAttribute('data-remote');
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var QUIZ = [
+    {
+      q: "把檔案上傳給 AI 然後提問（也就是一般的 RAG 做法），最根本的限制是什麼？",
+      opts: [
+        "一次能上傳的檔案數量與總容量都有上限，文件一多就塞不下",
+        "每次提問都從原始文件重新拼湊，什麼都沒累積",
+        "AI 沒辦法讀取 PDF 這類格式",
+        "回答的速度會隨檔案變多而變慢"
+      ],
+      a: 1,
+      why: "問題不在容量或速度，而在「沒有累積」。你上次問出來的心得，下次它完全不記得；讀過的東西沒有變成資產。LLM Wiki 的做法是在資料進來時就整理成頁面，讓知識編譯一次、之後持續維護。"
+    },
+    {
+      q: "在三層架構中，最底層的「原始資料」有什麼規則？",
+      opts: [
+        "AI 可以隨時整理、重新命名，保持整齊",
+        "AI 讀取並摘要之後，應該刪除原始檔節省空間",
+        "AI 只能讀取，絕對不可以修改",
+        "由 AI 與使用者共同編輯與維護"
+      ],
+      a: 2,
+      why: "原始資料是你的真相來源，必須維持不可變。一旦被 AI 改過，你就再也無法確認事實。相對地，wiki 那一層則是 AI 完全擁有，由它建立與維護，你只負責讀。"
+    },
+    {
+      q: "CLAUDE.md 這個檔案最特別的地方是什麼？",
+      opts: [
+        "它使用一種專屬的設定檔格式，語法要正確",
+        "它必須放在系統資料夾才會生效",
+        "它是純文字檔，但每次啟動都會被自動讀取進來",
+        "它需要先編譯過才會被套用"
+      ],
+      a: 2,
+      why: "它就是一個普通的 markdown 檔，特別的只有檔名——工具認得這個名字，看到就自動載入，把內容當成這個專案的常駐指令。換成其他工具只是檔名不同，例如 Codex 用 AGENTS.md。"
+    },
+    {
+      q: "課程強調規則書「短的才有用」，主要理由是什麼？",
+      opts: [
+        "檔案太長會讓 AI 每次讀取都變慢，回應時間跟著拉長",
+        "太長會稀釋重點，你不敢改、AI 也容易忽略",
+        "工具對設定檔的長度有硬性限制",
+        "短的版本比較容易翻譯成其他語言"
+      ],
+      a: 1,
+      why: "三百行的規格書是兩敗俱傷：你讀不完所以不敢改，AI 讀了但關鍵規則被稀釋，反而更不聽話。寧可四十行、但條條都被執行。"
+    },
+    {
+      q: "Agent 用內建工具讀 PDF 失敗之後，它接下來做了什麼？",
+      opts: [
+        "回報做不到，等使用者換一種檔案格式再來",
+        "先跳過這一篇，改去處理資料夾裡格式比較單純的下一篇論文",
+        "根據標題推測內容，先生成一份摘要",
+        "裝套件、撞到編碼問題後自己寫程式繞過"
+      ],
+      a: 3,
+      why: "它先查 Python 版本與已裝套件，選了一個能同時抽文字和圖片的套件安裝；接著遇到 Windows 編碼問題，就改成把文字寫進檔案再讀回來，並為此寫了一支小程式。整段過程沒有人下指令。"
+    },
+    {
+      q: "面對會產生大量後續工作的任務，先問 AI「你打算做什麼」有什麼好處？",
+      opts: [
+        "改計畫的成本，遠低於改成品",
+        "可以讓 AI 有更多時間思考，答案品質較好",
+        "這樣 AI 才會把整個流程記在長期記憶裡",
+        "可以避免 AI 擅自使用外部工具"
+      ],
+      a: 0,
+      why: "在它動手之前，計畫還只是幾段文字，推翻或調整都很便宜。等它已經產出十幾個檔案再回頭改，成本就完全不同了。"
+    },
+    {
+      q: "使用者說「你寫得太死了……前面這個計畫作廢」，這一步最重要的啟示是什麼？",
+      opts: [
+        "AI 不適合用來設計目錄結構這類工作",
+        "一開始就該把規則訂得更詳細完整",
+        "規則要從實作撞出來的摩擦裡累積，不是預先立法",
+        "神經科學這種專業領域不適合套用這套方法"
+      ],
+      a: 2,
+      why: "那份計畫看起來很完整，但它建立在六個檔名的推測上。Karpathy 說規則書要和 AI「共同演化」，意思正是如此：先做、撞牆，再把撞牆的經驗寫成規則。否決 AI 不是失敗，而是這套方法正常運作的樣子。"
+    },
+    {
+      q: "為什麼工作日誌要記下「卡在哪裡」和「被否決的方案」，而不只是記「做了什麼」？",
+      opts: [
+        "為了統計每次工作花費的時間",
+        "那些紀錄是規則的來源，也是教材的素材",
+        "為了讓 AI 下次自動避開同樣的檔案與同一種錯誤，不必人再提醒",
+        "這是 markdown 格式本身的規定"
+      ],
+      a: 1,
+      why: "課程裡的每一條規則，幾乎都對應一次具體的失敗——編碼問題、抽取到錯誤的數字、被推翻的設計。如果日誌只記成果，這些來源就消失了，之後也無從判斷某條規則當初為什麼要存在。"
+    },
+    {
+      q: "下列哪一個修改指令，對 AI 來說最有用？",
+      opts: [
+        "這一篇再寫得好一點，該補的地方請你自己判斷補上",
+        "內容可以更豐富一些",
+        "品質請再往上提升",
+        "寫兩千字，讀者是高中生，少用形容詞"
+      ],
+      a: 3,
+      why: "關鍵在於「可被檢查」。字數、讀者程度、用語限制，每一項都能拿來驗收；「好一點」則沒有任何判準，AI 只能猜，你也無法判斷它有沒有做到。"
+    },
+    {
+      q: "在這套方法裡，人負責的主要工作是什麼？",
+      opts: [
+        "撰寫並維護 wiki 裡的每一個頁面",
+        "事先把完整的目錄結構與規則準備好給 AI",
+        "找來源、問對問題、否決錯誤的設計",
+        "逐行檢查 AI 產生的 markdown 語法是否正確"
+      ],
+      a: 2,
+      why: "整個過程裡，那份筆記使用者一個字都沒有寫。人做的是指定方向、提供真實資料、把名詞問清楚，以及在方向錯誤時喊停；摘要、交叉引用、歸檔這些苦工交給 AI。"
+    }
+  ];
+
+  var LETTER = ["A", "B", "C", "D"];
+  var stage = document.getElementById("stage");
+  var bar = document.getElementById("bar");
+  var counter = document.getElementById("counter");
+  var i = 0, answered = false, correct = 0, misses = [];
+
+  QUIZ.forEach(function () {
+    bar.appendChild(document.createElement("i"));
+  });
+
+  function paintBar() {
+    [].forEach.call(bar.children, function (el, n) {
+      el.className = n < i ? (misses.some(function (m) { return m.n === n; }) ? "miss" : "done")
+                           : (n === i ? "now" : "");
+    });
+  }
+
+  function render() {
+    answered = false;
+    var item = QUIZ[i];
+    counter.textContent = "第 " + (i + 1) + " 題 / 共 " + QUIZ.length + " 題";
+    paintBar();
+
+    var box = document.createElement("section");
+    box.className = "q";
+
+    var h = document.createElement("h2");
+    h.textContent = item.q;
+    box.appendChild(h);
+
+    var list = document.createElement("div");
+    list.className = "opts";
+    item.opts.forEach(function (text, n) {
+      var b = document.createElement("button");
+      b.className = "opt";
+      b.type = "button";
+      b.innerHTML = '<span class="key">' + LETTER[n] + '</span><span></span>';
+      b.lastChild.textContent = text;
+      b.addEventListener("click", function () { choose(n, box, list); });
+      list.appendChild(b);
+    });
+    box.appendChild(list);
+
+    stage.innerHTML = "";
+    stage.appendChild(box);
+  }
+
+  function choose(n, box, list) {
+    if (answered) return;
+    answered = true;
+    var item = QUIZ[i];
+    var right = n === item.a;
+    if (right) correct++;
+    else misses.push({ n: i, picked: n });
+
+    [].forEach.call(list.children, function (el, k) {
+      el.disabled = true;
+      if (k === n) el.classList.add(right ? "pick-right" : "pick-wrong");
+      else if (k === item.a && !right) el.classList.add("reveal");
+      else el.classList.add("dim");
+    });
+
+    var fb = document.createElement("div");
+    fb.className = "fb" + (right ? "" : " no");
+    var v = document.createElement("span");
+    v.className = "verdict";
+    v.textContent = right ? "答對了" : "正確答案是 " + LETTER[item.a];
+    var p = document.createElement("p");
+    p.textContent = item.why;
+    fb.appendChild(v); fb.appendChild(p);
+    box.appendChild(fb);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    var go = document.createElement("button");
+    go.className = "go";
+    go.textContent = i === QUIZ.length - 1 ? "看結果" : "下一題";
+    go.addEventListener("click", next);
+    act.appendChild(go);
+    box.appendChild(act);
+    go.focus();
+    paintBar();
+  }
+
+  function next() {
+    if (i === QUIZ.length - 1) { results(); return; }
+    i++;
+    render();
+  }
+
+  function results() {
+    i = QUIZ.length;
+    paintBar();
+    counter.textContent = "已完成";
+
+    var pct = correct / QUIZ.length;
+    var verdict = pct === 1 ? "全對。這一集的重點你都掌握了。"
+      : pct >= 0.8 ? "掌握得不錯，看一下答錯的那幾題就完整了。"
+      : pct >= 0.5 ? "主要觀念有了，建議回頭重看第三幕與第四幕。"
+      : "建議重看一次影片，特別是「規則要從摩擦裡長出來」那一段。";
+
+    var wrap = document.createElement("div");
+
+    var sc = document.createElement("div");
+    sc.className = "score";
+    sc.innerHTML = '<div class="n"><b>' + correct + '</b><span class="of"> / ' + QUIZ.length + '</span></div>';
+    var vp = document.createElement("p");
+    vp.className = "verdict";
+    vp.textContent = verdict;
+    sc.appendChild(vp);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    act.style.justifyContent = "center";
+    var again = document.createElement("button");
+    again.className = "go";
+    again.textContent = "再測一次";
+    again.addEventListener("click", function () {
+      i = 0; correct = 0; misses = []; render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    act.appendChild(again);
+    sc.appendChild(act);
+    wrap.appendChild(sc);
+
+    var rev = document.createElement("div");
+    rev.className = "review";
+    var h3 = document.createElement("h3");
+    h3.textContent = misses.length ? "答錯的題目" : "檢討";
+    rev.appendChild(h3);
+
+    if (!misses.length) {
+      var ok = document.createElement("div");
+      ok.className = "allgood";
+      ok.textContent = "沒有答錯的題目。";
+      rev.appendChild(ok);
+    } else {
+      misses.forEach(function (m) {
+        var item = QUIZ[m.n];
+        var d = document.createElement("div");
+        d.className = "miss-item";
+        var q = document.createElement("p");
+        q.className = "qq";
+        q.textContent = (m.n + 1) + ". " + item.q;
+        var a = document.createElement("p");
+        a.className = "ans";
+        a.innerHTML = "你選了 " + LETTER[m.picked] + "，正確答案是 <b>" +
+                      LETTER[item.a] + "</b>。";
+        var w = document.createElement("p");
+        w.className = "ans";
+        w.style.marginTop = ".5rem";
+        w.textContent = item.why;
+        d.appendChild(q); d.appendChild(a); d.appendChild(w);
+        rev.appendChild(d);
+      });
+    }
+    wrap.appendChild(rev);
+
+    stage.innerHTML = "";
+    stage.appendChild(wrap);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (i >= QUIZ.length) return;
+    if (!answered && /^[1-4]$/.test(e.key)) {
+      var btns = stage.querySelectorAll(".opt");
+      var n = parseInt(e.key, 10) - 1;
+      if (btns[n]) { btns[n].click(); e.preventDefault(); }
+    } else if (answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+      var go = stage.querySelector("button.go");
+      if (go) { go.click(); e.preventDefault(); }
+    }
+  });
+
+  render();
+})();
+</script>

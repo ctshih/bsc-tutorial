@@ -1,0 +1,516 @@
+<meta charset="utf-8">
+<title>EP03 Quiz</title>
+<style>
+  :root {
+    --paper:#F7F8F7; --surface:#FFFFFF; --surface-2:#EFF2F1;
+    --ink:#16171A; --ink-soft:#576063; --ink-faint:#8A9496;
+    --rule:#DCE1DF; --rule-soft:#E9EDEB;
+    --human:#9A5B08; --human-bg:#FDF6EC;
+    --agent:#0C625F; --agent-bg:#EDF5F4; --agent-rule:#7FBAB6;
+    --wrong:#A8331E; --wrong-bg:#FCF1EE; --wrong-rule:#E0A797;
+    --shadow:0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif TC",serif;
+    --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+    --mono:"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+      --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+      --rule:#2A3336; --rule-soft:#222A2D;
+      --human:#E4A75C; --human-bg:#241C11;
+      --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+      --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+    --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+    --rule:#2A3336; --rule-soft:#222A2D;
+    --human:#E4A75C; --human-bg:#241C11;
+    --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+    --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:0 1.5rem 5rem;}
+
+  header.top{
+    padding:3.5rem 0 1.6rem; display:flex; flex-direction:column; gap:.7rem;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(1.9rem,5vw,2.7rem);
+    line-height:1.12; margin:0; letter-spacing:-.015em;
+  }
+  .sub{margin:0; color:var(--ink-soft); font-size:1rem;}
+
+  /* progress */
+  .bar{
+    display:flex; gap:.3rem; margin:1.8rem 0 2.2rem;
+  }
+  .bar i{
+    flex:1; height:5px; border-radius:3px; background:var(--rule);
+    transition:background .3s ease;
+  }
+  .bar i.done{background:var(--agent);}
+  .bar i.miss{background:var(--wrong);}
+  .bar i.now{background:var(--ink-faint);}
+
+  .meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--mono); font-size:.78rem; color:var(--ink-faint);
+    margin-bottom:1rem;
+  }
+
+  /* question */
+  .q{
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; padding:1.8rem 1.9rem; box-shadow:var(--shadow);
+  }
+  .q h2{
+    font-family:var(--serif); font-size:1.35rem; line-height:1.4;
+    margin:0 0 1.5rem; font-weight:600; text-wrap:balance;
+  }
+  .opts{display:flex; flex-direction:column; gap:.6rem;}
+  .opt{
+    display:flex; gap:.9rem; align-items:flex-start; width:100%;
+    text-align:left; font:inherit; color:inherit;
+    background:var(--paper); border:1px solid var(--rule);
+    border-radius:5px; padding:.85rem 1rem; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .opt:hover:not(:disabled){border-color:var(--agent-rule); background:var(--surface-2);}
+  .opt:active:not(:disabled){transform:translateY(1px);}
+  .opt:disabled{cursor:default;}
+  .opt:focus-visible{outline:2px solid var(--agent); outline-offset:2px;}
+  .opt .key{
+    font-family:var(--mono); font-size:.78rem; font-weight:600;
+    color:var(--ink-faint); flex:none; padding-top:.22em;
+    min-width:1.1rem;
+  }
+  .opt.pick-right{background:var(--agent-bg); border-color:var(--agent);}
+  .opt.pick-right .key{color:var(--agent);}
+  .opt.pick-wrong{background:var(--wrong-bg); border-color:var(--wrong);}
+  .opt.pick-wrong .key{color:var(--wrong);}
+  .opt.reveal{border-color:var(--agent); border-style:dashed;}
+  .opt.dim{opacity:.45;}
+
+  /* feedback */
+  .fb{
+    margin-top:1.4rem; padding:1.1rem 1.2rem; border-radius:5px;
+    border-left:3px solid var(--agent); background:var(--agent-bg);
+  }
+  .fb.no{border-left-color:var(--wrong); background:var(--wrong-bg);}
+  .fb .verdict{
+    font-family:var(--mono); font-size:.7rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; color:var(--agent);
+    display:block; margin-bottom:.55rem;
+  }
+  .fb.no .verdict{color:var(--wrong);}
+  .fb p{margin:0; font-size:.97rem; line-height:1.6;}
+
+  /* buttons */
+  .actions{margin-top:1.6rem; display:flex; gap:.8rem; align-items:center; flex-wrap:wrap;}
+  button.go{
+    font:inherit; font-weight:600; font-size:.97rem;
+    background:var(--ink); color:var(--paper); border:0;
+    padding:.7rem 1.5rem; border-radius:5px; cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  button.go:hover{opacity:.86;}
+  button.go:focus-visible{outline:2px solid var(--agent); outline-offset:3px;}
+  button.ghost{
+    background:transparent; color:var(--ink-soft);
+    border:1px solid var(--rule);
+  }
+  .hint{font-family:var(--mono); font-size:.72rem; color:var(--ink-faint);}
+
+  /* results */
+  .score{
+    text-align:center; padding:2.5rem 1.5rem 2rem;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; box-shadow:var(--shadow);
+  }
+  .score .n{
+    font-family:var(--serif); font-size:4.2rem; line-height:1;
+    font-weight:600; letter-spacing:-.03em;
+  }
+  .score .n b{color:var(--agent);}
+  .score .of{color:var(--ink-faint); font-size:1.6rem;}
+  .score .verdict{
+    margin:1rem 0 0; font-size:1.1rem; color:var(--ink-soft); text-wrap:balance;
+  }
+  .review{margin-top:2.2rem;}
+  .review h3{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+    margin:0 0 1rem;
+  }
+  .miss-item{
+    border:1px solid var(--rule); border-left:3px solid var(--wrong);
+    border-radius:5px; padding:1rem 1.2rem; margin-bottom:.8rem;
+    background:var(--surface);
+  }
+  .miss-item .qq{font-weight:600; margin:0 0 .5rem; line-height:1.45;}
+  .miss-item .ans{margin:0; font-size:.93rem; color:var(--ink-soft); line-height:1.6;}
+  .miss-item .ans b{color:var(--agent); font-weight:600;}
+  .allgood{
+    padding:1.2rem; border:1px dashed var(--agent-rule); border-radius:5px;
+    color:var(--agent); text-align:center; font-size:.97rem;
+  }
+  .backlink{
+    margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--rule-soft);
+    font-size:.9rem; color:var(--ink-faint);
+  }
+  .backlink a{color:var(--agent);}
+
+  @media (max-width:34rem){
+    body{font-size:16px;}
+    .q{padding:1.4rem 1.2rem;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">BSC Tutorial · EP03 · English edition</div>
+    <h1>Self-check Quiz</h1>
+    <p class="sub">Ten multiple-choice questions. After each answer you immediately see whether you were right, and why. Wrong answers cost nothing — the point is to understand the reasoning.</p>
+  </header>
+
+  <div class="bar" id="bar"></div>
+  <div class="meta">
+    <span id="counter">Question 1 of 10</span>
+    <span class="hint">Press 1–4 to answer　·　Enter for the next question</span>
+  </div>
+
+  <main id="stage"></main>
+
+  <p class="backlink">
+    Forgot something? Go back to the
+    <a href="ep03.html"
+       data-remote="EP03_ENG_ARTIFACT_URL">EP03 tutorial page</a>, or rewatch the
+    <a href="https://youtu.be/IUhhnPO7_aQ" data-remote="https://youtu.be/IUhhnPO7_aQ" target="_blank" rel="noopener">tutorial video ↗</a>.
+  </p>
+
+</div>
+
+<script>
+// When published on claude.ai, same-folder relative links don't exist; point them at the online versions.
+// Placeholders of the form EP03_ENG_… mean "not published yet" and are left alone.
+(function () {
+  if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+  document.querySelectorAll('a[data-remote]').forEach(function (a) {
+    var r = a.getAttribute('data-remote');
+    if (!r || /^EP\d\d_/.test(r)) return;
+    a.href = r;
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var QUIZ = [
+    {
+      q: "Six entries are written and the index lists all six. Why is the knowledge base still called a “warehouse” at this point rather than a wiki?",
+      opts: [
+        "Because there are too few entries — you need at least twenty, covering two or more domains, before it earns the name wiki",
+        "Because there is no video and no quiz yet",
+        "Because there is no middle layer between the entries — a paper arriving touches exactly one file",
+        "Because the entries are written in markdown, and a wiki needs dedicated software"
+      ],
+      a: 2,
+      why: "The difference between a warehouse and a wiki is not the count, it is “how many pages have to change when something new arrives”. A warehouse is one file per paper, each unrelated to the rest; in a wiki, a paper arrives and whichever topics it brings new evidence for are pages that now have to be edited. The three things this episode does — growing the topic pages, defining “update”, and completing the links — all exist to make “more than one page changes” the normal case."
+    },
+    {
+      q: "With the six entries written, you asked the Agent to turn the front page from a “list of papers” into a “domain → topic” wiki structure, and said “tell me what you plan to do, don't start yet”. What was the first thing it did before proposing a plan?",
+      opts: [
+        "Swept every [[link]] already planted in the six entries, to see which concepts were linked from how many papers",
+        "Looked up online which topics the Drosophila connectome field recognizes, then checked the six entries to see which of them already had material to write about",
+        "Wrote one sample topic page for you to look at first",
+        "Went straight to listing the five topics it thought made sense"
+      ],
+      a: 0,
+      why: "It measured first and spoke second. The topics were not invented out of thin air — the [[concept]] links planted while writing the entries became, at this step, the evidence for the structure (all six entries link to FlyCircuit, four link to LPU, and so on). This is also why “planting one more concept link while writing an entry pays for itself”."
+    },
+    {
+      q: "The Agent's plan had three levels (domain → topic → concept → paper) and you cut it down to two. Who should make that decision, and why?",
+      opts: [
+        "The Agent, because it has swept every entry and has the most complete data",
+        "You, because it does not have your picture of what this knowledge base will become; the structure is set by a person",
+        "The Agent, but it should give you two options to choose between",
+        "It makes no difference who decides; it can always be changed later"
+      ],
+      a: 1,
+      why: "The Agent offers options, measures the evidence and does the work; two levels or three, what the domains are called, how the prose should read — those are yours to rule on. It stopped of its own accord and listed “two things it should not be the one to decide” — that is not a shortfall in ability, it is knowing that structural decisions belong to whoever knows what the thing will be used for. “Don't start yet” is what makes those rulings happen before anything gets produced."
+    },
+    {
+      q: "When writing the five topic pages, the Agent first wrote only one of them — FlyCircuit database — for you to look at, and wrote the other four only after you had set the tone. What is the reason for working that way?",
+      opts: [
+        "Because the material for the FlyCircuit page is the most complete — all six entries depend on it, so it is the easiest and fastest one to start with",
+        "Because it can only handle one file at a time",
+        "Because of what the wrong style costs: a one-page pilot means rewriting one page, whereas writing five at once means rewriting five",
+        "Because you had told it to stop after every page it wrote"
+      ],
+      a: 2,
+      why: "Pilot before you mass-produce. It is the same principle as the previous episode's “ask until it is clear before writing the rulebook”: before producing in bulk, spend the smallest amount possible to let you see whether the direction is right. The note “how this page was written” appended to the pilot page is there precisely for you to check it against."
+    },
+    {
+      q: "You asked the Agent to work out for itself, from then on, which papers in papers/ had not been processed yet. It built a registry (registry.md) instead of inferring “does this one have an entry?” from the file tree each time. Why?",
+      opts: [
+        "Because working through dozens of filenames one by one every time is slow and burns too many tokens; the registry is a single table and is far faster to consult",
+        "Because inference drifts with the naming convention, and it cannot express “deliberately skipped”; an explicit table turns “already processed” into a fact",
+        "Because Obsidian requires a registry",
+        "Because the Agent has no permission to read the file tree"
+      ],
+      a: 1,
+      why: "Guessing “is there an entry for this?” from a filename may be accurate today and stop being accurate the moment the naming convention changes; and “I looked at this one and decided not to process it” simply cannot be read off the file tree. The registry's matching key is the PDF filename, character for character, and there is a separate “skipped” table — what you deliberately leave alone has to be registered too, or every run treats it as outstanding work."
+    },
+    {
+      q: "You said a single word, “update”, and the Agent ran pending.py, opened subagents to read the papers, ingested them one by one and registered them. How did it know to do that whole sequence?",
+      opts: [
+        "Because it remembers the previous conversation",
+        "Because pending.py automatically triggers the following steps once it finishes",
+        "Because it guessed that was roughly what you meant",
+        "Because the four-step definition of “update” is written in CLAUDE.md, which is loaded on every turn"
+      ],
+      a: 3,
+      why: "This is exactly what the rulebook being “present on every turn” buys you. Step 05 wrote “the definition of update” into CLAUDE.md: pending → load the skill for each paper → register immediately → log. After that you never have to restate the procedure. It is not memory; it is a rule that gets read afresh every single time."
+    },
+    {
+      q: "The five new papers came to more than six hundred thousand characters in total. The Agent opened five subagents, each reading one paper and reporting back only a summary. What is that mainly for?",
+      opts: [
+        "To keep the full texts out of the main conversation, where they would dilute the judgements that follow; but the entries still have to be written from the originals",
+        "To process the five in parallel and save time",
+        "Because a single Agent can only read one PDF at a time",
+        "So that each paper is assessed independently by a different subagent, the five summaries do not influence one another, and planning the domains afterwards is more objective"
+      ],
+      a: 0,
+      why: "Parallelism is a side benefit; the main purpose is keeping the main agent's context clean — five full texts in the main conversation would dilute its attention for planning the domains and writing the entries afterwards. But it also reminded itself that a summary is no substitute for the original: when writing the entries it still has to go back to the source for the abstract and the captions. A subagent is a division of labour, not a replacement."
+    },
+    {
+      q: "The Neurophotonics paper is a Perspective — no methods, no results. You ruled that it should “not be forced into the six sections, but handled according to the structure of the original”. When did the Agent write that into the skill?",
+      opts: [
+        "When all five papers were finished, during the wrap-up",
+        "The next time it ran into a Perspective",
+        "The moment it received the ruling, before starting the first paper",
+        "After you reminded it one more time"
+      ],
+      a: 2,
+      why: "“Three rulings received; write them into the skill, then start work.” If it had waited until all five were done, the four papers in between would each have handled the Perspective and the Extended Data their own way, and unifying them afterwards would be hard. Write the rule at the moment you hit the wall, and the work that follows runs on it — this too is a rule growing out of friction, in real time."
+    },
+    {
+      q: "The front page originally had a “sources” column after each topic listing the years, with the first row reading “all 6 papers”. You asked for it to be taken out. What principle about structural pages does that reflect?",
+      opts: [
+        "Tables do not display well on a phone",
+        "Source information should be kept confidential",
+        "Do not put a count that expires on a page that grows — the day the seventh paper arrives, “all 6 papers” is wrong",
+        "The years make students think the papers are ranked by date, so an older topic looks outdated and not worth reading"
+      ],
+      a: 2,
+      why: "Years and paper counts on a structural page are time bombs. The Agent did not just remove the column; while it was there it also rewrote sentences like “the first six papers all depend on FlyCircuit; the seventh switches to hemibrain” into forms that carry no count — the same reasoning. Then it wrote the format into CLAUDE.md, because otherwise the next round of ingesting would grow the table straight back."
+    },
+    {
+      q: "Looking back over this episode — changing the front page, adding the changelog page, fixing the link format — the Agent wrote the format into CLAUDE.md or the skill each time. What is the core reason for that habit?",
+      opts: [
+        "The thicker the rulebook and the more situations it covers, the more reliable the Agent becomes, so every change should be recorded in it",
+        "Changing a page fixes the present; changing the rulebook is what fixes the future — write nothing down and the next round grows it back the way it was",
+        "So that from now on no human needs to look at it at all",
+        "Because CLAUDE.md has a minimum length"
+      ],
+      a: 1,
+      why: "The Agent does not remember; it re-reads the rules every time. The page is fixed, but if “why it was changed that way” only exists in this one conversation, next time it will not know. All three cases in this episode went the same way: fix the present, then write the rule. That does not mean the human steps back — every decision about the structure is still yours; the rulebook only makes it stick."
+    }
+  ];
+
+  var LETTER = ["A", "B", "C", "D"];
+  var stage = document.getElementById("stage");
+  var bar = document.getElementById("bar");
+  var counter = document.getElementById("counter");
+  var i = 0, answered = false, correct = 0, misses = [];
+
+  QUIZ.forEach(function () {
+    bar.appendChild(document.createElement("i"));
+  });
+
+  function paintBar() {
+    [].forEach.call(bar.children, function (el, n) {
+      el.className = n < i ? (misses.some(function (m) { return m.n === n; }) ? "miss" : "done")
+                           : (n === i ? "now" : "");
+    });
+  }
+
+  function render() {
+    answered = false;
+    var item = QUIZ[i];
+    counter.textContent = "Question " + (i + 1) + " of " + QUIZ.length;
+    paintBar();
+
+    var box = document.createElement("section");
+    box.className = "q";
+
+    var h = document.createElement("h2");
+    h.textContent = item.q;
+    box.appendChild(h);
+
+    var list = document.createElement("div");
+    list.className = "opts";
+    item.opts.forEach(function (text, n) {
+      var b = document.createElement("button");
+      b.className = "opt";
+      b.type = "button";
+      b.innerHTML = '<span class="key">' + LETTER[n] + '</span><span></span>';
+      b.lastChild.textContent = text;
+      b.addEventListener("click", function () { choose(n, box, list); });
+      list.appendChild(b);
+    });
+    box.appendChild(list);
+
+    stage.innerHTML = "";
+    stage.appendChild(box);
+  }
+
+  function choose(n, box, list) {
+    if (answered) return;
+    answered = true;
+    var item = QUIZ[i];
+    var right = n === item.a;
+    if (right) correct++;
+    else misses.push({ n: i, picked: n });
+
+    [].forEach.call(list.children, function (el, k) {
+      el.disabled = true;
+      if (k === n) el.classList.add(right ? "pick-right" : "pick-wrong");
+      else if (k === item.a && !right) el.classList.add("reveal");
+      else el.classList.add("dim");
+    });
+
+    var fb = document.createElement("div");
+    fb.className = "fb" + (right ? "" : " no");
+    var v = document.createElement("span");
+    v.className = "verdict";
+    v.textContent = right ? "Correct" : "The correct answer is " + LETTER[item.a];
+    var p = document.createElement("p");
+    p.textContent = item.why;
+    fb.appendChild(v); fb.appendChild(p);
+    box.appendChild(fb);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    var go = document.createElement("button");
+    go.className = "go";
+    go.textContent = i === QUIZ.length - 1 ? "See results" : "Next question";
+    go.addEventListener("click", next);
+    act.appendChild(go);
+    box.appendChild(act);
+    go.focus();
+    paintBar();
+  }
+
+  function next() {
+    if (i === QUIZ.length - 1) { results(); return; }
+    i++;
+    render();
+  }
+
+  function results() {
+    i = QUIZ.length;
+    paintBar();
+    counter.textContent = "Finished";
+
+    var pct = correct / QUIZ.length;
+    var verdict = pct === 1 ? "All correct. You've got the key points of this episode."
+      : pct >= 0.8 ? "Solid. Look over the ones you missed and you're done."
+      : pct >= 0.5 ? "The main ideas are there. Consider rewatching acts three and four."
+      : "Consider rewatching the video, especially the part on “rules should grow out of friction”.";
+
+    var wrap = document.createElement("div");
+
+    var sc = document.createElement("div");
+    sc.className = "score";
+    sc.innerHTML = '<div class="n"><b>' + correct + '</b><span class="of"> / ' + QUIZ.length + '</span></div>';
+    var vp = document.createElement("p");
+    vp.className = "verdict";
+    vp.textContent = verdict;
+    sc.appendChild(vp);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    act.style.justifyContent = "center";
+    var again = document.createElement("button");
+    again.className = "go";
+    again.textContent = "Try again";
+    again.addEventListener("click", function () {
+      i = 0; correct = 0; misses = []; render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    act.appendChild(again);
+    sc.appendChild(act);
+    wrap.appendChild(sc);
+
+    var rev = document.createElement("div");
+    rev.className = "review";
+    var h3 = document.createElement("h3");
+    h3.textContent = misses.length ? "Questions you missed" : "Review";
+    rev.appendChild(h3);
+
+    if (!misses.length) {
+      var ok = document.createElement("div");
+      ok.className = "allgood";
+      ok.textContent = "No questions missed.";
+      rev.appendChild(ok);
+    } else {
+      misses.forEach(function (m) {
+        var item = QUIZ[m.n];
+        var d = document.createElement("div");
+        d.className = "miss-item";
+        var q = document.createElement("p");
+        q.className = "qq";
+        q.textContent = (m.n + 1) + ". " + item.q;
+        var a = document.createElement("p");
+        a.className = "ans";
+        a.innerHTML = "You chose " + LETTER[m.picked] + "; the correct answer is <b>" +
+                      LETTER[item.a] + "</b>.";
+        var w = document.createElement("p");
+        w.className = "ans";
+        w.style.marginTop = ".5rem";
+        w.textContent = item.why;
+        d.appendChild(q); d.appendChild(a); d.appendChild(w);
+        rev.appendChild(d);
+      });
+    }
+    wrap.appendChild(rev);
+
+    stage.innerHTML = "";
+    stage.appendChild(wrap);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (i >= QUIZ.length) return;
+    if (!answered && /^[1-4]$/.test(e.key)) {
+      var btns = stage.querySelectorAll(".opt");
+      var n = parseInt(e.key, 10) - 1;
+      if (btns[n]) { btns[n].click(); e.preventDefault(); }
+    } else if (answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+      var go = stage.querySelector("button.go");
+      if (go) { go.click(); e.preventDefault(); }
+    }
+  });
+
+  render();
+})();
+</script>

@@ -1,0 +1,2629 @@
+<meta charset="utf-8">
+<title>Writing the First Rulebook</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
+           "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- General text ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* Supplementary blocks */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* Collapsible variant */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- Video ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- Legend ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- Table of contents ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- Steps ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* The three voices */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* Tools box */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* Origin tags — EP02 only */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* Screenshots */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* Screenshots scale uniformly (captured at one resolution, so text is the same size); heights are not forced to match */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* Takeaways */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- Closing ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  /* ===== English-edition additions (tools/english-edition.css) ===== */
+
+/* English-edition styles for a tutorial page (extracted from ep01_eng, shared by every epNN_eng)
+
+   Append the whole file to the end of that episode's Chinese <style> block, and change two things:
+     --sans / --serif  put the Latin faces first
+     body line-height  1.78 -> 1.68 (English does not need the looser leading)
+
+   .edition          the "About this edition" note in the header
+   .v-human .orig    the prompt's original wording, under its English translation
+   details.transcript / .tr-*   the English transcript panel under a screenshot
+   .table-note       the small note under a table */
+
+/* ---------- Edition note ---------- */
+
+  .edition {
+    margin: 2.2rem 0 0;
+    padding: 1.1rem 1.4rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .93rem;
+    line-height: 1.6;
+  }
+  .edition b { color: var(--ink); }
+  .edition p { margin: 0 0 .5rem; }
+  .edition p:last-child { margin-bottom: 0; }
+
+/* the original wording, verbatim */
+  .v-human .orig {
+    margin: .8rem 0 0;
+    padding-top: .65rem;
+    border-top: 1px dashed var(--human-rule);
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    white-space: pre-wrap;
+  }
+  .v-human .orig .orig-label {
+    display: block;
+    font-size: .62rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--human);
+    opacity: .85;
+    margin-bottom: .2rem;
+    font-weight: 600;
+  }
+
+/* English transcript of a screenshot */
+
+  details.transcript {
+    max-width: 52rem;
+    margin: .9rem 0 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    font-size: .9rem;
+    line-height: 1.55;
+  }
+  details.transcript > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: .7rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  details.transcript > summary::-webkit-details-marker { display: none; }
+  details.transcript > summary::marker { content: ""; }
+  details.transcript > summary::before {
+    content: "\2212";
+    font-family: var(--mono);
+    font-size: .95rem;
+    line-height: 1;
+    width: 1.2rem; height: 1.2rem;
+    flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.transcript:not([open]) > summary::before { content: "+"; }
+  details.transcript > summary .hint {
+    margin-left: auto;
+    font-size: .64rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+    text-transform: none;
+  }
+  details.transcript[open] > summary { border-bottom: 1px solid var(--rule-soft); }
+  .tr-body { padding: 1rem 1.2rem 1.1rem; }
+  .tr-body > :last-child { margin-bottom: 0; }
+  .tr-body p { margin: 0 0 .55rem; }
+  .tr-body .tr-user {
+    /* the user's prompt: a bubble on the right, sized to its text, like the real UI */
+    display: block;
+    width: fit-content;
+    max-width: 78%;
+    margin: 0 0 .9rem auto;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: .55rem .9rem;
+    white-space: pre-wrap;
+    color: var(--ink);
+  }
+  .tr-tool {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    margin: .3rem 0 .6rem;
+  }
+  .tr-tool.fail { color: #B3341F; }
+  .tr-tool .diff-add { color: #2E7D32; }
+  .tr-tool .diff-del { color: #B3341F; }
+  .tr-h { font-weight: 600; margin: .85rem 0 .3rem; }
+  .tr-quote {
+    margin: .3rem 0 .7rem;
+    padding: .1rem 0 .1rem .9rem;
+    border-left: 2px solid var(--rule);
+    color: var(--ink-soft);
+  }
+  .tr-pane { border-top: 1px dashed var(--rule); padding-top: .8rem; margin-top: 1rem; }
+  .tr-pane:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+  .tr-pane-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--agent);
+    font-weight: 600;
+    margin-bottom: .45rem;
+  }
+  .tr-note { color: var(--ink-faint); font-size: .82rem; }
+  .tr-cut { color: var(--ink-faint); }
+  .tr-body table { min-width: 0; font-size: .85rem; margin: .3rem 0 .8rem; }
+  .tr-body th, .tr-body td { padding: .38rem .6rem; }
+  .tr-body td:first-child { font-family: var(--sans); font-size: .85rem; white-space: normal; }
+  .tr-body dl.kv {
+    margin: 0 0 .8rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .2rem .9rem;
+    font-size: .85rem;
+  }
+  .tr-body dl.kv dt { font-family: var(--mono); color: var(--ink-faint); font-size: .8rem; }
+  .tr-body dl.kv dd { margin: 0; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .tr-tool.fail, :root:not([data-theme="light"]) .tr-tool .diff-del { color: #F0907A; }
+    :root:not([data-theme="light"]) .tr-tool .diff-add { color: #7BC47F; }
+  }
+  :root[data-theme="dark"] .tr-tool.fail, :root[data-theme="dark"] .tr-tool .diff-del { color: #F0907A; }
+  :root[data-theme="dark"] .tr-tool .diff-add { color: #7BC47F; }
+
+  .table-note {
+    font-size: .82rem;
+    color: var(--ink-faint);
+    margin: .5rem 0 0;
+  }
+
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP02 · English edition</div>
+    <h1>Writing the First Rulebook</h1>
+    <p class="standfirst">
+      The previous episode built the knowledge base but deliberately left the rulebook unwritten.
+      This episode fills that gap: what <code>CLAUDE.md</code> actually is, and how to build one out of
+      the friction the work has accumulated — with every rule labeled with where it came from.
+    </p>
+    <div class="meta-row">
+      <span>16 steps</span>
+      <span>Claude Code · Opus 5</span>
+      <span>Windows 11</span>
+      <span>Follows on from EP01</span>
+    </div>
+  </header>
+
+  <aside class="edition">
+    <p><b>About this edition.</b> This is the English version of EP02. The session it records was
+    conducted in Traditional Chinese, so the screenshots are in Chinese. They are shown exactly as
+    captured — nothing has been retouched. <b>Under every screenshot is an English transcript</b> of
+    what it says. Each prompt is also given in English translation with the original wording underneath.</p>
+  </aside>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/I_zE02dEaPw" data-remote="https://youtu.be/I_zE02dEaPw"
+       target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="Opening frame of the video: Writing the First Rulebook">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">Play the tutorial video　·　12 min 39 s　·　watch on YouTube ↗</span>
+    </a>
+    <figcaption>
+      <b>Tutorial video</b>
+      <span>Watch the video first for the big picture, then read the sixteen steps below for the details.</span>
+    </figcaption>
+  </figure>
+
+  <script>
+  // Video playback: embed inline when served from a web server, otherwise open in a new tab.
+  // YouTube refuses embeds from file:// (error 153) and claude.ai's CSP blocks external
+  // iframes, so both of those cases fall back to a plain link.
+  // The YouTube ID is filled in after upload; until then the card links to the local mp4.
+  (function () {
+    var ID = 'I_zE02dEaPw';       var box = document.querySelector('a.video-frame');
+    if (!box || !ID) return;
+
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;   // keep plain-link behavior
+
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = 'Writing the First Rulebook';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; ' +
+                'gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.allowFullscreen = true;
+
+      var ok = false;
+      f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f);
+      box.classList.add('playing');
+
+      // Safety net: if the embed is blocked (unknown CSP), restore the poster and say so
+      setTimeout(function () {
+        if (ok) return;
+        f.remove();
+        box.classList.remove('playing');
+        var note = document.createElement('p');
+        note.className = 'video-note';
+        note.textContent = 'Inline playback is not allowed here — click the poster to watch on YouTube.';
+        box.parentNode.appendChild(note);
+      }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>How to read this page</h2>
+    <div class="legend-item">
+      <span class="swatch h"></span>
+      <span><b>Your prompt</b>Reproduced verbatim — typos included — in the original Chinese,
+      with an English translation above it.</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch a"></span>
+      <span><b>What the Agent did</b>Not just what it answered, but how it sorted things,
+      what criteria it used, and what it raised on its own initiative.</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>What the screen showed</b>Real screenshots of the original (Chinese) session, each with
+      an English transcript underneath. They capture only part of the story; the full account is in
+      the text above each one.</span>
+    </div>
+  </section>
+
+  <nav class="toc">
+    <h2>The sixteen steps</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>What CLAUDE.md Actually Is</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>Lay the Rules Out, Each with Its Origin</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>Frontmatter and Page Structure</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>Writing, Figures and Tables</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>The Key Question: CLAUDE.md or a Skill</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>Thirty Selected Lines into CLAUDE.md</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>Skills and CLAUDE.md</span></a></li>
+      <li><a href="#s08"><span class="n">08</span><span>Write It, and Say What Could Not Be Done</span></a></li>
+      <li><a href="#s09"><span class="n">09</span><span>Acceptance: List the Hard Rules</span></a></li>
+      <li><a href="#s10"><span class="n">10</span><span>Stress-Test the Rules on Five Papers</span></a></li>
+      <li><a href="#s11"><span class="n">11</span><span>The Missing Panel Labels</span></a></li>
+      <li><a href="#s12"><span class="n">12</span><span>The Header Is Too Long, and Needs a Local PDF Link</span></a></li>
+      <li><a href="#s13"><span class="n">13</span><span>Review the Rulebook, Decide to Package a Skill</span></a></li>
+      <li><a href="#s14"><span class="n">14</span><span>Check the Skill Yourself</span></a></li>
+      <li><a href="#s15"><span class="n">15</span><span>How to Trigger a Skill</span></a></li>
+      <li><a href="#s16"><span class="n">16</span><span>How Long a Skill Can Be</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <h2>What CLAUDE.md Actually Is</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Explain what “CLAUDE.md” is, what role it plays and how it actually works</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>說明「CLAUDE.md」是什麼，其角色與實際運作的方式</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ul>
+        <li>Started with what it fundamentally is: a plain-text markdown file. <strong>No schema, no syntax
+        checking, no reserved words</strong> — you can write it in Notepad.</li>
+        <li>Pointed out that the only special thing about it is the <strong>filename</strong> — at startup
+        Claude Code looks for a file with that name, reads the contents in, and treats them as standing
+        instructions for the session.</li>
+        <li>Listed the three places it can live and when each is loaded, and explained that they
+        <strong>stack</strong>: the global <code>~/.claude/CLAUDE.md</code> and the one in the project root
+        are loaded at every startup, while one in a subdirectory is loaded
+        <strong>only when a file in that folder is read</strong>.</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/00-what-is-claudemd.png" style="width:752px"
+           alt="The Agent explains what CLAUDE.md fundamentally is and gives a table of the three locations and when each is loaded">
+      <figcaption><b>Note</b>The table in the lower half is what every judgement later in this episode
+      rests on — the “when it loads” column decides where a given rule belongs.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">Explain what &ldquo;<code>CLAUDE.md</code>&rdquo; is, its role and how it actually works</p>
+          <p class="tr-h">What it is</p>
+          <p><code>CLAUDE.md</code> is just a plain-text markdown file. There is nothing special about the format &mdash; no schema, no syntax checking, no reserved words. You could write it in Notepad.</p>
+          <p>The only special thing is the filename. When Claude Code starts up it goes looking for a file with that name, reads the contents in, and treats them as standing instructions for this working session.</p>
+          <p class="tr-h">When it loads, and how it stacks</p>
+          <p>Three locations, and they stack:</p>
+          <table>
+            <thead><tr><th>Location</th><th>Scope</th><th>When it loads</th></tr></thead>
+            <tbody>
+              <tr><td><code>~/.claude/CLAUDE.md</code></td><td>You personally, all projects</td><td>Every startup</td></tr>
+              <tr><td>Project root <code>CLAUDE.md</code></td><td>This project</td><td>Every startup</td></tr>
+              <tr><td>Subdirectory <code>CLAUDE.md</code></td><td>That directory</td><td>Only loaded when a file in that folder is read</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>Before you write something, make sure you know what it is. Asking what a term means costs far
+      less than finishing a whole design on a wrong understanding and then tearing it down.</p>
+      <p>And it was asked in the right place: the “when it loads” column in that answer becomes, in
+      step 05, the criterion that sorts the entire document.</p>
+    </aside>
+
+    <details class="digest" style="margin-top:1.6rem;">
+      <summary>How CLAUDE.md actually works<span class="hint">click to expand</span></summary>
+      <div class="digest-body">
+
+      <h3>It is context, not code</h3>
+      <p>This is the most commonly misunderstood point. The contents of <code>CLAUDE.md</code> are not
+      “executed” — they are <strong>pasted into the conversation</strong>. Technically the text is placed
+      into the context sent to the model, with exactly the effect of you pasting it in by hand at the start
+      of every session.</p>
+      <p>Three consequences all follow from this:</p>
+      <ul>
+        <li><strong>It has no force.</strong> Nothing intercepts an action that breaks a rule. A hard rule
+        saying “raw sources are read-only” is not write protection; it is a sentence. Its power comes from
+        the model reading it and deciding to comply — which is why a rule has to be concrete, checkable and
+        given a reason. <strong>A vague rule is not a weak constraint, it is no constraint at all.</strong></li>
+        <li><strong>Every request pays for it.</strong> A three-hundred-line rulebook means every turn of the
+        conversation pays a three-hundred-line tax up front — you pay it to ask a small question, you pay it
+        to fix a typo. That, and not aesthetics, is the real reason “only the short one works”.</li>
+        <li><strong>Rules dilute one another.</strong> Attention in the context is finite. Each of twenty
+        rules carries more weight than any one of a hundred.</li>
+      </ul>
+
+      <h3>Editing it mid-session does not take effect immediately</h3>
+      <p>The rulebook is read in when the session starts. If you edit it in the middle of a conversation,
+      <strong>the copy already loaded is not updated</strong> — the running conversation still sees the old
+      one. The reliable way to make an edit take effect is to start a new session.</p>
+
+      <h3>It is not memory</h3>
+      <p>The same text is loaded every time. It does not grow a new rule because you corrected something
+      last time — <strong>if it grows, it is because you or the Agent wrote the rule in.</strong></p>
+      <p>The analogy from the previous episode still holds: think of the Agent as an employee who loses all
+      memory at the start of every shift. The rulebook is the notice on the wall, not the employee's memory.
+      Whatever is not on the wall, he will not know tomorrow.</p>
+
+      <h3>The equivalent filename in other tools</h3>
+      <p>Same concept, different filename, identical logic: Claude Code uses <code>CLAUDE.md</code>,
+      OpenAI Codex uses <code>AGENTS.md</code>, Cursor uses <code>.cursorrules</code>.</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head">
+      <span class="step-num">02</span>
+      <h2>Lay the Rules Out, Each with Its Origin</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">List the rules for writing a wiki entry (the md file that corresponds to one paper PDF)</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>列出寫 wiki 條目（對應一篇論文 PDF 的 md 檔）的規則</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Set the tone in its opening line: <strong>“All of these rules come from this build; every one of
+        them has an origin.”</strong></li>
+        <li>Then did the crucial thing — it gave every rule an <strong>origin column</strong>, marking it as
+        “from you”, “from a failure”, “convention” or “precaution”.</li>
+        <li>The first group was “A. Files and naming”, three rules with three different origins.</li>
+      </ol>
+    </div>
+
+    <div class="origin">
+      <span class="voice-label">Four kinds of origin</span>
+      <ul>
+        <li><span class="tag given">From you</span><b>From an explicit instruction by the user.</b> It holds because you asked for it.</li>
+        <li><span class="tag hit">From a failure</span><b>From something that went wrong during the build.</b> It holds because not doing it has already caused trouble.</li>
+        <li><span class="tag conv">Convention</span><b>Standard practice in the field or the tool.</b> Not binding, but following it saves work.</li>
+        <li><span class="tag conv">Precaution</span><b>A risk worked out in advance.</b> It has not happened yet, but it is foreseeable.</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/01-rules-with-origin.png" style="width:832px"
+           alt="The Agent lists three rules for files and naming, with the origin of each rule in the right-hand column">
+      <figcaption><b>Note</b>The right-hand column is the origin. The third rule is marked “from a failure”,
+      with the reason in the same cell: the original filename <code>p08_x127_1362x1386.jpeg</code> is
+      completely unreadable.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">List the rules for writing a wiki entry (the md file that corresponds to one paper PDF)</p>
+          <p class="tr-note">Under the prompt bubble: the copy / retry / branch icons and <b>3 hours ago</b>.</p>
+          <p>All of these rules come out of this build; every one of them has a source. I mark whether it was &ldquo;something you gave me&rdquo; or &ldquo;something we hit the hard way&rdquo;.</p>
+          <p class="tr-h">A. Files and naming</p>
+          <table>
+            <thead><tr><th>Rule</th><th>Where it came from</th></tr></thead>
+            <tbody>
+              <tr><td>Filenames use <code>year-first author-identifier.md</code>, e.g. <code>2011-Chiang-FlyCircuit.md</code></td><td>Convention</td></tr>
+              <tr><td>Don't use the date as the primary key &mdash; several papers get handled on the same day</td><td>Precaution</td></tr>
+              <tr><td>Figure files go in <code>assets/&lt;identifier&gt;/</code>, named <code>fig1</code>…<code>figN</code></td><td>Hit the hard way (the original filename <code>p08_x127_1362x1386.jpeg</code> is completely unreadable)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">If you remember one thing, remember this</span>
+      <p><strong>Every rule has to name where it came from.</strong></p>
+      <p>Once every rule must state its origin, “why does this one exist” stops being a vague feeling and
+      becomes a <strong>question you can check</strong>. A rule whose origin you cannot fill in is a rule
+      that should not be written yet.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head">
+      <span class="step-num">03</span>
+      <h2>Frontmatter and Page Structure</h2>
+    </div>
+
+    <div class="prose">
+      <p>There is <strong>no new prompt</strong> in this step; it continues the previous one — the same list,
+      further down.</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Listed the nine required fields under “B. Frontmatter”, with the constraint noted beside each:
+        <code>title</code> <strong>may not be omitted or abbreviated</strong>; <code>own_work</code> is added
+        only for your own papers.</li>
+        <li>Added a reason about <strong>timing</strong>:
+        “Add frontmatter on day one. Decide you want it after two hundred pages have piled up and you have to
+        go back and add it two hundred times.”</li>
+        <li>Then “C. Page structure (fixed order)”, nine items — from the full English title as the H1 down
+        to Related pages at the end.</li>
+        <li>Item 3 came with a note: <strong>“Why it matters” is about the entry's relationship to the other
+        pages in the knowledge base, not its standing in the field</strong>.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/02-frontmatter-structure.png" style="width:491px"
+           alt="The Agent lists the nine required frontmatter fields and the nine fixed blocks of the page structure">
+      <figcaption><b>Note</b>The top half is a frontmatter example, with the constraints in gray on the right;
+      the nine items below are the skeleton of every paper entry.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-h">B. Required frontmatter</p>
+      <pre><code>type: paper
+      title: "full English title"        # no omitting, no abbreviating
+      title_zh: "Chinese title"
+      authors: [...]
+      year: 2011
+      journal: "Current Biology 21(1), 1-11"
+      doi: 10.1016/j.cub.2010.11.056
+      own_work: true                     # only for your own papers
+      tags: [...]</code></pre>
+          <p>Add the frontmatter on day one. If you only want it once two hundred pages have piled up, you have to go back and fill it in two hundred times.</p>
+          <p class="tr-h">C. Page structure (fixed order)</p>
+          <ol>
+            <li>H1 = the full English title; below it the Chinese translation, authors, journal, DOI link</li>
+            <li>One-sentence conclusion</li>
+            <li>Why it matters &mdash; its relationship to the other pages in the knowledge base, not its standing in the field</li>
+            <li>Abstract &mdash; original text + Chinese translation</li>
+            <li>General-audience article &mdash; high-school level, about 2,000 characters</li>
+            <li>Technical article &mdash; 3,000 characters or more, six sections: Overview / Methods / Results / Discussion / Problems and limitations / Future work</li>
+            <li>Open questions and follow-ups</li>
+            <li>Figure sources &mdash; copyright note</li>
+            <li>Related pages</li>
+          </ol>
+          <p><span class="tr-cut">… (cut off)</span></p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>“Add it from the start” is the kind of rule most easily skipped, and the most expensive to skip.</p>
+      <p>What it governs is not how well the rule is written, but <strong>the cost of going back through two
+      hundred entries to change their format</strong>. With only one entry written it looks like overhead;
+      seen across the whole knowledge base it is essential.</p>
+      <p>Note item 3, “Why it matters”: it insists on <strong>“its relationship to the other pages”</strong>
+      rather than “its standing in the field” — the latter is already covered in the Abstract section and need
+      not be repeated here, while the former is what gives the entry its particular place in this knowledge base.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head">
+      <span class="step-num">04</span>
+      <h2>Writing, Figures and Tables</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did (continued from the previous step)</span>
+      <ol>
+        <li>Five rules under “D. Writing”, two of them explicitly tagged with an origin —
+        <span class="tag given">From you</span>the general-audience article carries no figures and must be
+        readable from plain text alone;
+        <span class="tag hit">From a failure</span>the same figure needs a different interpretation for each
+        reader level, and the two must not share one copied paragraph.</li>
+        <li>Seven rules under “E. Figures and tables”, covering where figures go, how captions are translated,
+        what an interpretation must do, and how tables, formulas and flowcharts are handled.</li>
+        <li>Several rules <strong>carry their reason inside the rule</strong>:
+        “translate captions item by item in full, never summarize — the caption is the way back in when you
+        search later”; “tables are always converted to markdown, never screenshotted — comparing numbers across
+        papers depends on it”.</li>
+        <li>The demand on interpretation was severe: <strong>“an interpretation must say something the paper
+        does not; otherwise it just repeats the caption.”</strong></li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/03-writing-and-figures.png" style="width:505px"
+           alt="The Agent lists five writing rules and seven figure-and-table rules, some of them tagged with an origin">
+      <figcaption><b>Note</b>The two arrows point at the origins — one rule from your instruction, one from a
+      problem hit during the build.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-h">D. Writing</p>
+          <ul>
+            <li>General-audience article: plain and natural; no adjectives or exclamations unless they are needed; analogies may be used to aid understanding</li>
+            <li>No figures in the general-audience article &mdash; it must be understandable from the plain text alone &larr; <i>your instruction this time</i></li>
+            <li>The technical article is written to the structure of a formal paper</li>
+            <li>Keep technical terms in English (LPU, neuropil, affine); don't force a translation</li>
+            <li>The same figure needs a different reading at each reader level; you can't copy the same passage into both &larr; <i>hit the hard way</i></li>
+          </ul>
+          <p class="tr-h">E. Figures and tables</p>
+          <ul>
+            <li>All figures go in the technical article, in the natural Figure 1&rarr;N order</li>
+            <li>Three layers per figure: the original image + a complete translation of the caption + a further interpretation</li>
+            <li>Translate the caption in full, sentence by sentence (including every A/B/C sub-item); no summarizing &mdash; the caption is the entry point for later retrieval</li>
+            <li>The interpretation has to say something the original text does not, otherwise it just repeats the caption</li>
+            <li>Always convert tables to markdown, never screenshot them &mdash; this is exactly what cross-paper comparison of the numbers relies on</li>
+            <li>Use LaTeX for formulas</li>
+            <li>Draw flowcharts and the like yourself in mermaid; don't screenshot the original</li>
+          </ul>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>Give a rule its reason, so that later you know when it may be broken.</strong></p>
+      <p>If the rule says only “tables are always converted to markdown”, then a table too complex to convert
+      leaves you choosing between forcing it and breaking the rule. Add “comparing numbers across papers depends
+      on it” and the judgement becomes easy: <strong>if this table will never be compared, a screenshot is
+      fine.</strong></p>
+      <p>A rule with no reason is either followed blindly or ignored.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head">
+      <span class="step-num">05</span>
+      <h2>The Key Question: CLAUDE.md or a Skill</h2>
+    </div>
+
+    <div class="prose">
+      <p>The list is finished, a little over twenty rules. <strong>The next move decides the shape of the whole
+      document.</strong></p>
+      <p>You could simply say “write them into CLAUDE.md” — the natural reaction, since writing the rulebook is
+      what this episode is for. But the question asked here is a different one.</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Should this go in CLAUDE.md or in a skill?</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>這應該寫 CLAUDE.md 還是寫 skill?</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ul>
+        <li>Gave the conclusion first: <strong>“Both — but where you cut the line between them is what
+        matters.”</strong></li>
+        <li>Then reduced the difference to three items, saying plainly that <strong>“there is only one decisive
+        difference”</strong> — when it loads.</li>
+        <li>The other two are whether it can carry programs, and how you hand it to someone else.</li>
+      </ul>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>CLAUDE.md</th><th>Skill</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>When it loads</td><td>Every startup, always</td><td>Only when the task matches</td></tr>
+          <tr><td>Can it carry programs</td><td>No, only a path to one</td><td>Yes, the scripts sit with the rules</td></tr>
+          <tr><td>Handing it to others</td><td>They copy and paste</td><td>Installed as one package</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="shot" style="margin-top:2rem;">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/04-claudemd-or-skill.png" style="width:758px"
+           alt="The Agent contrasts CLAUDE.md and skills in a three-row table of the decisive differences">
+      <figcaption><b>Note</b>“Both — but where you cut the line between them is what matters” turns the question
+      from “which of the two” into “how to split them”.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">Should this go in <code>CLAUDE.md</code> or in a skill?</p>
+          <p>Both, but where you cut the line is what matters.</p>
+          <p>There is only one decisive difference:</p>
+          <table>
+            <thead><tr><th></th><th>CLAUDE.md</th><th>Skill</th></tr></thead>
+            <tbody>
+              <tr><td>When it loads</td><td>Every startup, always loaded</td><td>Loaded only when the task matches</td></tr>
+              <tr><td>Can it carry code?</td><td>No, you can only write a path</td><td>Yes, the scripts sit together with the rules</td></tr>
+              <tr><td>Giving it to someone else</td><td>They have to copy and paste it</td><td>Installs as one package</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>Asking this early saves rewriting the whole document.</p>
+      <p>“<strong>Changing the plan is cheap, changing the product is expensive</strong>” — except that what
+      would have to change here is not the content but the <strong>classification</strong>. Discovering, after
+      twenty-odd rules are in the file, that half of them belong somewhere else costs far more than asking
+      first.</p>
+      <p>Note how the Agent answered: it did not pick one of the two. It <strong>rejected the premise of the
+      question first</strong>, then supplied the question that should have been asked.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head">
+      <span class="step-num">06</span>
+      <h2>Thirty Selected Lines into CLAUDE.md</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did (continued from the previous step)</span>
+      <ol>
+        <li>Redistributed the twenty-odd rules <strong>by when they load</strong>, into two piles.</li>
+        <li><strong><code>CLAUDE.md</code> (about 30 lines) — the standing constitution</strong>: who owns which
+        of the three layers, the directory structure, the <code>log.md</code> format and “record the friction,
+        not just what was done”, language and style, always look up facts that go stale, and never trust
+        extracted numbers blindly.</li>
+        <li><strong>The <code>ingest-paper</code> skill — loaded only when it is needed</strong>: the full
+        nine-block structure, the length and target reader of the general-audience and technical articles,
+        the three-layer record for each figure and the item-by-item full translation of captions,
+        tables converted to markdown and formulas in LaTeX, the definition-of-done checklist,
+        and <strong>copies of the two scripts <code>pdftxt.py</code> and <code>pdfimg.py</code></strong>.</li>
+        <li>Explained, unprompted, one arrangement that looks inconsistent:
+        “I deliberately put the last two in <code>CLAUDE.md</code> rather than in the skill —
+        <strong>because they are traps you can fall into at any time, not only when handling papers.</strong>”</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/05-two-piles.png" style="width:610px"
+           alt="The Agent splits the rules into two piles: six items for CLAUDE.md and six for the ingest-paper skill">
+      <figcaption><b>Note</b>The note between the two piles is the important part — it explains why a rule as
+      technical-looking as “never trust numbers blindly” belongs in the standing layer instead.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-h">How to split them</p>
+          <p><b>CLAUDE.md (about 30 lines) &mdash; the standing constitution</b></p>
+          <ul>
+            <li>The responsibilities of the three layers: <code>raw/</code> read-only, <code>wiki/</code> entirely the AI's, schema co-evolves</li>
+            <li>Directory structure</li>
+            <li>The format of <code>log.md</code>, plus &ldquo;record the friction, not just what was done&rdquo;</li>
+            <li>Language and style: mainly Chinese, technical terms kept in English</li>
+            <li>Anything time-sensitive is always looked up, never answered from memory</li>
+            <li>Never blindly trust the numbers that come out of extraction</li>
+          </ul>
+          <p>I put the last two in CLAUDE.md rather than in the skill on purpose &mdash; they are traps you can step into at any moment, not only when handling papers.</p>
+          <p><b>Skill <code>ingest-paper</code> &mdash; loaded only when it is needed</b></p>
+          <ul>
+            <li>The full structure of the nine blocks</li>
+            <li>Length and target reader for the general-audience article / technical article</li>
+            <li>The three-layer record for figures; item-by-item full translation of the captions</li>
+            <li>Tables converted to markdown, LaTeX for formulas, mermaid for flowcharts</li>
+            <li>The definition-of-done checklist</li>
+            <li>Ships with <code>pdftxt.py</code> and <code>pdfimg.py</code></li>
+          </ul>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>The criterion is “when it loads”, not “how important it is”.</strong> The two are easy to
+      confuse.</p>
+      <p>The nine-block page structure is very important — without it, entries come out ragged. But it is
+      <strong>only used when writing a paper entry</strong>, so it goes into the skill.</p>
+      <p>“Never trust numbers blindly” looks far more trivial, yet it can bite in any piece of work at all:
+      reading a web page, going through a report, converting a spreadsheet. So it goes into the standing layer.</p>
+      <p>Sorting by “how important” gives exactly the opposite answer, and exactly the wrong one.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head">
+      <span class="step-num">07</span>
+      <h2>Skills and CLAUDE.md, and Why There Is No Hurry</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did (continued from the previous step)</span>
+      <ol>
+        <li>In EP01 the Agent wrote two utility programs, <code>pdftxt.py</code> and <code>pdfimg.py</code>,
+        and left them in a temporary directory — <strong>they disappear on reboot</strong>.</li>
+        <li>If <code>CLAUDE.md</code> said “use <code>pdftxt.py</code> to do such and such…”, the rule would be
+        useless the moment those temporary files were gone. Packaging the two programs into the skill as well
+        <strong>makes sure they can still be reused later</strong>.</li>
+        <li>Its recommendation: <strong>write <code>CLAUDE.md</code> now</strong>, because those 30 lines are
+        all general rules and unlikely to be wrong; <strong>leave the skill until a few more paper entries have
+        been written and the rules are firmer</strong>.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/06-one-reminder.png" style="width:765px"
+           alt="The Agent explains that a skill can carry its scripts along, and warns that these rules have been run on only one paper">
+      <figcaption><b>Note</b>Nobody asked for the “One reminder” section in the lower half. It turns Karpathy's
+      line about the schema co-evolving into an actionable judgement: rules should grow out of
+      <strong>repeated</strong> friction, not be generalized from a single success.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-h">Why the skill side is the decisive one</p>
+          <p><code>pdftxt.py</code> and <code>pdfimg.py</code> are lying in a temp directory right now; they will be gone at the next reboot.</p>
+          <p>All CLAUDE.md can do is write &ldquo;please use pdftxt.py&rdquo; and then pray the file is still there. A skill packs the scripts and the rules into the same folder, so they travel together. That matters especially for your course material &mdash; what the student gets is a thing that runs, not a description they have to rebuild themselves.</p>
+          <p class="tr-h">One reminder</p>
+          <p>This set of rules has only been run on one paper.</p>
+          <p>Karpathy's line that &ldquo;the schema has to co-evolve&rdquo; means the rules should grow out of repeated friction, not be generalised from a single success. My advice:</p>
+          <ol>
+            <li>Write CLAUDE.md now &mdash; those 30 lines are all general rules, they are unlikely to be wrong</li>
+            <li>Wait another two or three papers for the skill &mdash; especially until you ingest a paper that is &ldquo;not your own, not Drosophila, not connectomics&rdquo;. LICONN or FFN in Papers-2 would be a good stress test; they will force out the assumptions in the current set of rules</li>
+          </ol>
+          <p>The rule most likely to give trouble is &ldquo;translate every caption item in full&rdquo;. Captions in methods papers sometimes run half a page, and translating all of it may not be worth it. Deal with that when we hit it.</p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">The heart of this episode</span>
+      <p>The previous episode taught <strong>not to legislate too early</strong> — do not turn a wall you have
+      not hit into a rule. This episode is the other half of the same lesson: <strong>when it is time to write,
+      write.</strong></p>
+      <p>The difference is whether the evidence is sufficient. Every one of those 30 general lines was actually
+      used across EP01, so writing them now is unlikely to be wrong; the detailed entry rules have succeeded on
+      exactly one paper, so a few more is the safer bet. <strong>Write what the evidence supports now, and leave
+      the rest for later</strong> — not everything, and not nothing.</p>
+      <p>One more thing worth taking: the Agent said in advance which rule was most likely to break, and gave its
+      reasoning. If it does break later, you know at once what has happened instead of working it out from
+      scratch.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="step" id="s08">
+    <div class="step-head">
+      <span class="step-num">08</span>
+      <h2>Write It, and Say What Could Not Be Done</h2>
+    </div>
+
+    <div class="prose">
+      <p>Only once the classification was settled did the writing start. There is no new prompt on this screen —
+      only execution and a report.</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Wrote <code>Wiki/CLAUDE.md</code>, stating what it wrote to:
+        <strong>“Following my own line that only the short one works, I have kept it to what applies at any
+        time.”</strong></li>
+        <li>Took care of something more basic along the way — it <strong>split the project in two</strong>:
+        <code>Wiki/</code> is task one (build the knowledge base), <code>Tutorial/</code> is task two (make the
+        teaching material), each with its own rulebook. Having both jobs in one folder was what made
+        “which of the two should <code>CLAUDE.md</code> be about” impossible to decide.</li>
+        <li>Filed the scattered scripts: <code>pdftxt.py</code>, <code>pdfimg.py</code> and
+        <code>md2pdf.py</code> into <code>Wiki/tools/</code>, <code>inline_img.py</code> into
+        <code>Tutorial/tools/</code>. That settles the “gone at the next reboot” problem raised in the previous
+        step.</li>
+        <li>136 lines changed in all (<code>Created 2 files, edited a file, ran a command</code>).</li>
+        <li><strong>Reported one step it could not do</strong>: the EP01 folder could not be moved into
+        <code>Tutorial/</code> and needs a person. The folder is the current session's own working directory,
+        locked by the process, and Windows will not move it — an environment limit, not a capability limit.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/07-claudemd-written.png" style="width:556px"
+           alt="The Agent writes Wiki/CLAUDE.md and lists the tidied project directory tree, with a note on the last line that the EP01 folder has not been moved yet">
+      <figcaption><b>Note</b>“Task 1” and “Task 2” down the right of the directory tree are the result of the
+      split. The last line, <code>← not yet moved into Tutorial/</code>, is its own annotation.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p>Writing <code>Wiki/CLAUDE.md</code> &mdash; following my own line that &ldquo;only a short one is any use&rdquo;, it holds only what applies at all times:</p>
+          <p class="tr-tool">Created 2 files, edited a file, ran a command <span class="diff-add">+136</span> <span class="diff-del">-0</span> ›</p>
+          <p>The structure is now split up, but there is one step I can't move &mdash; it needs you to do it.</p>
+          <p class="tr-h">Done</p>
+      <pre><code>BSC Tutorial/
+      ├── Papers/  Papers-2/
+      ├── Wiki/                      ← task 1
+      │   ├── CLAUDE.md              new
+      │   ├── index.md               new
+      │   ├── log.md
+      │   ├── 2011-Chiang-FlyCircuit.md
+      │   ├── assets/  snapshots/
+      │   └── tools/                 pdftxt.py · pdfimg.py · md2pdf.py
+      ├── Tutorial/                  ← task 2
+      │   └── tools/                 inline_img.py
+      └── EP01 什麼是 LLM-Wiki 知識庫/    ← not moved into Tutorial/ yet</code></pre>
+        </div>
+      </details>
+    </figure>
+
+    <div class="tools">
+      <h3>Programs filed in this step</h3>
+      <dl>
+        <dt>Wiki/tools/</dt>
+        <dd><code>pdftxt.py</code> (PDF to UTF-8 text) ·
+        <code>pdfimg.py</code> (extract embedded images) ·
+        <code>md2pdf.py</code> (markdown to a PDF snapshot)</dd>
+        <dt>Tutorial/tools/</dt>
+        <dd><code>inline_img.py</code> (inline images as base64 to make a single-file web page)</dd>
+      </dl>
+    </div>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>Two things are worth noticing.</p>
+      <p>First, it <strong>applied the rule it had just set</strong>. “Only the short one works” was its own line
+      from the previous step, and it followed it while writing rather than forgetting it the moment it was said.
+      A rulebook that even its author ignores is dead from day one.</p>
+      <p>Second, it <strong>said which step it could not do</strong> instead of quietly skipping it. A report
+      claiming “all done” that has in fact missed a step costs far more than an honest failure — you find out
+      days later, by which time nobody remembers what happened.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section class="step" id="s09">
+    <div class="step-head">
+      <span class="step-num">09</span>
+      <h2>Acceptance: List the Hard Rules</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">List the hard rules in Wiki/CLAUDE.md</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>把 Wiki/CLAUDE.md 的鐵則列出來</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ul>
+        <li>Listed six hard rules, and <strong>stated their scope up front</strong>:
+        “these apply at any time, <strong>not only when handling papers</strong>” —
+        that qualifier is the trace left by the sorting criterion from step 06.</li>
+        <li>Every rule kept its origin. Rule 3 writes the scene of the failure straight into the rule:
+        “this actually happened — <code>±</code> came out as <code>6</code>, <code>µm</code> came out as
+        <code>mm</code>”.</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/08-six-rules-listed.png" style="width:756px"
+           alt="The Agent lists the six standing hard rules in Wiki/CLAUDE.md">
+      <figcaption><b>Note</b>Six rules, all of them the “applies at any time” kind. The absolute path in rule 1
+      was added later — it originally said only “raw sources are read-only”, without naming where the files
+      are.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">List the hard rules in <code>Wiki/CLAUDE.md</code></p>
+          <p><code>Wiki/CLAUDE.md</code> &lang;Standing hard rules&rang;, six of them. The preamble limits the scope: &ldquo;these apply at any time, not only when handling papers&rdquo;.</p>
+          <ol>
+            <li><code>C:\Users\USER\Work\BSC Tutorial\Papers</code> holds the original literature files and is the source for the whole wiki. Read only, never write &mdash; modifying, deleting, renaming and moving are all forbidden.</li>
+            <li>Anything time-sensitive is always verified, never answered from memory. Once checked, mark the date it was checked.</li>
+            <li>Numbers extracted from a PDF or by OCR must not be trusted blindly &mdash; it has actually happened that ± was extracted as 6 and µm as mm. Every number is checked by hand before it goes into a page.</li>
+            <li>Speculation must be marked as speculation. Anything with no source behind it must not be written as fact.</li>
+            <li>When you find the sources contradicting each other, mark it as to-be-verified; don't pick one version yourself and gloss over it.</li>
+            <li>A page with no <code>[[links]]</code> does not count as finished. Linking to a page that doesn't exist yet is normal &mdash; that is the marker for &ldquo;to be written&rdquo;.</li>
+          </ol>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>Check the work once it is written, and the cheapest check is to have it list the rules and read
+      them through.</strong></p>
+      <p>Laid out on one screen, you see at once which rule is too long, which one is really a formatting
+      convention that slipped in, and which one is too vague to be checked.</p>
+      <p>This time it caught rule 1. It originally read “raw sources are read-only” — which sounds clear enough,
+      but <strong>it never named the folder</strong>. Only after the full path and the four forbidden actions
+      (modify, delete, rename, move) were added did the rule become something that can actually be followed.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="step" id="s10">
+    <div class="step-head">
+      <span class="step-num">10</span>
+      <h2>Stress-Test the Rules on Five Papers</h2>
+    </div>
+
+    <div class="prose">
+      <p>The rulebook is written, but only one paper has tested it. The next prompt puts the rules on trial.</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">We now have Wiki/CLAUDE.md, the tools in Wiki/tools/, and the experience of writing the first paper entry. Next, please write entries for the other 5 papers in Papers, so that the writing rules become firmer</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>現在我們有 Wiki/CLAUDE.md 和 Wiki/tools/ 裡面的工具，以及寫第一篇論文條目的經驗。接下來，請你把 Papers 裡面的另外 5 篇論文條目寫出來，讓寫作規則更確定</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Its first sentence named the task: <strong>“This is the stress test — once five papers are through,
+        wherever the rules do not hold will show itself.”</strong> Then it declared how it would work: ingest one
+        paper at a time, follow <code>CLAUDE.md</code> throughout, record the friction in the log.</li>
+        <li>Listed <code>Papers/</code> to see what was actually there, and read the source of both utility
+        programs — establishing what its tools can do before starting.</li>
+        <li>Built a task list, then <strong>extracted the text of all five papers in one go</strong>
+        (one command, eight tool calls) rather than extracting one and writing one.</li>
+        <li>Starting with the 2015 paper, after extracting five figures it <strong>opened each one to confirm
+        its content before naming it</strong>, as the rules require — no guessing from page numbers.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/09-write-five-more.png" style="width:764px"
+           alt="Given the instruction to write five entries, the Agent first lists the folder and the tools, extracts all the text, then opens each figure to confirm it">
+      <figcaption><b>Note</b>The line <code>Read 5 files</code> is it looking at the figures one by one — five
+      figures, five reads. That is the action the rulebook prescribes, and here it is being followed.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">We now have <code>Wiki/CLAUDE.md</code> and the tools in <code>Wiki/tools/</code>, plus the experience of writing the first paper entry. Next, please write out the entries for the other 5 papers in Papers, so the writing rules become more settled</p>
+          <p>Right, this is the stress test &mdash; run all five and wherever the rules don't hold up will show itself. Ingest one at a time, follow <code>Wiki/CLAUDE.md</code> the whole way, record the friction in the log.</p>
+          <p>First, what is in <code>Papers/</code>:</p>
+          <p class="tr-tool">Listed papers and read tool scripts ›</p>
+          <p>All five are there, including four targets that are already on the &lang;to be written&rang; list. Before starting I'll build a task list, then extract the text and the figures of all five in one go:</p>
+          <p class="tr-tool">Ran a command, used 8 tools ›</p>
+          <p>All five extracted. Starting with 2015 (39 pages; like 2011 it is main text + supplementary material):</p>
+          <p class="tr-tool">Read 2015.txt, ran a command ›</p>
+          <p>Five images, exactly the number of the five main figures. Following the rules, open them and confirm the content before naming them, rather than guessing from page numbers:</p>
+          <p class="tr-tool">Read 5 files ›</p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>The prompt in this step has a crucial tail: “<strong>so that the writing rules become firmer</strong>”.</p>
+      <p>It tells the Agent that these five are not only output but a <strong>test</strong> — while writing, watch
+      for which rule jams and which one is redundant. Without that tail the Agent hands back five entries; with
+      it, the Agent also hands back a health report on the rules.</p>
+      <p>The result after five papers: the eight-block structure held throughout, including for the three tool
+      papers; “translate captions item by item in full”, predicted to be the rule that would break, did not. The
+      new rules that genuinely grew were none of the ones anyone had anticipated — see the next step.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section class="step" id="s11">
+    <div class="step-head">
+      <span class="step-num">11</span>
+      <h2>The Missing Panel Labels</h2>
+    </div>
+
+    <div class="prose">
+      <p>With the five entries delivered, you open Obsidian and go through them one by one. At Fig 2 of the
+      Kaleido paper, something turns up:</p>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/10-missing-panel-labels.png" style="width:539px"
+           alt="Kaleido Fig 2 in Obsidian: a whole-brain view and a magnified comparison of Kenyon cells; the image carries no A, B, C labels, yet the caption below refers to a, b, c and 1 to 3">
+      <figcaption><b>Note</b>The caption reads “a: from the FlyCircuit database…”, “b, c: the calyx of the Kenyon
+      cells…”, “1 to 3: magnified comparison of the region between arrows 1 and 3” — but there is not a single
+      letter or number on the image. The reader has no way to tell which panel is a and which is b.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-note">A rendered figure block from the entry (no application chrome visible). At the top, a whole-brain image of densely packed multicolored neurons; below it two rows of four images each &mdash; a small calyx view followed by three close-ups. None of the sub-images carries a panel letter (a/b/c) or a number (1&ndash;3).</p>
+          <p class="tr-quote"><b>Original caption (Fig. 2 Visualize the Drosophila connectome with the optimal color assignment, in comparison with random color assignment)</b><br>
+          a: The connectome assembled from 10,000 single-neuron images in the FlyCircuit database, with colors assigned by energy-function optimization.<br>
+          b, c: The calyx of the Kenyon cells, with energy-optimized color assignment (b) and random color assignment (c) respectively. The arrows point out that in c some neighboring cell bodies happen to be assigned very similar colors and are hard to tell apart; by contrast Kaleido separates the neurons well (b). 1 to 3: enlarged comparison of the region between arrows 1 and 3, same as b and c.</p>
+        </div>
+      </details>
+    </figure>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">When you put the figures in you sometimes dropped their panel labels — for example in the 2018 Kaleido paper, the sub-panels of Fig. 2 and 3 have no A, B, C… numbering, so when reading the caption you cannot tell which is which. Check them all and fix them</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>你放截圖的時候有時把圖的 panel 標記給漏了，例如 2018 Kaleido 那篇，Fig.2, 3 的各子圖沒有 A, B, C...等編號，這樣在閱讀圖說時會搞不清楚是哪個，整體檢查一次並修正</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Diagnosed the cause in one line: <strong>panel letters usually live in the PDF's text layer and
+        cannot be pulled out of the raster layer</strong> — so the figures <code>pdfimg.py</code> extracts are
+        missing them by construction.</li>
+        <li>Instead of fixing only the two you named, it <strong>wrote a checking script and swept all six
+        papers, 31 figures</strong>: for each figure, detect whether a standalone A–H letter sits in the text
+        layer within the figure's bounds; if one does, the raster extraction must be missing it.</li>
+        <li>The first version of the script sorted wrongly (with two figures on one page they have to be taken by
+        position, not by area); it fixed that and reran.</li>
+        <li>For the figures missing letters it rebuilt them by <strong>page rendering</strong> — “photographing”
+        the figure area together with the neighboring text layer, so the letters and the legend come along.
+        The first rebuild of Fig 3 clipped the legend at the left edge, so it widened the region and rendered
+        again.</li>
+        <li>The results fell into three classes: three needing repair (Fig 2, 3 and 4 of the 2018 paper), a bit
+        over twenty that were fine already (the letters are burned into the image), and <strong>three where the
+        paper itself never printed the letters</strong> (Fig 2, 4 and 5 of the 2024 paper, whose captions cite
+        (A)–(F) that simply are not on the page). The last class is not repaired; the discrepancy is stated in
+        the interpretation, with a column-order mapping.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/11-check-panels-script.png" style="width:747px"
+           alt="The Agent diagnoses that panel letters live in the PDF text layer, writes a checking script to sweep every figure, fixes a sorting problem, and rebuilds the figures missing letters">
+      <figcaption><b>Note</b><code>Created check_panels.py +77</code> — a 77-line checking tool. Its whole point
+      is to turn “you spotted one bad figure” into “every figure in the base has been checked”.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">When you place the screenshots you sometimes drop the panel labels of a figure &mdash; for example the 2018 Kaleido paper, where the sub-figures of Fig.2, 3 have no A, B, C… numbering, which makes it unclear which one is meant when reading the caption. Check the whole lot and fix it</p>
+          <p>Right, this is another form of the &ldquo;the extracted figure is not the paper's figure&rdquo; problem &mdash; the panel letters usually live in the PDF's text layer, and the bitmap layer can't pick them up. I'll write a check script that goes through every figure in the six papers one by one: does the text layer inside the figure's area contain standalone letters A&ndash;H? Where it does, rebuild the complete figure with its labels by rendering the page:</p>
+          <p class="tr-tool">Created check_panels.py <span class="diff-add">+77</span> <span class="diff-del">-0</span> ›</p>
+          <p>Fix a sorting problem (with two figures on one page they have to be taken by position, not by area) and run again:</p>
+          <p class="tr-tool">Edited a file, ran a command <span class="diff-add">+3</span> <span class="diff-del">-1</span> ›</p>
+          <p>fig2 and fig4 are perfect (fig4 even got back the legend box that was missing in the original). fig3 now has A&ndash;F, but the driver legend text on the left edge is clipped &mdash; widen the crop area, re-render, and look at the other two candidates:</p>
+          <p class="tr-tool">Ran a command, read 3 files ›</p>
+        </div>
+      </details>
+    </figure>
+
+    <div class="tools">
+      <h3>Programs used in this step</h3>
+      <dl>
+        <dt><span class="tag hit">Wrote</span>check_panels.py</dt>
+        <dd>Scans every figure of every paper, checking the PDF text layer inside the figure's bounds for
+        standalone panel letters; where they are missing, it rebuilds a candidate figure by page rendering.</dd>
+      </dl>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/12-panel-labels-fixed.png" style="width:556px"
+           alt="Kaleido Fig 2 after repair: the panel labels A, B and C and the magnification numbers 1, 2 and 3 have all reappeared">
+      <figcaption><b>Note</b>The same figure after repair. The red boxes are annotations added for this
+      explanation — A (whole brain), B (Kaleido color assignment), C (random color assignment) — and the 1, 2 and
+      3 on the magnified regions are back. The caption now matches the figure.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-note">The same figure after re-rendering, now carrying its panel labels. The whole-brain image at the top is marked <b>A</b>; the two calyx views on the left are marked <b>B</b> and <b>C</b> (each letter ringed in red). The calyx views carry the arrow numbers <b>1</b>, <b>2</b>, <b>3</b>, and each of the six close-ups is numbered <b>1</b>, <b>2</b> or <b>3</b> in its top-left corner, with black arrowheads marking the cell bodies being compared. No other text appears in this screenshot.</p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">If you remember one thing, remember this</span>
+      <p><strong>This is the kind of place a rule grows out of.</strong></p>
+      <p>“The extracted figure is not the paper's figure” is something nobody would think of while writing the
+      rulebook. It surfaced only after six entries had been written and <strong>someone actually read
+      them</strong>. Once found, it became a rule with a concrete test (letters in the text layer inside the
+      figure's bounds → the raster extraction must be missing them → rebuild by page rendering), together with a
+      tool that checks it automatically.</p>
+      <p>Note also the scope the Agent took: you pointed at two figures, it swept 31. <strong>Find one error and
+      assume there is more than one of its kind</strong> — that is the reflex maintaining a knowledge base
+      requires.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 12 ============ -->
+  <section class="step" id="s12">
+    <div class="step-head">
+      <span class="step-num">12</span>
+      <h2>The Header Is Too Long, and Needs a Local PDF Link</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">One more rule we missed earlier: the header needs a link to the local PDF (the knowledge base is for local use only and never goes online, so there is no copyright problem). Also I think the header is too long. Change it:
+
+1. Drop “type” (everything here is a paper, so it is not needed)
+2. Merge “year”, “journal” and “doi”: format Current Biology 21(1), 1–11 (2011). doi: 10.1016/j.cub.2010.11.056 &lt;link to the local full-text PDF&gt;
+3. Turn “own_work” into a tag instead of a field of its own</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>再補一個之前漏掉的規則：在檔頭的部分要有本機的 PDF 連結（知識庫為本機自用而不上網，不會有著作權問題）。還有我覺得檔頭太長了，改一下：
+
+1. 把「type」拿掉（因為這裡都是 paper所以不需要）
+2. 「year」、「journal」、「doi」合併：格式 Current Biology 21(1), 1–11 (2011). doi: 10.1016/j.cub.2010.11.056 &lt;本機全文 PDF 檔連結&gt;
+3. 「own_work」變成一個 tag，不要獨佔一欄</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Made all three changes at once and applied them to all six entries (<code>Edited 7 files</code> —
+        the six entries plus the log). The header went from nine fields down to five.</li>
+        <li>The PDF link used a <code>file:///</code> absolute path, with spaces in the path escaped as
+        <code>%20</code>.</li>
+        <li>But this version <strong>did not survive the next round</strong>. One look in Obsidian: neither the
+        doi nor the PDF is a hyperlink, and nothing is clickable.</li>
+        <li>The Agent found the reason: Obsidian's properties panel renders a clickable link only when
+        <strong>the entire value is a single URL</strong>; a URL mixed in with other text stays dead. And
+        <code>doi: 10.x</code> is not a URL at all — it has to start with <code>https://doi.org/</code>.</li>
+        <li>Second version: doi and pdf each get a field of their own — clickable, but the header is long
+        again.</li>
+        <li>Third version, the one that stuck: <strong>the header goes back to five fields and the links move
+        into the title block in the body</strong> — one line reading “DOI: 10.xxx・Full-text PDF”. A markdown
+        link in the body is not subject to the properties panel's restriction and can carry its own display
+        text.</li>
+        <li>The last hurdle: to Obsidian a <code>file:///</code> link is external — clicking it raises a security
+        confirmation and hands the file to a system program, whereas what you want is for it to <strong>open
+        inside Obsidian</strong>. That needs the PDF to be in the vault, so <code>Papers/</code> was copied into
+        <code>Wiki/papers/</code> and the links changed to internal links, which open straight into a tab in the
+        built-in viewer.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/13-header-first-version.png" style="width:756px"
+           alt="The user asks for a shorter header with a local PDF link; the Agent cuts it to five fields, with a file:/// path inside a merged field">
+      <figcaption><b>Note</b>This is the first version: the <code>journal</code> field carries three things at
+      once — journal, doi and PDF path. It looks compact, but nothing opens, and it was overturned in the next
+      round.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">One more rule I missed earlier: the header needs a link to the local PDF (the knowledge base is for local use only and never goes online, so there is no copyright problem). Also I think the header is too long, change it:<br><br>
+          1. Drop &ldquo;type&rdquo; (everything here is a paper so it isn't needed)<br>
+          2. Merge &ldquo;year&rdquo;, &ldquo;journal&rdquo; and &ldquo;doi&rdquo;: format Current Biology 21(1), 1&ndash;11 (2011). doi: 10.1016/j.cub.2010.11.056 &lt;link to the local full-text PDF&gt;<br>
+          3. Turn &ldquo;own_work&rdquo; into a tag, don't let it take a field of its own</p>
+          <p>Got it &mdash; all three changes together, applied across all six entries. The merged field follows the format you gave: journal volume(issue), pages (year). doi: … plus the local PDF link (spaces in the path become %20, so the Obsidian properties panel can open it directly):</p>
+          <p class="tr-tool">Edited 7 files, ran a command <span class="diff-add">+25</span> <span class="diff-del">-36</span> ›</p>
+          <p>Done, applied to all six entries. The header shrinks from nine fields to five:</p>
+      <pre><code>---
+      title: "Three-Dimensional Reconstruction of Brain-wide Wiring Networks…"
+      title_zh: "果蠅全腦連線網絡的單細胞解析度三維重建"
+      authors: [Chiang AS, …]
+      journal: "Current Biology 21(1), 1-11 (2011). doi: 10.1016/j.cub.2010.11.056
+      file:///C:/Users/USER/Work/BSC%20Tutorial/Papers/CurrentBiology2011_….pdf"</code></pre>
+          <p><span class="tr-cut">… (cut off)</span></p>
+        </div>
+      </details>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/14-header-final.png" style="width:619px"
+           alt="The final form of the Kaleido entry in Obsidian: a five-field properties panel, with clickable DOI and full-text PDF links in the title block">
+      <figcaption><b>Note</b>The final form. The top half is the properties panel — five fields, clean; the lower
+      half is the title block in the body, where both the DOI and “Full-text PDF” are hyperlinks, and the PDF
+      opens inside Obsidian.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-note">An Obsidian note, <code>2018-Wang-Kaleido</code>, with the properties panel above the rendered note.</p>
+          <p class="tr-h">Properties</p>
+          <dl class="kv">
+            <dt>title</dt><dd>Kaleido: Visualizing Big Brain Data with Automatic Color Assignment for Single-Neuron Images</dd>
+            <dt>title_zh</dt><dd>Kaleido：以自動配色視覺化大腦巨量單神經元影像</dd>
+            <dt>authors</dt><dd>Wang TY × &nbsp; Chen NY × &nbsp; He GW × &nbsp; Wang GT × &nbsp; Shih CT × &nbsp; Chiang AS ×</dd>
+            <dt>journal</dt><dd>Neuroinformatics (2018 online-first version; volume, issue and page numbers not given in the PDF)</dd>
+            <dt>tags</dt><dd>connectome × &nbsp; Drosophila × &nbsp; FlyCircuit × &nbsp; visualization × &nbsp; Monte-Carlo × &nbsp; tools paper × &nbsp; own-work ×</dd>
+          </dl>
+          <p class="tr-note">+ Add property</p>
+          <p class="tr-h">Kaleido: Visualizing Big Brain Data with Automatic Color Assignment for Single-Neuron Images</p>
+          <p><b>Kaleido：以自動配色視覺化大腦巨量單神經元影像</b></p>
+          <p>Wang TY, Chen NY, He GW, Wang GT, Shih CT, Chiang AS. <i>Neuroinformatics</i> (2018)<br>
+          DOI: <u>10.1007/s12021-018-9363-3</u> ↗ · <u>full-text PDF</u><br>
+          (Wang, Chen and He contributed equally; corresponding authors Chen NY, Shih CT, Chiang AS)</p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>This one rule took three versions to settle; some of the back-and-forth has been left out to keep the
+      material from getting long. Worth saying plainly to the reader: <strong>revising a rule is rarely done in
+      one move — it usually takes several rounds before it settles.</strong></p>
+      <p>The next time someone asks “why is the PDF link in the body and not in the header”, the answer is not
+      “that is the rule” but three lines of grounded reasoning. <strong>A rule with its reason attached tells
+      you, when you come to change it, which of its premises still hold and which have moved.</strong></p>
+      <p>One more thing: this rule came from <strong>you</strong>, not from the Agent. The rulebook co-evolves —
+      the Agent grows rules out of friction in the work, you grow them out of using the result, and both go into
+      the log.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 13 ============ -->
+  <section class="step" id="s13">
+    <div class="step-head">
+      <span class="step-num">13</span>
+      <h2>Review the Rulebook, Decide to Package a Skill</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Good, I am OK with these six entries. Now let's review:
+
+1. Does Wiki/CLAUDE.md need updating?
+2. Time to package the “write an entry” skill, right?
+
+One last reminder: “Drosophila connectome” is not the only topic in this knowledge base, and it may keep expanding, so do not tie it to one field</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>好，這六個條目我 OK 了。再來回顧一下：
+
+1. Wiki/CLAUDE.md 有需要更新嗎？
+2. 可以包「寫條目」的 skill 了吧？
+
+最後提醒：「果蠅 connectome」並非這個知識庫唯一的主題，未來可能持續擴充，所以不要限定領域</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Reviewed <code>CLAUDE.md</code> and updated only two places, each with its origin attached:
+          <ul>
+            <li>Hard rule 3 widened from “never trust numbers blindly” to “never trust numbers,
+            <strong>symbols or formulas</strong> blindly” — the origin being what actually happened in these
+            five papers: the polarity values extracted from the 2015 paper lost their minus signs wholesale, and
+            the formulas in the 2021 paper came out in fragments.</li>
+            <li>The whole “What is not here” section was rewritten to point at the skill — what it said
+            (“not settled yet, package it once there are three or more papers”) had gone stale, since packaging
+            it was exactly what was being done now.</li>
+          </ul>
+        </li>
+        <li>The rest of the six hard rules, the log rules and the language and style section all still held, and
+        were <strong>left alone</strong>.</li>
+        <li>Packaged the entry-writing conventions as a skill at <code>.claude/skills/ingest-paper/</code>,
+        containing <code>SKILL.md</code> (the conventions in full) and <code>scripts/</code> (copies of the two
+        utility programs — the rules travel with their tools).</li>
+        <li>Acted on your reminder with <strong>two layers of insurance</strong>: nowhere in the skill is there a
+        rule specific to Drosophila or connectomics (even the examples are written generically); and
+        <code>CLAUDE.md</code> now states in so many words that “no domain-specific rule may appear inside the
+        skill”, so whoever edits the skill later will see it.</li>
+        <li>Added an honest note of its own accord: the packaging condition it had originally set was “three or
+        more papers, <strong>and at least one outside connectomics</strong>” — the second half was not met, since
+        all six sit in the same ecosystem. You ruled that it should be packaged now, so the first paper of the
+        next batch is this skill's stress test.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/15-claudemd-and-skill.png" style="width:769px"
+           alt="The Agent reports that CLAUDE.md needs only two updates, in a table with their origins, and shows the directory structure of the packaged skill">
+      <figcaption><b>Note</b>The “origin” column on the right of the table is the point — the case for widening
+      hard rule 3 names which two papers and which problem.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">Good, these six entries are OK by me. Now let's take stock:<br><br>
+          1. Does <code>Wiki/CLAUDE.md</code> need updating?<br>
+          2. We can package the &ldquo;write an entry&rdquo; skill now, right?<br><br>
+          One last reminder: &ldquo;Drosophila connectome&rdquo; is not the only topic in this knowledge base, it may well keep expanding, so don't tie it to one field</p>
+          <p>I'll handle both together. First a review of <code>Wiki/CLAUDE.md</code> &mdash; two places need updating &mdash; then package the skill.</p>
+          <p class="tr-h">1. Two updates to CLAUDE.md</p>
+          <table>
+            <thead><tr><th>Where</th><th>Change</th><th>Where it came from</th></tr></thead>
+            <tbody>
+              <tr><td>Hard rule 3</td><td>&ldquo;Numbers must not be trusted blindly&rdquo; widened to &ldquo;numbers, symbols and formulas must not be trusted blindly&rdquo;</td><td>2015: a whole batch of polarity minus signs lost; 2021: the BS formula came out fragmented</td></tr>
+              <tr><td>&lang;Things that are not here&rang;</td><td>The whole section becomes &lang;Entry-writing conventions&rang;, pointing at the skill; it states in so many words that &ldquo;no field-specific rules may appear inside the skill&rdquo;</td><td>That section's &ldquo;not settled yet, wait for three or more papers before packaging&rdquo; has expired &mdash; that is exactly what we are doing now</td></tr>
+            </tbody>
+          </table>
+          <p>The other six hard rules, the log rules and the language style all still stand; untouched.</p>
+          <p class="tr-h">2. The skill is packaged</p>
+      <pre><code>.claude/skills/ingest-paper/
+      ├── SKILL.md          the full entry-writing conventions
+      └── scripts/          pdftxt.py · pdfimg.py copies (rules and tools travel together)</code></pre>
+          <p><span class="tr-cut">… (cut off)</span></p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>When you review a rulebook, <strong>“unchanged” is as much a conclusion as “changed”</strong>. Six hard
+      rules ran through six papers and still held — that sentence is itself information: they passed the test.</p>
+      <p>The one rule that did change, rule 3, changed in <strong>scope</strong> rather than in content: it
+      covered numbers, and now it covers symbols and formulas as well. That is the healthiest way for rules to
+      grow — not a new rule, but an existing one widened a little on new evidence.</p>
+      <p>The reminder “do not tie it to one field” matters. All six papers are Drosophila work, and rules written
+      from them easily pick up Drosophila assumptions without anyone noticing. The Agent answered with two layers
+      — generic examples throughout, plus an explicit prohibition in <code>CLAUDE.md</code> —
+      <strong>but the real test waits for the first paper from a different field</strong>, as it said itself.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 14 ============ -->
+  <section class="step" id="s14">
+    <div class="step-head">
+      <span class="step-num">14</span>
+      <h2>Check the Skill Yourself</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">I want to check the contents of this skill</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>我要確認這個 skill 的內容</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Laid out all 150 lines of <code>SKILL.md</code>, then gave a <strong>seven-section structure
+        table</strong> — what each section says and <strong>which step the rule came from</strong>: filename and
+        frontmatter from “the three versions iterated over these two days”, the title block from “today's fight
+        over the links”, the fixed structure from “verified across all six papers”…</li>
+        <li>Listed <strong>four judgement calls of its own that you could overrule</strong>: whether the word
+        counts should be hard-coded; whether “do not repair defects in the published figure, just state them”
+        should be a formal rule; how wide the trigger wording should be; and the drift risk of keeping copies in
+        <code>scripts/</code> alongside <code>tools/</code>.</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/16-skill-structure.png" style="width:751px"
+           alt="The Agent reads out SKILL.md and lists a seven-section structure table, each section with a content summary and the origin of its rules">
+      <figcaption><b>Note</b>The “rule origin” column is the origin column from step 02, carried forward — every
+      section of the skill can point back to the friction it grew out of.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">I want to check what is in this skill</p>
+          <p class="tr-tool">Read SKILL.md ›</p>
+          <p>The full 150 lines are as follows (<code>.claude/skills/ingest-paper/SKILL.md</code>). A tour of the structure, and a few points you may want to rule on:</p>
+          <p class="tr-h">Structure (seven sections)</p>
+          <table>
+            <thead><tr><th>Section</th><th>Contents</th><th>Where the rule came from</th></tr></thead>
+            <tbody>
+              <tr><td>Pipeline overview + tools</td><td>The six-step pipeline; how to use pdftxt/pdfimg, note on the <code>scripts/</code> copies</td><td>EP01</td></tr>
+              <tr><td>One. Filename and frontmatter</td><td>year-author-identifier; the five fields settled; the own-work tag</td><td>Three rounds of iteration over these two days</td></tr>
+              <tr><td>Two. Title block</td><td>DOI + the &ldquo;full-text PDF&rdquo; internal link; copy the PDF into <code>papers/</code> first</td><td>Today's tug-of-war over links</td></tr>
+              <tr><td>Three. Fixed structure</td><td>The one-line requirement for each of the eight blocks; how to map &ldquo;Results&rdquo; for a tools paper</td><td>Verified on all six papers</td></tr>
+              <tr><td>Four. Figures</td><td>The three-layer record format; four-way verification of extracted figures <span class="tr-cut">… (cut off)</span></td><td><span class="tr-cut">… (cut off)</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </figure>
+
+    <details class=digest>
+      <summary>SKILL.md in full (150 lines)<span class=hint>click to expand</span></summary>
+      <div class=digest-body>
+        <pre class=skill-src>---
+name: ingest-paper
+description: Ingest one paper PDF into a knowledge-base entry (any field). Use when the user asks to ingest a paper, write a paper entry, or process a newly arrived PDF. Covers entry structure, the three-layer record for figures, writing the critical layer, the definition of done and the closing actions.
+---
+
+# Writing a paper entry
+
+Turn one paper PDF into a complete knowledge-base entry. **Any field** — these conventions must not depend on the habits of any one discipline.
+The standing hard rules (raw sources read-only, checking numbers and symbols, marking inference, and so on) are in `Wiki/CLAUDE.md` and are not repeated here.
+
+## The flow
+
+```
+extract full text → read it through → extract figures → open each figure to verify → write the entry → close out (PDF copy, index, log)
+```
+
+## Tools
+
+Run under `Wiki/` (needs `pip install pymupdf`):
+
+```bash
+python tools/pdftxt.py &lt;input.pdf&gt; &lt;output.txt&gt;     # full text to UTF-8, bypassing Windows cp950
+python tools/pdfimg.py &lt;input.pdf&gt; &lt;output dir&gt; [max page] [min edge px]   # extract embedded images
+```
+
+Where a new environment does not have these two, copies are in this skill's `scripts/`.
+
+## 1. Filename and frontmatter
+
+- Filename: `year-firstauthor-identifier.md` (the identifier being a tool name, a database name or a short topic word, alphanumeric)
+- Figure directory: `assets/&lt;first author lowercase&gt;&lt;year&gt;/`, figures named `fig1`…`figN` in natural order
+- Frontmatter is **fixed at five fields**, no more and no fewer:
+
+```yaml
+---
+title: "full English title"        # may not be omitted or abbreviated
+title_zh: "Chinese title"
+authors: [Family Initials, …]      # list them all, no et al.
+journal: "Journal vol(issue), pages (year)"   # note exceptions such as online-first in parentheses
+tags: [topic words…, own-work]     # add own-work for your own papers; no type/year/doi/pdf field
+---
+```
+
+## 2. Title block
+
+```markdown
+# Full English title
+
+**Chinese title**
+
+First author, second author, et al. *Journal* vol(issue), pages (year)
+DOI: [10.xxx/…](https://doi.org/10.xxx/…)・[[papers/&lt;original filename&gt;.pdf|Full-text PDF]]
+(equal contribution, corresponding author, open licence and so on, one line in parentheses)
+```
+
+- **Copy the PDF from the master folder into `Wiki/papers/` first** — only an internal link opens inside an Obsidian page.
+  The master copy always stays in the original folder (see hard rule 1)
+- The DOI needs the full `https://doi.org/` URL to be clickable
+
+## 3. Fixed structure (the order never changes)
+
+```
+One-sentence conclusion → Why it matters → Abstract (original + Chinese translation) → General-audience article → Technical article
+→ Open questions and follow-ups → Figure sources → Related pages
+```
+
+| Block | Requirement |
+|---|---|
+| One-sentence conclusion | **Must carry the key numbers**; one paragraph saying what the paper did and what it found |
+| Why it matters | Its **relationship to the other pages in the knowledge base** (which research line, which entries it affects), not its standing in the field — the Abstract already covers that |
+| Abstract | The original **in full, never abridged**; translation and original in parallel sections |
+| General-audience article | About 2,000–2,500 characters, high-school level, **no figures** (readable from plain text alone), few adjectives, analogies allowed |
+| Technical article | 3,000 characters or more, six fixed sections: Overview (main question / state of the field at publication / significance), Methods, Results, Discussion, Problems and limitations, Future work |
+| Open questions and follow-ups | Every item **actionable** (say what to check back on, what to ask), pointing at what will be read later |
+| Figure sources | A copyright statement is mandatory (publisher and licence terms; for CC-BY, note the attribution obligation) |
+| Related pages | List every `[[link]]` in one place; linking to a page that does not exist yet is normal (a to-be-written marker) |
+
+- The general-audience and technical articles **may not copy paragraphs from each other** — the same thing has to be written separately for each readership
+- For tool and method papers the “Results” section maps to “algorithm + demonstration cases + quantitative validation”; the six section titles do not change
+
+## 4. Figures
+
+**All figures go in the technical article**, each with a three-layer record:
+
+```markdown
+![Figure N](assets/&lt;dir&gt;/figN.jpeg)
+
+&gt; **Original caption (Figure N. English title)**
+&gt; Full panel-by-panel translation — (A)…(B)… never summarize; the caption is the way back in when you search later.
+&gt;
+&gt; **Interpretation**: write what the paper does not say (order of importance, reading traps, level of evidence,
+&gt; what this data cannot guarantee). Restating the caption is the same as writing nothing.
+```
+
+**Mandatory verification after extracting figures** (three traps actually hit):
+
+1. **Open every figure and confirm its content matches its number**; never infer from page numbers
+2. **Check completeness against the original PDF page** — schematic panels and arrow annotations are often in the vector layer, which `pdfimg.py` cannot reach;
+   panel letters (A, B, C…) and legends are often in the text layer, which the raster image does not carry either.
+   Quick screen: check whether a standalone A–H letter sits in the PDF text layer within the figure's bbox; if one does, the raster extraction is certainly missing something
+3. Where panels or letters are missing, **rebuild by page rendering**:
+
+```python
+import pymupdf
+doc = pymupdf.open(pdf); page = doc[page_no]
+bbox = pymupdf.Rect(page.get_image_info()[k]["bbox"])   # several figures on one page: tell them apart by y coordinate
+clip = pymupdf.Rect(bbox)
+for w in page.get_text("words"):                        # fold in the text-layer elements that belong to the figure
+    r = pymupdf.Rect(w[:4])
+    if r.intersects(bbox + (-60, -16, 16, 6)) and r.height &lt; 20:
+        clip |= r
+pix = page.get_pixmap(matrix=pymupdf.Matrix(3, 3), clip=clip)
+pix.save("figN.png")   # exclude the page header, footer and caption column; open the figure again after rendering to confirm
+```
+
+4. **Defects in the published figure itself** (the caption cites panel letters that were never printed on the image): do not repair the figure,
+   state the discrepancy at the start of the interpretation and give the mapping (e.g. first column from the left = (A))
+- Tables are always converted to markdown, never screenshotted (comparing numbers across papers depends on it); formulas in LaTeX;
+  flow diagrams redrawn in mermaid rather than extracted from the paper
+
+## 5. Numbers and formulas
+
+- **Record the error and the sample size together**: `93% ± 2% (n=33)` — a percentage without n and ± may not be quoted on its own
+- **The basis travels with the number**: where one thing has several numbers (different definitions, different denominators, abstract disagreeing with the body),
+  state the basis of each and never mix them; say so when the denominator is extrapolated
+- Signed values (minus signs, ±) and formulas must be checked symbol by symbol against the original after extraction — the text layer swallows minus signs wholesale and breaks formulas apart
+
+## 6. The critical layer (where the entry is worth more than the paper)
+
+- “Problems and limitations” splits into three kinds: **intrinsic to the method / sampling and statistics / definitions and internal consistency**
+- **There must be criticism the authors did not make** — restating the limitations the paper admits is the same as writing nothing
+- Mark **internal contradictions** in the paper with ⚠️: say what contradicts what and where to check back, and require the doubt to be carried along whenever that number is quoted
+- Every figure's interpretation states **what this data cannot guarantee**
+- Cross-paper vigilance (when reading several papers on one research line):
+  - **Count drift** — the number or the unit for the same object quietly changes between papers; compare them one by one and record it under open questions
+  - **Hypothesis hardening** — what an earlier paper called putative or conjectural is used by a later one as fact or as a category name
+- The published literature is wrong sometimes too (bad citations, wrong figure numbers, missing labels on figures) — record it when you find it; “it is published” is not a pass
+
+## 7. Definition of done (checklist)
+
+- [ ] The PDF is copied into `Wiki/papers/`, and the “Full-text PDF” internal link in the title block opens
+- [ ] Five frontmatter fields; the filename follows the convention
+- [ ] All eight blocks present and in the right order
+- [ ] The abstract complete in the original plus a translation
+- [ ] A three-layer record for every main figure; each one opened to verify its mapping and completeness
+- [ ] Numbers carry the error / sample size / basis; symbols and formulas checked against the original
+- [ ] Criticism the authors did not make is present; internal contradictions marked ⚠️
+- [ ] `[[links]]` created (including pages still to be written); the Related pages section complete
+- [ ] A new row in `index.md` (page, one-sentence summary, figure count)
+- [ ] A new entry appended to `log.md` — **record the friction** (where it jammed, what was abandoned, rule candidates), not just what was done
+</pre>
+      </div>
+    </details>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>What the Agent packages, you check yourself.</strong> It is the sole author and you are the
+      editor-in-chief — but an editor-in-chief still reads the copy.</p>
+      <p>There is a cheap way to do it: do not read from the first line to the last. Look at the structure table
+      first, then at the points it flagged as yours to overrule. Where the Agent marks its own uncertainty is
+      where your attention belongs.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 15 ============ -->
+  <section class="step" id="s15">
+    <div class="step-head">
+      <span class="step-num">15</span>
+      <h2>How to Trigger a Skill</h2>
+    </div>
+
+    <div class="prose">
+      <p>With the skill packaged and its contents checked, the next thing is knowing how to use it. There is no
+      screenshot for this step — just the explanation.</p>
+      <p>There are two ways to trigger a skill, and both work:</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Way</th><th>How</th><th>What it is</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Command</td>
+            <td>Type <code>/ingest-paper</code> in the input box; a target can follow, for example
+              <code>/ingest-paper Papers-2/LICONN.pdf</code></td>
+            <td><strong>Forced load</strong> — however you describe the task, these conventions come in</td>
+          </tr>
+          <tr>
+            <td>Natural language</td>
+            <td>Just say “ingest this paper”, “write this PDF up as an entry”, “process the papers that came in”</td>
+            <td><strong>Automatic match</strong> — the Agent compares the task against the skill's
+              <code>description</code> and loads it itself when the two match</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose" style="margin-top:1.6rem;">
+      <p>Natural language works because the frontmatter at the top of <code>SKILL.md</code> has a
+      <code>description</code> field, and what it contains is “when this skill should be used”. When the Agent
+      sees the task match the description, it loads the skill. So that field is not a comment, it is the
+      <strong>trigger condition</strong>; write it too narrow and it misses, too wide and it fires when it should
+      not.</p>
+      <p>Two practical things to know:</p>
+      <ul>
+        <li><strong>Where it applies</strong>: the skill sits in <code>.claude/skills/</code> at the project
+        root, and any session whose working directory is this project (or a subfolder of it) can use it.</li>
+        <li><strong>When it applies</strong>: the list of skills is normally loaded when a session starts, so a
+        skill you have just created may not appear until you open a new session — the same thing as
+        “editing <code>CLAUDE.md</code> mid-session does not take effect immediately” from step 01.</li>
+      </ul>
+    </div>
+
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p>The difference between the command and natural language is the difference between <strong>you being sure
+      you want it</strong> and <strong>letting the Agent judge whether it is wanted</strong>.</p>
+      <p>When you know what you are doing, the slash command is the least effort and cannot misjudge. The value
+      of the natural-language trigger is that you do not have to remember every skill's name — describe the task
+      clearly and the conventions that belong come in by themselves. Which is the other benefit of moving
+      conventions out of <code>CLAUDE.md</code> and into a skill: <strong>standing material needs you to remember
+      it is there; material loaded on demand only needs you to be able to describe the task.</strong></p>
+    </aside>
+  </section>
+
+  <!-- ============ 16 ============ -->
+  <section class="step" id="s16">
+    <div class="step-head">
+      <span class="step-num">16</span>
+      <h2>How Long a Skill Can Be</h2>
+    </div>
+
+    <div class="prose">
+      <p>One last question pulls the thread of this episode together — the rulebook has to be short, so what about
+      the skill?</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt</span>
+      <p class="cmd">Compared with CLAUDE.md, can a skill be much longer?</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>跟 CLAUDE.md 比起來，skill 可以寫很長？</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ul>
+        <li>Corrected the premise of the question first: much longer, yes, but not because “a skill has a bigger
+        allowance” — because <strong>you pay for it at a different time</strong>.</li>
+        <li><code>CLAUDE.md</code> is present on every turn — you pay for it to ask a small question, you pay for
+        it to fix a typo — so every line has to answer “is this line used in <strong>all</strong> work?”</li>
+        <li>A skill loads only when it is triggered. While you are ingesting a paper, those 150 lines are the
+        working instructions for that task and every one of them gets used —
+        <strong>the same text is a necessary cost when it appears at the right moment and a tax when it appears
+        at the wrong one</strong>.</li>
+        <li>There is still an upper bound, from the same two mechanisms as with <code>CLAUDE.md</code>: dilution
+        happens either way (blow 150 lines up to 500 and the key rules get washed out just the same); and when
+        the skill loads, <code>CLAUDE.md</code> is present too — the two <strong>stack</strong>.</li>
+        <li>It offered a test: the goal for <code>CLAUDE.md</code> is that <strong>all forty lines actually get
+        followed</strong>; the goal for a skill is that <strong>you can finish the task without having to look
+        anything else up</strong>. The first aims at short, the second at enough — “enough” is usually longer than
+        “short”, but longer is not better.</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · actual screenshot</span>
+      <img loading="lazy" decoding="async" src="screenshots/17-skill-length.png" style="width:754px"
+           alt="The Agent explains that a skill can be longer because you pay for it at a different time, and that there is still an upper bound">
+      <figcaption><b>Note</b>“The same text is a necessary cost when it appears at the right moment and a tax when
+      it appears at the wrong one” — that sentence is another way of stating the sorting criterion from steps 05
+      and 06.</figcaption>
+    
+      <details class="transcript" open>
+        <summary>English transcript · what the screenshot says<span class="hint">click to collapse</span></summary>
+        <div class="tr-body">
+          <p class="tr-user">Compared with <code>CLAUDE.md</code>, can a skill be written much longer?</p>
+          <p>It can be a great deal longer, but the reason isn't that &ldquo;a skill gets a bigger allowance&rdquo; &mdash; it is that you pay for it at a different time.</p>
+          <p><code>CLAUDE.md</code> is present on every turn of the conversation &mdash; you pay for it when you ask a small question, you pay for it when you fix a typo. So every line of it has to ask &ldquo;is this line used in every job?&rdquo; Any line whose answer is &ldquo;no&rdquo; is pure waste.</p>
+          <p>A skill only loads when it is triggered. When you ingest a paper, those 150 lines are the working spec for that job and all of them get used &mdash; the same text is a necessary cost when it appears at the right moment and a tax when it appears at the wrong one. So the correct way to say &ldquo;a skill can be long&rdquo; is: a skill can be as long as this task genuinely needs, without being constrained by &ldquo;it has to be loaded every time&rdquo;.</p>
+          <p>Length still has an upper limit, though, coming from two mechanisms that are the same as <code>CLAUDE.md</code>'s:</p>
+          <ul>
+            <li>Dilution still happens &mdash; once loaded, the 150 lines of rules are still competing with each other for attention. The three lines of verification code and the ten-item checklist in SKILL.md would wash the key rules out just the same if they swelled to 500 lines. So I did cut while writing: of EP02's 29 candidates, only the ones actually hit or used across the six papers went in.</li>
+            <li>It stacks with <code>CLAUDE.md</code> &mdash; when the skill loads, <code>CLAUDE.md</code> is there too, and only the two added together are the real context burden. That is also why the line at the top of the skill, &ldquo;the standing hard rules are in CLAUDE.md and are not repeated here&rdquo;, is not politeness but a saving of allowance.</li>
+          </ul>
+          <p>One way to judge it: the goal for <code>CLAUDE.md</code> is that all forty lines get executed; the goal for a skill is that you can finish this task without having to look anything else up. The first aims at short, the second at enough &mdash; &ldquo;enough&rdquo; is usually longer than &ldquo;short&rdquo;, but it still isn't &ldquo;the longer the better&rdquo;.</p>
+        </div>
+      </details>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">Where this episode lands</span>
+      <p>The episode opens by asking what <code>CLAUDE.md</code> is, goes by way of how rules get sorted, how they
+      get checked and how they grow out of friction, and comes back to the same question: <strong>when should a
+      document written for an AI be short, and when may it be long?</strong></p>
+      <p>The answer is not in the word count but in <strong>when it gets read</strong>. What is always present
+      pays a permanent cost, so it aims at short; what loads on demand pays only when it is needed, so it aims at
+      enough.</p>
+      <p>Which is why the step that asked what <code>CLAUDE.md</code> is was worth so much — once you understand
+      that it is context, pasted into the conversation and charged for on every turn, every later judgement about
+      length, classification and what to write follows from that one fact.</p>
+    </aside>
+  </section>
+
+  <!-- ============ Closing ============ -->
+  <section class="closing">
+    <h2>What this episode teaches</h2>
+
+    <div class="prose">
+      <p>The previous episode ended on “rules should grow out of friction”. This one answers the harder question
+      that comes next: <strong>the friction has accumulated — now what?</strong></p>
+      <p>The answer is not “write it all down”. It is <strong>ask first where each rule came from, then ask when
+      it will be used</strong>.</p>
+    </div>
+
+    <h3>Three observations about writing rules</h3>
+    <ul class="obs">
+      <li><b>Every rule needs an origin</b>From you, from a failure, convention, precaution. A rule whose origin
+      you cannot fill in is the kind that got <em>scrapped</em> in the previous episode — it looks professional,
+      and it rests on guesswork.</li>
+      <li><b>Sort by when it loads, not by how important it is</b>Standing rules go in <code>CLAUDE.md</code>,
+      task-specific ones are packaged as a skill. Sorting by importance gives exactly the opposite answer.</li>
+      <li><b>Restraint is not writing nothing</b>General rules that are already verified get written now; anything
+      that has run only once waits for more evidence. The same material, with different weights of evidence behind
+      it, deserves different treatment.</li>
+    </ul>
+
+    <h3>About your role</h3>
+    <div class="prose">
+      <p>You did four things in this episode: <strong>asked what the term meant</strong>, <strong>asked for the
+      rules to be listed</strong>, <strong>asked the classification question</strong>, and <strong>checked the
+      result</strong>.</p>
+      <p>The Agent generalized the rules, the Agent labeled their origins, and the sorting criterion was the
+      Agent's too. But <strong>“should this go in CLAUDE.md or in a skill” was your question</strong> — and that
+      question decided the shape of the whole document.</p>
+      <p>The decisive move in the previous episode was <strong>the overrule</strong>; in this one it is
+      <strong>the question</strong>. What they have in common: both happen <em>before</em> the Agent produces in
+      bulk.</p>
+    </div>
+
+    <h3>What this episode produced</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Item</th><th>Status</th><th>Contents</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Wiki/CLAUDE.md</td><td>New</td><td>The standing rules, including six hard rules</td></tr>
+          <tr><td>Wiki/index.md</td><td>New</td><td>Index of the knowledge base</td></tr>
+          <tr><td>Wiki/tools/</td><td>Filed</td><td>pdftxt.py · pdfimg.py · md2pdf.py</td></tr>
+          <tr><td>Tutorial/tools/</td><td>Filed</td><td>inline_img.py</td></tr>
+          <tr><td>skill ingest-paper</td><td>Packaged</td><td>SKILL.md plus copies of the two utility programs; domain-neutral, still to be tested by a paper from another field</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h3>Check yourself</h3>
+        <p>Ten multiple-choice questions. After each answer you immediately see whether you were right,
+        and why. Wrong answers cost nothing — the point is to understand the reasoning.</p>
+      </div>
+      <a class="cta-btn" href="ep02-quiz.html"
+         data-remote="EP02_ENG_QUIZ_ARTIFACT_URL">
+        Start the quiz →
+      </a>
+    </div>
+
+    <script>
+    // When published on claude.ai, same-folder relative links don't exist; point them at the online versions.
+    // Placeholders of the form EP02_ENG_… mean "not published yet" and are left alone.
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        var r = a.getAttribute('data-remote');
+        if (!r || /^EP\d\d_/.test(r)) return;
+        a.href = r;
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

@@ -1,0 +1,513 @@
+<meta charset="utf-8">
+<title>EP05 隨堂測驗</title>
+<style>
+  :root {
+    --paper:#F7F8F7; --surface:#FFFFFF; --surface-2:#EFF2F1;
+    --ink:#16171A; --ink-soft:#576063; --ink-faint:#8A9496;
+    --rule:#DCE1DF; --rule-soft:#E9EDEB;
+    --human:#9A5B08; --human-bg:#FDF6EC;
+    --agent:#0C625F; --agent-bg:#EDF5F4; --agent-rule:#7FBAB6;
+    --wrong:#A8331E; --wrong-bg:#FCF1EE; --wrong-rule:#E0A797;
+    --shadow:0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+    --mono:"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+      --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+      --rule:#2A3336; --rule-soft:#222A2D;
+      --human:#E4A75C; --human-bg:#241C11;
+      --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+      --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+    --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+    --rule:#2A3336; --rule-soft:#222A2D;
+    --human:#E4A75C; --human-bg:#241C11;
+    --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+    --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:0 1.5rem 5rem;}
+
+  header.top{
+    padding:3.5rem 0 1.6rem; display:flex; flex-direction:column; gap:.7rem;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(1.9rem,5vw,2.7rem);
+    line-height:1.12; margin:0; letter-spacing:-.015em;
+  }
+  .sub{margin:0; color:var(--ink-soft); font-size:1rem;}
+
+  /* 進度 */
+  .bar{
+    display:flex; gap:.3rem; margin:1.8rem 0 2.2rem;
+  }
+  .bar i{
+    flex:1; height:5px; border-radius:3px; background:var(--rule);
+    transition:background .3s ease;
+  }
+  .bar i.done{background:var(--agent);}
+  .bar i.miss{background:var(--wrong);}
+  .bar i.now{background:var(--ink-faint);}
+
+  .meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--mono); font-size:.78rem; color:var(--ink-faint);
+    margin-bottom:1rem;
+  }
+
+  /* 題目 */
+  .q{
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; padding:1.8rem 1.9rem; box-shadow:var(--shadow);
+  }
+  .q h2{
+    font-family:var(--serif); font-size:1.35rem; line-height:1.45;
+    margin:0 0 1.5rem; font-weight:600; text-wrap:balance;
+  }
+  .opts{display:flex; flex-direction:column; gap:.6rem;}
+  .opt{
+    display:flex; gap:.9rem; align-items:flex-start; width:100%;
+    text-align:left; font:inherit; color:inherit;
+    background:var(--paper); border:1px solid var(--rule);
+    border-radius:5px; padding:.85rem 1rem; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .opt:hover:not(:disabled){border-color:var(--agent-rule); background:var(--surface-2);}
+  .opt:active:not(:disabled){transform:translateY(1px);}
+  .opt:disabled{cursor:default;}
+  .opt:focus-visible{outline:2px solid var(--agent); outline-offset:2px;}
+  .opt .key{
+    font-family:var(--mono); font-size:.78rem; font-weight:600;
+    color:var(--ink-faint); flex:none; padding-top:.22em;
+    min-width:1.1rem;
+  }
+  .opt.pick-right{background:var(--agent-bg); border-color:var(--agent);}
+  .opt.pick-right .key{color:var(--agent);}
+  .opt.pick-wrong{background:var(--wrong-bg); border-color:var(--wrong);}
+  .opt.pick-wrong .key{color:var(--wrong);}
+  .opt.reveal{border-color:var(--agent); border-style:dashed;}
+  .opt.dim{opacity:.45;}
+
+  /* 解說 */
+  .fb{
+    margin-top:1.4rem; padding:1.1rem 1.2rem; border-radius:5px;
+    border-left:3px solid var(--agent); background:var(--agent-bg);
+  }
+  .fb.no{border-left-color:var(--wrong); background:var(--wrong-bg);}
+  .fb .verdict{
+    font-family:var(--mono); font-size:.7rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; color:var(--agent);
+    display:block; margin-bottom:.55rem;
+  }
+  .fb.no .verdict{color:var(--wrong);}
+  .fb p{margin:0; font-size:.97rem; line-height:1.7;}
+
+  /* 按鈕 */
+  .actions{margin-top:1.6rem; display:flex; gap:.8rem; align-items:center; flex-wrap:wrap;}
+  button.go{
+    font:inherit; font-weight:600; font-size:.97rem;
+    background:var(--ink); color:var(--paper); border:0;
+    padding:.7rem 1.5rem; border-radius:5px; cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  button.go:hover{opacity:.86;}
+  button.go:focus-visible{outline:2px solid var(--agent); outline-offset:3px;}
+  button.ghost{
+    background:transparent; color:var(--ink-soft);
+    border:1px solid var(--rule);
+  }
+  .hint{font-family:var(--mono); font-size:.72rem; color:var(--ink-faint);}
+
+  /* 結果 */
+  .score{
+    text-align:center; padding:2.5rem 1.5rem 2rem;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; box-shadow:var(--shadow);
+  }
+  .score .n{
+    font-family:var(--serif); font-size:4.2rem; line-height:1;
+    font-weight:600; letter-spacing:-.03em;
+  }
+  .score .n b{color:var(--agent);}
+  .score .of{color:var(--ink-faint); font-size:1.6rem;}
+  .score .verdict{
+    margin:1rem 0 0; font-size:1.1rem; color:var(--ink-soft); text-wrap:balance;
+  }
+  .review{margin-top:2.2rem;}
+  .review h3{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+    margin:0 0 1rem;
+  }
+  .miss-item{
+    border:1px solid var(--rule); border-left:3px solid var(--wrong);
+    border-radius:5px; padding:1rem 1.2rem; margin-bottom:.8rem;
+    background:var(--surface);
+  }
+  .miss-item .qq{font-weight:600; margin:0 0 .5rem; line-height:1.5;}
+  .miss-item .ans{margin:0; font-size:.93rem; color:var(--ink-soft); line-height:1.65;}
+  .miss-item .ans b{color:var(--agent); font-weight:600;}
+  .allgood{
+    padding:1.2rem; border:1px dashed var(--agent-rule); border-radius:5px;
+    color:var(--agent); text-align:center; font-size:.97rem;
+  }
+  .backlink{
+    margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--rule-soft);
+    font-size:.9rem; color:var(--ink-faint);
+  }
+  .backlink a{color:var(--agent);}
+
+  @media (max-width:34rem){
+    body{font-size:16px;}
+    .q{padding:1.4rem 1.2rem;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">BSC Tutorial · EP05</div>
+    <h1>隨堂測驗</h1>
+    <p class="sub">十題單選：Kaleido 的兩招、能量函數、復刻撞的牆、agentic coding 的迴圈。答完每一題會立刻告訴你對錯與理由，答錯不扣分，重點是看懂為什麼。</p>
+  </header>
+
+  <div class="bar" id="bar"></div>
+  <div class="meta">
+    <span id="counter">第 1 題 / 共 10 題</span>
+    <span class="hint">按 1–4 選答案　·　Enter 下一題</span>
+  </div>
+
+  <main id="stage"></main>
+
+  <p class="backlink">
+    忘記內容了？回去看
+    <a href="ep05.html"
+       data-remote="EP05_ARTIFACT_URL">EP05 教材</a>，或重看
+    <a href="https://youtu.be/CsLOYgDzTfk" target="_blank" rel="noopener">教學影片 ↗</a>。
+  </p>
+
+</div>
+
+<script>
+// 發布在 claude.ai 時，同資料夾的相對連結不存在，改指向線上版本。
+(function () {
+  if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+  document.querySelectorAll('a[data-remote]').forEach(function (a) {
+    a.href = a.getAttribute('data-remote');
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var QUIZ = [
+    {
+      q: "Kaleido 要同時顯示一萬顆神經元，第一個瓶頸是記憶體。它的第一招是什麼？",
+      opts: [
+        "把每顆神經元的影像壓縮成骨架，只存中心線與分支點，載入時再重建",
+        "只載入目前視野內的神經元，其餘暫存到硬碟",
+        "把解析度降到原來的四分之一",
+        "全部畫進同一張 3D 影像，檔案大小只由標準腦解析度決定"
+      ],
+      a: 3,
+      why: "「壓平圖層」。放棄每顆一個物件，全部畫進同一張圖；記憶體與神經元數量脫鉤。代價是個別神經元不能再單獨操作，所以論文留了反查通道：每個亮著的像素只屬於一顆神經元（winner-take-all），點它就能回報 NeuronID。"
+    },
+    {
+      q: "Kaleido 的能量函數 E = Σ 1/(d_ij · min(Δ_ij, 360°−Δ_ij))。哪一種配對對總能量貢獻最大？",
+      opts: [
+        "空間上離得遠、色相也差很多的配對",
+        "空間上離得遠、但色相很接近的配對",
+        "空間上離得近、色相也很接近的配對",
+        "所有配對貢獻一樣，E 只跟顆數有關"
+      ],
+      a: 2,
+      why: "d 在分母、色相差也在分母——兩個都小的時候能量最大。這正是要懲罰的情況：兩顆纏在一起的神經元穿了幾乎一樣的顏色。Monte Carlo 做的事就是反覆交換色相角，把這種配對的能量壓下去。"
+    },
+    {
+      q: "復刻時 Agent 寫碼之前做了兩件事：讀知識庫裡的 Kaleido 條目、打開一個資料檔看檔頭。這兩件事的共同目的是什麼？",
+      opts: [
+        "確認知識庫條目和資料檔的授權都沒有問題，之後才能放進對外的教材",
+        "讓 Agent 有東西可以寫進 README",
+        "因為沒有這兩步程式跑不起來",
+        "先弄清楚規格（論文七步）和資料格式，省掉後面猜錯的時間"
+      ],
+      a: 3,
+      why: "論文沒有公開程式碼，能復刻的依據就是條目裡抄下來的七步與能量函數；資料的格式（AmiraMesh、ushort、HxZip、BoundingBox）打開檔頭就知道。這兩件事花不到一分鐘，省的是後面猜格式猜錯的半小時。Agentic coding 的第一步不是寫碼。"
+    },
+    {
+      q: "跑整條管線時出現 IndexError: index 280 is out of bounds for axis 1 with size 269。問題的根源是什麼？",
+      opts: [
+        "第 280 顆神經元的檔案損壞",
+        "100 個 .am 各是裁切過的小體積、尺寸不同，第一版卻拿第一顆的形狀當畫布",
+        "AmiraMesh 的 x、y、z 順序讀反了，所以 y 軸拿到了 x 軸的長度 542，索引自然超界",
+        "zlib 解壓縮的長度算錯"
+      ],
+      a: 1,
+      why: "錯誤訊息說「第二軸長度 269 卻有索引 280」——有顆神經元的座標超出第一顆的體積。查檔頭：100 個檔案有 100 種 lattice 尺寸、100 個 BoundingBox。論文第 1 步「轉入標準腦」在這批資料上的意思是：用 BoundingBox 把每顆放回同一個座標系。論文裡一句話的步驟，在真實資料上可能是整個問題。"
+    },
+    {
+      q: "Monte Carlo 照論文的移動方式（每步只動目前能量最高的配對）跑 20,000 步，能量曲線在約 3,000 步後就不再下降。Agent 接下來做了什麼？",
+      opts: [
+        "判定已收斂，直接採用結果",
+        "把步數加到 200,000 步再跑一次",
+        "做小實驗比較三種移動方式，採用更好的那種，但保留論文原版的開關",
+        "換成模擬退火以外的最佳化方法，例如遺傳演算法"
+      ],
+      a: 2,
+      why: "只動最差配對會在同幾顆之間打轉、卡在局部最小。Agent 混入純隨機交換，p = 0／0.5／1 × 三種步數 × 三個種子做一張表：混合移動能量更低（1.263 vs 1.292）、變異更小。預設改成混合，但 --p-random 0 還原論文原版——復刻不是照抄，但改動要留開關、要寫下來。"
+    },
+    {
+      q: "旋轉動畫第一版出現格子狀的條紋（摩爾紋）。程式沒有任何錯誤訊息，陣列形狀與數值範圍都正常。這件事說明了什麼？",
+      opts: [
+        "資料本身有週期性的雜訊，是掃描時的條紋假影留下來的",
+        "視覺輸出要用眼睛驗收——數值對不代表圖對",
+        "numpy 的投影函式有 bug",
+        "72 格太少，應該用 360 格"
+      ],
+      a: 1,
+      why: "摩爾紋來自非整數倍的縮放：週期性地有些像素列分不到任何 voxel。這不是資料問題、不是函式 bug，是取樣問題；而且只有把圖渲染出來看才會發現。Agentic coding 的迴圈裡要有「可看的輸出」，Agent 才能自己抓到這種「沒有錯誤訊息的錯」。"
+    },
+    {
+      q: "摩爾紋的第二版解法是「先用兩倍解析度畫再縮回」，結果整張變暗。為什麼？",
+      opts: [
+        "縮圖時用了錯誤的色彩空間",
+        "Lanczos 濾波器把高頻全部砍掉了，細纖維的亮度跟著被削掉",
+        "voxel 之間的空像素被一起平均進去，亮的點被黑的稀釋",
+        "兩倍解析度超過了顯示器的色深"
+      ],
+      a: 2,
+      why: "放大後每個 voxel 只佔一個像素、周圍都是空的；縮回時把空像素平均進去就變暗，x 方向最稀的 0°、180° 最明顯。第三版的做法：固定 1 voxel = 2 像素、每個點畫成 2×2 方塊（沒有縫）、再 Lanczos 縮回。三版都留在 docstring 裡。"
+    },
+    {
+      q: "復刻版把同一批 100 顆神經元分別用 Kaleido 配色與隨機配色並排，差異不如論文 10,000 顆那麼戲劇化。教材怎麼處理這件事？",
+      opts: [
+        "換一個角度、換一塊區域裁圖，直到看起來差很多為止，再放進教材裡",
+        "把顆數改成 10,000 重跑",
+        "不放對照圖，只放論文的 Fig. 2",
+        "直接說差異不大、說明原因，再用色相環把演算法的效果量出來"
+      ],
+      a: 3,
+      why: "100 顆 vs 10,000 顆是資料密度的差異，不是演算法的差異。誠實說出來，然後找一張能分離效果的圖：色相環上每顆一個點、灰線連到空間最近鄰——Kaleido 那張線明顯拉得更開。結果不如預期時不硬拗，這在論文條目與教材都是同一條規則。"
+    },
+    {
+      q: "Vibe coding 和 agentic coding 的差別，課程怎麼說？",
+      opts: [
+        "vibe coding：講需求、AI 生成、人看結果；agentic coding：AI 自己規劃、執行、看輸出、改、回報",
+        "vibe coding 是給初學者的，agentic coding 是給工程師的",
+        "兩者一樣，只是名字不同",
+        "vibe coding 完全不需要人參與；agentic coding 則相反，每一步都要人逐項確認、簽核過了之後才能往下走"
+      ],
+      a: 0,
+      why: "差別在迴圈。這一集你給了一句指令，中間十二步（讀規格、看資料、寫、撞牆、對齊、做實驗、改三版）都是 Agent 自己走的，判斷依據是它自己跑出來的輸出——錯誤訊息、數字、圖。人給目標和邊界、看成品。"
+    },
+    {
+      q: "這一集裡人做的事很少：一句指令、給資料、看成品。課程認為哪些決定「Agent 自己不會做」？",
+      opts: [
+        "選用 numpy 還是其他數值套件",
+        "要三視圖和旋轉動畫、記得放圖、程式放哪、不推 GitHub——交付物與邊界",
+        "Monte Carlo 要跑幾步",
+        "用哪一種字型畫能量曲線"
+      ],
+      a: 1,
+      why: "交付物與邊界是人的，迴圈是 Agent 的。套件、步數、字型這些 Agent 會自己決定（而且會說明理由）；但「這一集要有旋轉動畫」「不要推上 GitHub」「上一集沒放圖要重做」這些決定，不在它的迴圈裡——它從你的指令拿到，或者從你看成品後的回饋拿到。"
+    }
+  ];
+
+  var LETTER = ["A", "B", "C", "D"];
+  var stage = document.getElementById("stage");
+  var bar = document.getElementById("bar");
+  var counter = document.getElementById("counter");
+  var i = 0, answered = false, correct = 0, misses = [];
+
+  QUIZ.forEach(function () {
+    bar.appendChild(document.createElement("i"));
+  });
+
+  function paintBar() {
+    [].forEach.call(bar.children, function (el, n) {
+      el.className = n < i ? (misses.some(function (m) { return m.n === n; }) ? "miss" : "done")
+                           : (n === i ? "now" : "");
+    });
+  }
+
+  function render() {
+    answered = false;
+    var item = QUIZ[i];
+    counter.textContent = "第 " + (i + 1) + " 題 / 共 " + QUIZ.length + " 題";
+    paintBar();
+
+    var box = document.createElement("section");
+    box.className = "q";
+
+    var h = document.createElement("h2");
+    h.textContent = item.q;
+    box.appendChild(h);
+
+    var list = document.createElement("div");
+    list.className = "opts";
+    item.opts.forEach(function (text, n) {
+      var b = document.createElement("button");
+      b.className = "opt";
+      b.type = "button";
+      b.innerHTML = '<span class="key">' + LETTER[n] + '</span><span></span>';
+      b.lastChild.textContent = text;
+      b.addEventListener("click", function () { choose(n, box, list); });
+      list.appendChild(b);
+    });
+    box.appendChild(list);
+
+    stage.innerHTML = "";
+    stage.appendChild(box);
+  }
+
+  function choose(n, box, list) {
+    if (answered) return;
+    answered = true;
+    var item = QUIZ[i];
+    var right = n === item.a;
+    if (right) correct++;
+    else misses.push({ n: i, picked: n });
+
+    [].forEach.call(list.children, function (el, k) {
+      el.disabled = true;
+      if (k === n) el.classList.add(right ? "pick-right" : "pick-wrong");
+      else if (k === item.a && !right) el.classList.add("reveal");
+      else el.classList.add("dim");
+    });
+
+    var fb = document.createElement("div");
+    fb.className = "fb" + (right ? "" : " no");
+    var v = document.createElement("span");
+    v.className = "verdict";
+    v.textContent = right ? "答對了" : "正確答案是 " + LETTER[item.a];
+    var p = document.createElement("p");
+    p.textContent = item.why;
+    fb.appendChild(v); fb.appendChild(p);
+    box.appendChild(fb);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    var go = document.createElement("button");
+    go.className = "go";
+    go.textContent = i === QUIZ.length - 1 ? "看結果" : "下一題";
+    go.addEventListener("click", next);
+    act.appendChild(go);
+    box.appendChild(act);
+    go.focus();
+    paintBar();
+  }
+
+  function next() {
+    if (i === QUIZ.length - 1) { results(); return; }
+    i++;
+    render();
+  }
+
+  function results() {
+    i = QUIZ.length;
+    paintBar();
+    counter.textContent = "已完成";
+
+    var pct = correct / QUIZ.length;
+    var verdict = pct === 1 ? "全對。這一集的重點你都掌握了。"
+      : pct >= 0.8 ? "掌握得不錯，看一下答錯的那幾題就完整了。"
+      : pct >= 0.5 ? "主要觀念有了，建議回頭重看第三幕與第四幕。"
+      : "建議重看一次影片，特別是「規則要從摩擦裡長出來」那一段。";
+
+    var wrap = document.createElement("div");
+
+    var sc = document.createElement("div");
+    sc.className = "score";
+    sc.innerHTML = '<div class="n"><b>' + correct + '</b><span class="of"> / ' + QUIZ.length + '</span></div>';
+    var vp = document.createElement("p");
+    vp.className = "verdict";
+    vp.textContent = verdict;
+    sc.appendChild(vp);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    act.style.justifyContent = "center";
+    var again = document.createElement("button");
+    again.className = "go";
+    again.textContent = "再測一次";
+    again.addEventListener("click", function () {
+      i = 0; correct = 0; misses = []; render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    act.appendChild(again);
+    sc.appendChild(act);
+    wrap.appendChild(sc);
+
+    var rev = document.createElement("div");
+    rev.className = "review";
+    var h3 = document.createElement("h3");
+    h3.textContent = misses.length ? "答錯的題目" : "檢討";
+    rev.appendChild(h3);
+
+    if (!misses.length) {
+      var ok = document.createElement("div");
+      ok.className = "allgood";
+      ok.textContent = "沒有答錯的題目。";
+      rev.appendChild(ok);
+    } else {
+      misses.forEach(function (m) {
+        var item = QUIZ[m.n];
+        var d = document.createElement("div");
+        d.className = "miss-item";
+        var q = document.createElement("p");
+        q.className = "qq";
+        q.textContent = (m.n + 1) + ". " + item.q;
+        var a = document.createElement("p");
+        a.className = "ans";
+        a.innerHTML = "你選了 " + LETTER[m.picked] + "，正確答案是 <b>" +
+                      LETTER[item.a] + "</b>。";
+        var w = document.createElement("p");
+        w.className = "ans";
+        w.style.marginTop = ".5rem";
+        w.textContent = item.why;
+        d.appendChild(q); d.appendChild(a); d.appendChild(w);
+        rev.appendChild(d);
+      });
+    }
+    wrap.appendChild(rev);
+
+    stage.innerHTML = "";
+    stage.appendChild(wrap);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (i >= QUIZ.length) return;
+    if (!answered && /^[1-4]$/.test(e.key)) {
+      var btns = stage.querySelectorAll(".opt");
+      var n = parseInt(e.key, 10) - 1;
+      if (btns[n]) { btns[n].click(); e.preventDefault(); }
+    } else if (answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+      var go = stage.querySelector("button.go");
+      if (go) { go.click(); e.preventDefault(); }
+    }
+  });
+
+  render();
+})();
+</script>

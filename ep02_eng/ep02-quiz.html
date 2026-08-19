@@ -1,0 +1,516 @@
+<meta charset="utf-8">
+<title>EP02 Quiz</title>
+<style>
+  :root {
+    --paper:#F7F8F7; --surface:#FFFFFF; --surface-2:#EFF2F1;
+    --ink:#16171A; --ink-soft:#576063; --ink-faint:#8A9496;
+    --rule:#DCE1DF; --rule-soft:#E9EDEB;
+    --human:#9A5B08; --human-bg:#FDF6EC;
+    --agent:#0C625F; --agent-bg:#EDF5F4; --agent-rule:#7FBAB6;
+    --wrong:#A8331E; --wrong-bg:#FCF1EE; --wrong-rule:#E0A797;
+    --shadow:0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif TC",serif;
+    --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+    --mono:"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+      --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+      --rule:#2A3336; --rule-soft:#222A2D;
+      --human:#E4A75C; --human-bg:#241C11;
+      --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+      --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+    --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+    --rule:#2A3336; --rule-soft:#222A2D;
+    --human:#E4A75C; --human-bg:#241C11;
+    --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+    --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:0 1.5rem 5rem;}
+
+  header.top{
+    padding:3.5rem 0 1.6rem; display:flex; flex-direction:column; gap:.7rem;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(1.9rem,5vw,2.7rem);
+    line-height:1.12; margin:0; letter-spacing:-.015em;
+  }
+  .sub{margin:0; color:var(--ink-soft); font-size:1rem;}
+
+  /* progress */
+  .bar{
+    display:flex; gap:.3rem; margin:1.8rem 0 2.2rem;
+  }
+  .bar i{
+    flex:1; height:5px; border-radius:3px; background:var(--rule);
+    transition:background .3s ease;
+  }
+  .bar i.done{background:var(--agent);}
+  .bar i.miss{background:var(--wrong);}
+  .bar i.now{background:var(--ink-faint);}
+
+  .meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--mono); font-size:.78rem; color:var(--ink-faint);
+    margin-bottom:1rem;
+  }
+
+  /* question */
+  .q{
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; padding:1.8rem 1.9rem; box-shadow:var(--shadow);
+  }
+  .q h2{
+    font-family:var(--serif); font-size:1.35rem; line-height:1.4;
+    margin:0 0 1.5rem; font-weight:600; text-wrap:balance;
+  }
+  .opts{display:flex; flex-direction:column; gap:.6rem;}
+  .opt{
+    display:flex; gap:.9rem; align-items:flex-start; width:100%;
+    text-align:left; font:inherit; color:inherit;
+    background:var(--paper); border:1px solid var(--rule);
+    border-radius:5px; padding:.85rem 1rem; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .opt:hover:not(:disabled){border-color:var(--agent-rule); background:var(--surface-2);}
+  .opt:active:not(:disabled){transform:translateY(1px);}
+  .opt:disabled{cursor:default;}
+  .opt:focus-visible{outline:2px solid var(--agent); outline-offset:2px;}
+  .opt .key{
+    font-family:var(--mono); font-size:.78rem; font-weight:600;
+    color:var(--ink-faint); flex:none; padding-top:.22em;
+    min-width:1.1rem;
+  }
+  .opt.pick-right{background:var(--agent-bg); border-color:var(--agent);}
+  .opt.pick-right .key{color:var(--agent);}
+  .opt.pick-wrong{background:var(--wrong-bg); border-color:var(--wrong);}
+  .opt.pick-wrong .key{color:var(--wrong);}
+  .opt.reveal{border-color:var(--agent); border-style:dashed;}
+  .opt.dim{opacity:.45;}
+
+  /* feedback */
+  .fb{
+    margin-top:1.4rem; padding:1.1rem 1.2rem; border-radius:5px;
+    border-left:3px solid var(--agent); background:var(--agent-bg);
+  }
+  .fb.no{border-left-color:var(--wrong); background:var(--wrong-bg);}
+  .fb .verdict{
+    font-family:var(--mono); font-size:.7rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; color:var(--agent);
+    display:block; margin-bottom:.55rem;
+  }
+  .fb.no .verdict{color:var(--wrong);}
+  .fb p{margin:0; font-size:.97rem; line-height:1.6;}
+
+  /* buttons */
+  .actions{margin-top:1.6rem; display:flex; gap:.8rem; align-items:center; flex-wrap:wrap;}
+  button.go{
+    font:inherit; font-weight:600; font-size:.97rem;
+    background:var(--ink); color:var(--paper); border:0;
+    padding:.7rem 1.5rem; border-radius:5px; cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  button.go:hover{opacity:.86;}
+  button.go:focus-visible{outline:2px solid var(--agent); outline-offset:3px;}
+  button.ghost{
+    background:transparent; color:var(--ink-soft);
+    border:1px solid var(--rule);
+  }
+  .hint{font-family:var(--mono); font-size:.72rem; color:var(--ink-faint);}
+
+  /* results */
+  .score{
+    text-align:center; padding:2.5rem 1.5rem 2rem;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; box-shadow:var(--shadow);
+  }
+  .score .n{
+    font-family:var(--serif); font-size:4.2rem; line-height:1;
+    font-weight:600; letter-spacing:-.03em;
+  }
+  .score .n b{color:var(--agent);}
+  .score .of{color:var(--ink-faint); font-size:1.6rem;}
+  .score .verdict{
+    margin:1rem 0 0; font-size:1.1rem; color:var(--ink-soft); text-wrap:balance;
+  }
+  .review{margin-top:2.2rem;}
+  .review h3{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+    margin:0 0 1rem;
+  }
+  .miss-item{
+    border:1px solid var(--rule); border-left:3px solid var(--wrong);
+    border-radius:5px; padding:1rem 1.2rem; margin-bottom:.8rem;
+    background:var(--surface);
+  }
+  .miss-item .qq{font-weight:600; margin:0 0 .5rem; line-height:1.45;}
+  .miss-item .ans{margin:0; font-size:.93rem; color:var(--ink-soft); line-height:1.6;}
+  .miss-item .ans b{color:var(--agent); font-weight:600;}
+  .allgood{
+    padding:1.2rem; border:1px dashed var(--agent-rule); border-radius:5px;
+    color:var(--agent); text-align:center; font-size:.97rem;
+  }
+  .backlink{
+    margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--rule-soft);
+    font-size:.9rem; color:var(--ink-faint);
+  }
+  .backlink a{color:var(--agent);}
+
+  @media (max-width:34rem){
+    body{font-size:16px;}
+    .q{padding:1.4rem 1.2rem;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">BSC Tutorial · EP02 · English edition</div>
+    <h1>Self-check Quiz</h1>
+    <p class="sub">Ten multiple-choice questions. After each answer you immediately see whether you were right, and why. Wrong answers cost nothing — the point is to understand the reasoning.</p>
+  </header>
+
+  <div class="bar" id="bar"></div>
+  <div class="meta">
+    <span id="counter">Question 1 of 10</span>
+    <span class="hint">Press 1–4 to answer　·　Enter for the next question</span>
+  </div>
+
+  <main id="stage"></main>
+
+  <p class="backlink">
+    Forgot something? Go back to the
+    <a href="ep02.html"
+       data-remote="EP02_ENG_ARTIFACT_URL">EP02 tutorial page</a>, or rewatch the
+    <a href="https://youtu.be/I_zE02dEaPw" data-remote="https://youtu.be/I_zE02dEaPw" target="_blank" rel="noopener">tutorial video ↗</a>.
+  </p>
+
+</div>
+
+<script>
+// When published on claude.ai, same-folder relative links don't exist; point them at the online versions.
+// Placeholders of the form EP02_ENG_… mean "not published yet" and are left alone.
+(function () {
+  if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+  document.querySelectorAll('a[data-remote]').forEach(function (a) {
+    var r = a.getAttribute('data-remote');
+    if (!r || /^EP\d\d_/.test(r)) return;
+    a.href = r;
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var QUIZ = [
+    {
+      q: "Technically, how does the file CLAUDE.md actually “work”?",
+      opts: [
+        "It is compiled into a rule engine that steps in and blocks any action breaking a rule",
+        "Its contents are pasted into the conversation's context — the equivalent of you pasting it in by hand at the start of every turn",
+        "It is read once, and only when the user explicitly invokes it",
+        "It is stored in the AI's long-term memory, so it never has to be loaded again"
+      ],
+      a: 1,
+      why: "It is context, not code. No mechanism intercepts an action that breaks a rule; the effect comes entirely from the model reading the rule and deciding to follow it. Three things follow from that: there is no enforcement (a vague rule is the same as no rule at all), you pay for the file on every turn, and rules dilute one another. Every later judgement in this course about length and classification comes from here."
+    },
+    {
+      q: "When the AI listed the rules for writing entries, each one had an extra column next to it: “origin”. What is that column for?",
+      opts: [
+        "To note which day the rule was written, so they can be sorted later",
+        "To record which author proposed it, for dividing up the work",
+        "To turn “what justifies this rule existing at all” into a question you can check",
+        "To mark the rule's priority, so that when two rules conflict the higher-ranked one wins"
+      ],
+      a: 2,
+      why: "The origins are “you gave it to us”, “we hit it”, “convention” and “precaution”. Once every rule has to name its origin, you can no longer write one out of thin air — a rule whose origin you cannot fill in is a rule you should not be writing yet. The plan that got scrapped in the previous episode was not wrong in its content; the problem was exactly this — it had no origin, it was all guesswork."
+    },
+    {
+      q: "The rule “add the header fields right from the start” looks completely redundant when you only have one entry. Why is it still worth putting in the rulebook?",
+      opts: [
+        "Because the tools reject any file without a complete header",
+        "Because the longer the header, the more accurately the AI understands the entry when it reads it",
+        "Because the rulebook has to look complete — the definitions and the order of the fields cannot be left out",
+        "Because what it governs is the cost of going back to fill them in after two hundred entries, not the quality of this one"
+      ],
+      a: 3,
+      why: "The value of this kind of rule lies in scale: redundant at one entry, two hundred rounds of rework at two hundred entries. From a single entry it looks like noise; from the whole knowledge base it matters a great deal. This is also why “a rule should carry its reason” — only with the reason attached can you tell what it is guarding against."
+    },
+    {
+      q: "You have twenty-odd rules and have to decide which go into CLAUDE.md and which go into a skill. What is the right criterion?",
+      opts: [
+        "Load timing: what gets used every time goes in CLAUDE.md, what only a specific task needs goes in the skill",
+        "Important ones in CLAUDE.md, secondary ones in the skill, so the key rules never get missed",
+        "Long ones in the skill, short ones in CLAUDE.md",
+        "Put everything in CLAUDE.md first, and move things to a skill once it gets too long"
+      ],
+      a: 0,
+      why: "The criterion is load timing, not importance. The nine-block page structure is important, but you only ever need it when writing a paper entry, so it goes in the skill; “never take an extracted number on trust” looks like a trivial detail, yet you trip over it while reading web pages and going through reports as well, so it goes in the always-loaded file. Sorting by “how important is it” gives you exactly the opposite answer."
+    },
+    {
+      q: "Why does a very technical rule like “never take an extracted number on trust” go into CLAUDE.md, which is loaded every time, rather than into the skill, which is loaded only when writing a paper entry?",
+      opts: [
+        "Because it is the single most important rule of the lot",
+        "Because it is very short, so it takes up no space wherever you put it",
+        "Because it is a pit you can fall into at any moment, not only when handling papers",
+        "Because a skill is not allowed to contain rules about numbers"
+      ],
+      a: 2,
+      why: "The other face of the same criterion. Reading a web page, going through a report, converting a spreadsheet — all of them can hand you a number that a PDF or an OCR pass extracted wrong. The risk is always present, so the rule belongs in the always-present rulebook. The AI spelled this out at the time, and it is the load-timing criterion in actual use."
+    },
+    {
+      q: "The AI pointed out unprompted that “these rules have only been run on one paper”, and then advised writing CLAUDE.md now while holding off on packaging the skill. What principle does that advice embody?",
+      opts: [
+        "Restraint does not mean writing nothing — write what the evidence supports, and leave the rest for now",
+        "The rulebook should be written in one pass rather than in batches, or the rules end up scattered and hard to maintain",
+        "A skill is harder to write than CLAUDE.md, so it calls for more caution",
+        "Write the short one first and leave the long one for later"
+      ],
+      a: 0,
+      why: "The previous episode taught “do not legislate rules in advance”; this is the other half of the same lesson — when it is time to write, write. Those thirty-odd general rules had all been used for real across the whole episode, so writing them down is unlikely to be wrong; the detailed rules for entries had succeeded on exactly one paper, so it is safer to write a few more entries before packaging them. The difference is the thickness of the evidence, not writing everything or writing nothing."
+    },
+    {
+      q: "After five entries were finished, you noticed that a caption referred to a, b and c while the figure itself carried none of those letters. What caused that?",
+      opts: [
+        "The AI lost the letters when extracting the figure and did not draw them back in",
+        "The paper's figure never had letters on it in the first place",
+        "The letters were added during the translation of the caption",
+        "The letters live in the PDF's text layer, and the figure extractor only pulls the raster layer"
+      ],
+      a: 3,
+      why: "“An extracted figure is not the paper's figure.” Panel letters and legends often sit in the PDF's text layer, while pdfimg.py pulls the raster image layer, so those characters are missing by construction. Nobody could have anticipated this while writing the rulebook; it surfaced only after six papers, when someone actually sat down and read one — a concrete instance of a rule coming out of friction."
+    },
+    {
+      q: "You pointed out that two figures had a problem, and the AI responded by writing a checking program that swept all thirty-one figures across the six papers. What is the thinking behind that?",
+      opts: [
+        "Doing a bit extra is safer, and the AI does not get tired anyway",
+        "When one error turns up, assume there is more than one of its kind",
+        "Once the checking program is written it can be sold to other people",
+        "The user's instructions are usually not precise enough, so it should widen the scope on its own"
+      ],
+      a: 1,
+      why: "This is the reflex you want when maintaining a knowledge base: one error surfacing usually means the same mechanism has gone wrong somewhere else too. Only after the sweep do you know the real state of things — three figures needing repair, twenty-odd that were fine all along, and three where the paper itself never printed the letters (in which case you leave the figure alone and say so in the interpretation)."
+    },
+    {
+      q: "The rule “keep the header lean and include a local PDF link” went through three versions before it settled. What does the course want you to take away from that?",
+      opts: [
+        "The AI usually gets it wrong the first time, so give it a few more chances",
+        "Revising a rule often does not land in one go; it takes a few rounds",
+        "Rules involving Obsidian are especially hard to write, because its own way of resolving links gets in the way",
+        "A rule revised that many times should never have been written in the first place"
+      ],
+      a: 1,
+      why: "And this rule came from the user's experience of actually using the thing, not from friction the AI hit while implementing — the rulebook co-evolves, and both sides end up in the log. The tutorial deliberately leaves the intermediate steps out, but the reasons all three versions were overruled were written down: next time you revise it, that is how you know which of the assumptions still hold."
+    },
+    {
+      q: "CLAUDE.md has to be short, yet a skill can run to a hundred and fifty lines. What is the underlying reason for the difference?",
+      opts: [
+        "A skill has a bigger length allowance",
+        "A skill is written for advanced users, so it can afford to go into detail",
+        "You pay at different moments: the always-loaded file is paid for on every turn, the on-demand one only when it is needed — so the first should be short and the second should be sufficient",
+        "CLAUDE.md is the old format and the skill is the new one, and the new format has fewer restrictions"
+      ],
+      a: 2,
+      why: "The same piece of text is a necessary cost when it appears at the right moment and a tax when it appears at the wrong one. CLAUDE.md aims for every single line to be carried out; a skill aims to let you finish the job without having to look anything else up. But longer is not better for a skill either — dilution happens there too, and when a skill loads, CLAUDE.md is present as well, so the two stack."
+    }
+  ];
+
+  var LETTER = ["A", "B", "C", "D"];
+  var stage = document.getElementById("stage");
+  var bar = document.getElementById("bar");
+  var counter = document.getElementById("counter");
+  var i = 0, answered = false, correct = 0, misses = [];
+
+  QUIZ.forEach(function () {
+    bar.appendChild(document.createElement("i"));
+  });
+
+  function paintBar() {
+    [].forEach.call(bar.children, function (el, n) {
+      el.className = n < i ? (misses.some(function (m) { return m.n === n; }) ? "miss" : "done")
+                           : (n === i ? "now" : "");
+    });
+  }
+
+  function render() {
+    answered = false;
+    var item = QUIZ[i];
+    counter.textContent = "Question " + (i + 1) + " of " + QUIZ.length;
+    paintBar();
+
+    var box = document.createElement("section");
+    box.className = "q";
+
+    var h = document.createElement("h2");
+    h.textContent = item.q;
+    box.appendChild(h);
+
+    var list = document.createElement("div");
+    list.className = "opts";
+    item.opts.forEach(function (text, n) {
+      var b = document.createElement("button");
+      b.className = "opt";
+      b.type = "button";
+      b.innerHTML = '<span class="key">' + LETTER[n] + '</span><span></span>';
+      b.lastChild.textContent = text;
+      b.addEventListener("click", function () { choose(n, box, list); });
+      list.appendChild(b);
+    });
+    box.appendChild(list);
+
+    stage.innerHTML = "";
+    stage.appendChild(box);
+  }
+
+  function choose(n, box, list) {
+    if (answered) return;
+    answered = true;
+    var item = QUIZ[i];
+    var right = n === item.a;
+    if (right) correct++;
+    else misses.push({ n: i, picked: n });
+
+    [].forEach.call(list.children, function (el, k) {
+      el.disabled = true;
+      if (k === n) el.classList.add(right ? "pick-right" : "pick-wrong");
+      else if (k === item.a && !right) el.classList.add("reveal");
+      else el.classList.add("dim");
+    });
+
+    var fb = document.createElement("div");
+    fb.className = "fb" + (right ? "" : " no");
+    var v = document.createElement("span");
+    v.className = "verdict";
+    v.textContent = right ? "Correct" : "The correct answer is " + LETTER[item.a];
+    var p = document.createElement("p");
+    p.textContent = item.why;
+    fb.appendChild(v); fb.appendChild(p);
+    box.appendChild(fb);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    var go = document.createElement("button");
+    go.className = "go";
+    go.textContent = i === QUIZ.length - 1 ? "See results" : "Next question";
+    go.addEventListener("click", next);
+    act.appendChild(go);
+    box.appendChild(act);
+    go.focus();
+    paintBar();
+  }
+
+  function next() {
+    if (i === QUIZ.length - 1) { results(); return; }
+    i++;
+    render();
+  }
+
+  function results() {
+    i = QUIZ.length;
+    paintBar();
+    counter.textContent = "Finished";
+
+    var pct = correct / QUIZ.length;
+    var verdict = pct === 1 ? "All correct. You've got the key points of this episode."
+      : pct >= 0.8 ? "Solid. Look over the ones you missed and you're done."
+      : pct >= 0.5 ? "The main ideas are there. Consider rewatching acts three and four."
+      : "Consider rewatching the video, especially the part on “rules should grow out of friction”.";
+
+    var wrap = document.createElement("div");
+
+    var sc = document.createElement("div");
+    sc.className = "score";
+    sc.innerHTML = '<div class="n"><b>' + correct + '</b><span class="of"> / ' + QUIZ.length + '</span></div>';
+    var vp = document.createElement("p");
+    vp.className = "verdict";
+    vp.textContent = verdict;
+    sc.appendChild(vp);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    act.style.justifyContent = "center";
+    var again = document.createElement("button");
+    again.className = "go";
+    again.textContent = "Try again";
+    again.addEventListener("click", function () {
+      i = 0; correct = 0; misses = []; render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    act.appendChild(again);
+    sc.appendChild(act);
+    wrap.appendChild(sc);
+
+    var rev = document.createElement("div");
+    rev.className = "review";
+    var h3 = document.createElement("h3");
+    h3.textContent = misses.length ? "Questions you missed" : "Review";
+    rev.appendChild(h3);
+
+    if (!misses.length) {
+      var ok = document.createElement("div");
+      ok.className = "allgood";
+      ok.textContent = "No questions missed.";
+      rev.appendChild(ok);
+    } else {
+      misses.forEach(function (m) {
+        var item = QUIZ[m.n];
+        var d = document.createElement("div");
+        d.className = "miss-item";
+        var q = document.createElement("p");
+        q.className = "qq";
+        q.textContent = (m.n + 1) + ". " + item.q;
+        var a = document.createElement("p");
+        a.className = "ans";
+        a.innerHTML = "You chose " + LETTER[m.picked] + "; the correct answer is <b>" +
+                      LETTER[item.a] + "</b>.";
+        var w = document.createElement("p");
+        w.className = "ans";
+        w.style.marginTop = ".5rem";
+        w.textContent = item.why;
+        d.appendChild(q); d.appendChild(a); d.appendChild(w);
+        rev.appendChild(d);
+      });
+    }
+    wrap.appendChild(rev);
+
+    stage.innerHTML = "";
+    stage.appendChild(wrap);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (i >= QUIZ.length) return;
+    if (!answered && /^[1-4]$/.test(e.key)) {
+      var btns = stage.querySelectorAll(".opt");
+      var n = parseInt(e.key, 10) - 1;
+      if (btns[n]) { btns[n].click(); e.preventDefault(); }
+    } else if (answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+      var go = stage.querySelector("button.go");
+      if (go) { go.click(); e.preventDefault(); }
+    }
+  });
+
+  render();
+})();
+</script>

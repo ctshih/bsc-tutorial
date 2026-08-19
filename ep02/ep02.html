@@ -1,0 +1,1969 @@
+<meta charset="utf-8">
+<title>寫下第一份規則書</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+             system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- 開場 ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- 通用文字 ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* 補充區塊 */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* 可收合版本 */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- 影片 ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- 圖例 ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- 目錄 ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- 步驟 ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* 三種聲音 */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* 工具盒 */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* 出處標籤 —— EP02 專用 */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* 截圖 */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* 截圖以統一比例縮放（同一解析度截的，字才會一樣大），不強制撐滿版面 */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* 教學重點 */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- 收尾 ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP02</div>
+    <h1>寫下第一份規則書</h1>
+    <p class="standfirst">
+      上一集動手建了知識庫，卻刻意沒寫規則書。這一集補上這件事：
+      <code>CLAUDE.md</code> 到底是什麼、怎麼從實作累積的摩擦裡把它做出來——
+      每一條規則都標出它從哪裡來。
+    </p>
+    <div class="meta-row">
+      <span>16 個步驟</span>
+      <span>Claude Code · Opus 5</span>
+      <span>Windows 11</span>
+      <span>承接 EP01</span>
+    </div>
+  </header>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/RfqH0zFA3jY"
+       target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="影片開頭畫面：寫下第一份規則書">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">播放教學影片　·　10 分 07 秒　·　在 YouTube 開啟 ↗</span>
+    </a>
+    <figcaption>
+      <b>教學影片</b>
+      <span>先看影片建立整體概念，再往下讀十六個步驟的細節。</span>
+    </figcaption>
+  </figure>
+
+  <script>
+  // 影片播放：從網頁伺服器開啟時直接內嵌，否則開新分頁到 YouTube。
+  // YouTube 拒絕來自 file:// 的嵌入（錯誤 153），claude.ai 的 CSP 也會擋外部 iframe，
+  // 因此這兩種情況一律走連結。
+  (function () {
+    var ID = 'RfqH0zFA3jY';
+    var box = document.querySelector('a.video-frame');
+    if (!box) return;
+
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;   // 保持純連結行為
+
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = '寫下第一份規則書';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; ' +
+                'gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.allowFullscreen = true;
+
+      var ok = false;
+      f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f);
+      box.classList.add('playing');
+
+      // 保險：若嵌入被擋（未知的 CSP 環境），還原封面並提示改用連結
+      setTimeout(function () {
+        if (ok) return;
+        f.remove();
+        box.classList.remove('playing');
+        var note = document.createElement('p');
+        note.className = 'video-note';
+        note.textContent = '這個環境不允許內嵌播放，請點封面在 YouTube 觀看。';
+        box.parentNode.appendChild(note);
+      }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>怎麼讀這一頁</h2>
+    <div class="legend-item">
+      <span class="swatch h"></span>
+      <span><b>你的指令</b>完整照登，一字未改。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch a"></span>
+      <span><b>Agent 做了什麼</b>不只是回答內容，還包括它怎麼分類、依據什麼判準、主動提了什麼。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>當時的畫面</b>實際截圖。畫面只截到一部分，完整經過寫在上方。</span>
+    </div>
+  </section>
+
+  <nav class="toc">
+    <h2>十六個步驟</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>CLAUDE.md 到底是什麼</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>把規則攤開，每條標出處</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>Frontmatter 與頁面結構</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>寫作、圖與表</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>關鍵一問：CLAUDE.md 還是 skill</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>精選三十行寫進 CLAUDE.md</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>Skill 與 CLAUDE.md 的區別</span></a></li>
+      <li><a href="#s08"><span class="n">08</span><span>動手寫，並說出做不到的</span></a></li>
+      <li><a href="#s09"><span class="n">09</span><span>驗收：把鐵則列出來</span></a></li>
+      <li><a href="#s10"><span class="n">10</span><span>用五篇論文壓力測試規則</span></a></li>
+      <li><a href="#s11"><span class="n">11</span><span>發現漏了圖的 panel 標記</span></a></li>
+      <li><a href="#s12"><span class="n">12</span><span>檔頭太長，加上本機 PDF 連結</span></a></li>
+      <li><a href="#s13"><span class="n">13</span><span>回顧規則書，決定包 skill</span></a></li>
+      <li><a href="#s14"><span class="n">14</span><span>親自確認 skill 的內容</span></a></li>
+      <li><a href="#s15"><span class="n">15</span><span>如何觸發 Skill</span></a></li>
+      <li><a href="#s16"><span class="n">16</span><span>Skill 可以寫多長</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <h2>CLAUDE.md 到底是什麼</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">說明「CLAUDE.md」是什麼，其角色與實際運作的方式</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>先講本質：一個純文字的 markdown 檔。<strong>沒有 schema、沒有語法檢查、沒有保留字</strong>，
+        用記事本就能寫。</li>
+        <li>指出唯一特別的地方是<strong>檔名</strong>——Claude Code 啟動時會去找這個名字的檔案，
+        把內容讀進來，當成這次工作階段的常駐指令。</li>
+        <li>列出三個放置位置與各自的載入時機，並說明它們會<strong>疊加</strong>：
+        全域 <code>~/.claude/CLAUDE.md</code> 與專案根目錄的每次啟動都載入，
+        子目錄的則是<strong>讀到那個資料夾的檔案時才載入</strong>。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/00-what-is-claudemd.png" style="width:752px"
+           alt="Agent 說明 CLAUDE.md 的本質，並列出三個放置位置與載入時機的表格">
+      <figcaption><b>說明</b>下半的表格是這一集後面所有判斷的依據——
+      「何時載入」這一欄，決定了一條規則該寫在哪裡。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>要寫一份東西之前，先確認它是什麼。問一個名詞的成本，
+      遠低於在錯誤的理解上做完一整套設計再打掉。</p>
+      <p>而且問對了地方：答案裡的「何時載入」這一欄，在第 05 步會變成整份文件的分類判準。</p>
+    </aside>
+
+    <details class="digest" style="margin-top:1.6rem;">
+      <summary>CLAUDE.md 實際上怎麼運作<span class="hint">點此展開</span></summary>
+      <div class="digest-body">
+
+      <h3>它是 context，不是 code</h3>
+      <p>這是最常被誤解的一點。<code>CLAUDE.md</code> 的內容不是被「執行」的，它是被<strong>貼進對話</strong>的——
+      技術上，那些文字會被放進送給模型的上下文裡，效果等同於你每次開場都手動貼一遍。</p>
+      <p>三個推論全部從這裡來：</p>
+      <ul>
+        <li><strong>它不是強制力。</strong>沒有任何機制會攔截違反規則的動作。鐵則寫「原始資料只能讀不能寫」，
+        那不是防寫保護，那是一句話。它的效力來自模型讀了之後決定遵守——
+        所以規則要寫得具體、可檢查、有理由。<strong>模糊的規則不是弱約束，是沒有約束。</strong></li>
+        <li><strong>每一次請求都在收費。</strong>一份三百行的規則書，等於每一輪對話都先付三百行的稅——
+        問一個小問題也付、改一個錯字也付。這才是「短的才有用」的真正理由，不是美學問題。</li>
+        <li><strong>規則之間互相稀釋。</strong>上下文裡的注意力有限。二十條規則各自拿到的權重，
+        高於一百條裡的每一條。</li>
+      </ul>
+
+      <h3>中途修改不會立刻生效</h3>
+      <p>規則書是在工作階段開始時讀進來的。你在對話中途改了它，<strong>已經載入的那份不會自動更新</strong>——
+      當下這個對話看到的還是舊的。改完要生效，最可靠的做法是開一個新的工作階段。</p>
+
+      <h3>它不是記憶</h3>
+      <p>每次載入的都是同一份文字。它不會因為你上次糾正過什麼就自己長出新規則——
+      <strong>要長，是你或 Agent 動手寫進去的。</strong></p>
+      <p>上一集用過的比喻在這裡仍然成立：把 Agent 想成每天上工都失憶的員工。規則書是貼在牆上的規矩，
+      不是員工的記憶。牆上沒寫的，明天他就不知道。</p>
+
+      <h3>換工具的對應檔名</h3>
+      <p>同一個概念，不同檔名，內容邏輯完全相同：Claude Code 用 <code>CLAUDE.md</code>、
+      OpenAI Codex 用 <code>AGENTS.md</code>、Cursor 用 <code>.cursorrules</code>。</p>
+      </div>
+    </details>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head">
+      <span class="step-num">02</span>
+      <h2>把規則攤開，每條標出處</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">列出寫 wiki 條目（對應一篇論文 PDF 的 md 檔）的規則</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>開場先定調：<strong>「這些規則全部來自這次實作，每一條都有出處。」</strong></li>
+        <li>然後做了一件關鍵的事——替每一條規則加上<strong>出處欄</strong>，
+        標明它是「你給的」、「撞出來的」，還是「慣例」與「預防」。</li>
+        <li>第一組是「A. 檔案與命名」，三條規則各有不同來歷。</li>
+      </ol>
+    </div>
+
+    <div class="origin">
+      <span class="voice-label">四種出處</span>
+      <ul>
+        <li><span class="tag given">你給的</span><b>來自使用者的明確指示。</b>它成立，是因為你要求過。</li>
+        <li><span class="tag hit">撞出來的</span><b>來自實作中的失敗。</b>它成立，是因為不這樣做已經出過事。</li>
+        <li><span class="tag conv">慣例</span><b>領域或工具的通行做法。</b>沒有強制性，但照做省事。</li>
+        <li><span class="tag conv">預防</span><b>推導出來的風險。</b>還沒發生，但可預見。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/01-rules-with-origin.png" style="width:832px"
+           alt="Agent 列出檔案與命名的三條規則，右欄標明每條規則的出處">
+      <figcaption><b>說明</b>右欄就是出處。第三條標的是「撞出來的」，
+      理由寫在同一格：原始檔名 <code>p08_x127_1362x1386.jpeg</code> 完全不可讀。</figcaption>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p><strong>每條規則都要填出處。</strong></p>
+      <p>一旦每條規則都得填出處，「這條憑什麼存在」就不再是模糊的感覺，
+      而是一個<strong>可以檢查的問題</strong>。填不出出處的規則，就是還不該寫的規則。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head">
+      <span class="step-num">03</span>
+      <h2>Frontmatter 與頁面結構</h2>
+    </div>
+
+    <div class="prose">
+      <p>這一步<strong>沒有新指令</strong>，是上一步的延續——同一份清單往下走。</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>列出「B. Frontmatter 必填」九個欄位，並在欄位旁註明限制：
+        <code>title</code> <strong>不可省略、不可縮寫</strong>；<code>own_work</code> 只有自己的論文才加。</li>
+        <li>補上一條<strong>時間性的理由</strong>：
+        「第一天就要加 frontmatter。等累積兩百頁才想加，得回頭補兩百次。」</li>
+        <li>接著是「C. 頁面結構（固定順序）」，九項——從 H1 的英文完整標題，
+        到最後的相關頁面。</li>
+        <li>其中第 3 項附了說明：〈為什麼重要〉<strong>講的是它跟知識庫其他頁的關係，
+        不是它在領域裡的地位</strong>。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/02-frontmatter-structure.png" style="width:491px"
+           alt="Agent 列出 frontmatter 九個必填欄位，以及頁面結構的九個固定區塊">
+      <figcaption><b>說明</b>上半是 frontmatter 的範例，右側灰字是限制條件；
+      下半九項就是每一篇論文條目的骨架。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>「一開始就要加」這句話，是規則書裡最容易被跳過、卻最容易付出巨大代價的一類。</p>
+      <p>它管的不是規則寫得好不好，是<strong>寫了兩百篇條目以後，
+      又要回頭逐篇改格式的成本</strong>。這種規則在只有一篇條目時看起來似乎多餘，
+      但是從整個知識庫來看，卻十分重要。</p>
+      <p>注意第 3 項的〈為什麼重要〉，強調<strong>「講它跟其他頁的關係」</strong>而非
+      「講它在領域裡的地位」——因為後者在〈摘要〉那一節就有了，這邊不用重複；
+      前者才是它在這個知識庫中的獨特地位。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head">
+      <span class="step-num">04</span>
+      <h2>寫作、圖與表</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（承接上一步）</span>
+      <ol>
+        <li>「D. 寫作」五條，其中兩條特別標了出處——
+        <span class="tag given">你給的</span>科普文不放圖，必須靠純文字就能讀懂；
+        <span class="tag hit">撞出來的</span>同一張圖在不同讀者層級要有不同的解讀，不能兩邊複製同一段文字。</li>
+        <li>「E. 圖與表」七條，涵蓋圖的放置、圖說的翻譯、解讀的要求，以及表格、公式、流程圖的處理方式。</li>
+        <li>幾條規則<strong>把理由直接寫在規則裡</strong>：
+        「圖說逐項全譯，不可摘要——圖說是日後檢索的入口」、
+        「表格一律轉 markdown，不可截圖——跨論文比較數據靠的就是這個」。</li>
+        <li>對解讀的要求下得很重：<strong>「解讀要寫原文沒說的東西，否則等於重複圖說。」</strong></li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/03-writing-and-figures.png" style="width:505px"
+           alt="Agent 列出寫作五條與圖表七條規則，部分條目標註出處">
+      <figcaption><b>說明</b>兩處箭頭標的就是出處——一條來自你的指示，
+      一條來自實作時撞到的問題。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>規則要附理由，日後才知道什麼情況可以破例。</strong></p>
+      <p>「表格一律轉 markdown」如果只寫這七個字，遇到一張複雜到難以轉換的表，
+      你只能在「硬轉」和「破戒」之間二選一。附上「跨論文比較數據靠的就是這個」，
+      判斷就變得容易：<strong>如果這張表不會被拿去比較，截圖就截圖。</strong></p>
+      <p>沒有理由的規則，要嘛被盲從，要嘛被無視。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head">
+      <span class="step-num">05</span>
+      <h2>關鍵一問：CLAUDE.md 還是 skill</h2>
+    </div>
+
+    <div class="prose">
+      <p>規則列完了，一共二十幾條。<strong>下一個動作決定了整份文件的形狀。</strong></p>
+      <p>你可以直接說「寫進 CLAUDE.md」——那是最自然的反應，這一集本來就是要寫規則書。
+      但這裡問的是另一個問題。</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">這應該寫 CLAUDE.md 還是寫 skill?</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>先給結論：<strong>「兩個都要，但切法是關鍵。」</strong></li>
+        <li>然後把差異收斂到三項，並明說<strong>「決定性的差異只有一個」</strong>——載入時機。</li>
+        <li>另外兩項是能不能帶程式、以及給別人用的方式。</li>
+      </ul>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th></th><th>CLAUDE.md</th><th>Skill</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>載入時機</td><td>每次啟動，一律載入</td><td>任務相符時才載入</td></tr>
+          <tr><td>能不能帶程式</td><td>不行，只能寫路徑</td><td>可以，腳本跟規則放在一起</td></tr>
+          <tr><td>給別人用</td><td>要對方複製貼上</td><td>整包安裝</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="shot" style="margin-top:2rem;">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/04-claudemd-or-skill.png" style="width:758px"
+           alt="Agent 用三列表格對照 CLAUDE.md 與 skill 的決定性差異">
+      <figcaption><b>說明</b>「兩個都要，但切法是關鍵」——
+      這句話把問題從「二選一」改成「怎麼分」。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>這一問問得早，省下的是整份文件的重寫。</p>
+      <p>「<strong>改計畫很便宜，改成品很貴</strong>」——只是這次要改的不是內容，
+      是<strong>分類</strong>。二十幾條規則寫進檔案之後才發現一半該搬走，比先問清楚貴得多。</p>
+      <p>注意 Agent 的回答方式：它沒有二選一，而是<strong>先否定了這個問題的前提</strong>，
+      再給出真正該問的東西。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head">
+      <span class="step-num">06</span>
+      <h2>精選三十行寫進 CLAUDE.md</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（承接上一步）</span>
+      <ol>
+        <li>把二十幾條規則<strong>依載入時機重新分配</strong>，分成兩堆。</li>
+        <li><strong><code>CLAUDE.md</code>（約 30 行）——常駐的憲法</strong>：三層權責、目錄結構、
+        <code>log.md</code> 格式與「要記摩擦，不只記做了什麼」、語言與風格、
+        有時效性的事實一律去查、數字不可盲信抽取結果。</li>
+        <li><strong>Skill <code>ingest-paper</code>——用到才載入</strong>：九個區塊的完整結構、
+        科普文與專業文的字數與讀者定位、圖的三層記錄與圖說逐項全譯、
+        表格轉 markdown 與公式用 LaTeX、完成的定義 checklist，
+        以及<strong>附帶 <code>pdftxt.py</code> 和 <code>pdfimg.py</code> 兩支腳本</strong>。</li>
+        <li>主動解釋了一個看似不一致的安排：
+        「最後兩條我特意放進 <code>CLAUDE.md</code> 而不是 skill——
+        <strong>因為它們是你隨時會踩到的坑，不限於處理論文。</strong>」</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/05-two-piles.png" style="width:610px"
+           alt="Agent 把規則分成 CLAUDE.md 六項與 skill ingest-paper 六項兩堆">
+      <figcaption><b>說明</b>兩堆中間那句說明是重點——它解釋了為什麼「數字不可盲信」
+      這種看起來很技術性的規則，反而屬於常駐層。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>判準是「載入時機」，不是「重不重要」。</strong>這兩者很容易混淆。</p>
+      <p>九個區塊的頁面結構非常重要——沒有它，條目會長得七零八落。
+      但它<strong>只有在寫論文條目時才用得到</strong>，所以進 skill。</p>
+      <p>「數字不可盲信」看起來瑣碎得多，卻在任何一次工作都可能踩到：讀網頁、看報告、
+      轉一份試算表都會遇到。所以它進常駐層。</p>
+      <p>如果用「重不重要」來分，會得到完全相反、而且完全錯誤的答案。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head">
+      <span class="step-num">07</span>
+      <h2>Skill 與 CLAUDE.md 的區別，以及為何不急著做</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（承接上一步）</span>
+      <ol>
+        <li>在 EP01 中，Agent 寫了 <code>pdftxt.py</code> 和 <code>pdfimg.py</code>
+        這兩個工具程式放在暫存目錄裡，<strong>重開機會不見</strong>。</li>
+        <li>如果在 <code>CLAUDE.md</code> 寫了「請使用 <code>pdftxt.py</code> 來幹嘛幹嘛……」，
+        由於暫存檔可能消失，就變成毫無用處的規則。
+        如果把這兩個程式也打包成 skill，<strong>就能確保以後還能重複使用</strong>。</li>
+        <li>建議：<strong>現在就寫 <code>CLAUDE.md</code></strong>，
+        因為那 30 行都是通則，不太會錯；<strong>skill 等多寫幾篇論文條目、
+        規則更確定之後寫</strong>。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/06-one-reminder.png" style="width:765px"
+           alt="Agent 說明 skill 能把腳本一起帶走，並提醒這套規則只跑過一篇論文">
+      <figcaption><b>說明</b>下半的〈一個提醒〉沒有人要求它寫。
+      它把 Karpathy「schema 要共同演化」那句話翻譯成一個可執行的判斷：
+      規則要從<strong>反覆</strong>的摩擦裡長出來，不是從一次成功裡歸納。</figcaption>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">這一集的核心</span>
+      <p>上一集學到的是<strong>先不要立規則</strong>——還沒撞過的牆，不要先寫成規則。
+      這一集是同一課的另一半：<strong>該寫的時候，就要動手寫。</strong></p>
+      <p>差別在證據夠不夠。那 30 行通則，整個 EP01 做下來每一條都實際用過，
+      現在寫不太會錯；條目的細部規則只成功過一篇，再多寫幾篇比較保險。
+      <strong>證據夠的現在就寫，證據還不夠的先放著</strong>——不是全寫，也不是全不寫。</p>
+      <p>還有一點值得學：Agent 先講了「哪一條規則最可能出問題」，還附上理由。
+      這樣以後真的撞到，馬上就知道是怎麼回事，不用從頭想一遍。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="step" id="s08">
+    <div class="step-head">
+      <span class="step-num">08</span>
+      <h2>動手寫，並說出做不到的</h2>
+    </div>
+
+    <div class="prose">
+      <p>分類決定之後才動手。這一步的畫面裡沒有新指令，只有執行與回報。</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>寫出 <code>Wiki/CLAUDE.md</code>，並且明說了下筆的依據：
+        <strong>「照我自己說的『短的才有用』，只放隨時適用的。」</strong></li>
+        <li>順手處理了一件更根本的事——把專案<strong>分成兩半</strong>：
+        <code>Wiki/</code> 是任務一（建知識庫）、<code>Tutorial/</code> 是任務二（做教材），
+        各自有自己的規則書。原本兩件事混在同一個資料夾，
+        才會導致「<code>CLAUDE.md</code> 到底該寫哪一個」無法決定。</li>
+        <li>把散落的腳本歸位：<code>pdftxt.py</code>、<code>pdfimg.py</code>、<code>md2pdf.py</code>
+        收進 <code>Wiki/tools/</code>，<code>inline_img.py</code> 收進 <code>Tutorial/tools/</code>。
+        這解決了上一步指出的「下次開機就沒了」。</li>
+        <li>一共動了 136 行（<code>Created 2 files, edited a file, ran a command</code>）。</li>
+        <li><strong>主動回報一步做不到</strong>：EP01 的資料夾搬不進 <code>Tutorial/</code>，
+        需要人操作。原因是它正是當前工作階段的所在目錄，被行程鎖住，
+        Windows 不允許移動——這是環境限制，不是能力問題。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/07-claudemd-written.png" style="width:556px"
+           alt="Agent 寫出 Wiki/CLAUDE.md 並列出整理後的專案目錄樹，最後一行標註 EP01 資料夾還沒搬">
+      <figcaption><b>說明</b>目錄樹右側的「任務 1」「任務 2」就是分家的結果。
+      最後一行 <code>← 還沒搬進 Tutorial/</code> 是它自己標的。</figcaption>
+    </figure>
+
+    <div class="tools">
+      <h3>這一步歸位的程式</h3>
+      <dl>
+        <dt>Wiki/tools/</dt>
+        <dd><code>pdftxt.py</code>（PDF 轉 UTF-8 文字）·
+        <code>pdfimg.py</code>（抽內嵌圖片）·
+        <code>md2pdf.py</code>（markdown 轉 PDF 快照）</dd>
+        <dt>Tutorial/tools/</dt>
+        <dd><code>inline_img.py</code>（把圖片轉 base64 內嵌成單檔網頁）</dd>
+      </dl>
+    </div>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>兩件事值得看。</p>
+      <p>一是它<strong>先套用自己剛訂的規則</strong>。「短的才有用」是它上一步自己講的，
+      下筆時就照做，而不是講完就忘。規則書如果連寫它的人都不遵守，那份文件從第一天就是死的。</p>
+      <p>二是它<strong>明說哪一步做不到</strong>，而不是安靜跳過。
+      一個宣稱「全部完成」但其實漏了一步的回報，比一個誠實的失敗昂貴得多——
+      因為你會在幾天後才發現，那時已經沒有人記得當時發生什麼事。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section class="step" id="s09">
+    <div class="step-head">
+      <span class="step-num">09</span>
+      <h2>驗收：把鐵則列出來</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">把 Wiki/CLAUDE.md 的鐵則列出來</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>列出六條鐵則，並且<strong>先交代前言限定的範圍</strong>：
+        「這幾條任何時候都適用，<strong>不限於處理論文</strong>」——
+        那句限定就是第 06 步分類判準留下的痕跡。</li>
+        <li>每一條都保留了它的來歷。第 3 條直接把失敗現場寫進規則裡：
+        「實際發生過 <code>±</code> 被抽成 <code>6</code>、<code>µm</code> 被抽成 <code>mm</code>」。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/08-six-rules-listed.png" style="width:756px"
+           alt="Agent 列出 Wiki/CLAUDE.md 的六條常駐鐵則">
+      <figcaption><b>說明</b>六條，全部是「任何時候都適用」的。
+      第 1 條的絕對路徑是後來補強的——原本只寫「原始資料唯讀」，沒有指名檔案在哪。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>寫完要驗收，而最便宜的驗收就是叫它列出來讀一遍。</strong></p>
+      <p>攤在同一個畫面上，你會立刻看出哪一條太長、哪一條其實是排版規範混進來的、
+      哪一條講得太模糊以致於無法檢查。</p>
+      <p>這一次抓到的是第 1 條：原本寫「原始資料唯讀」——聽起來很清楚，
+      但它<strong>沒有指名是哪個資料夾</strong>。補上完整路徑與四個禁止動作
+      （修改、刪除、改名、移動）之後，這條規則才真正可以被執行。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="step" id="s10">
+    <div class="step-head">
+      <span class="step-num">10</span>
+      <h2>用五篇論文壓力測試規則</h2>
+    </div>
+
+    <div class="prose">
+      <p>規則書寫好了，但它只被一篇論文驗證過。接下來的指令，是要讓規則接受考驗。</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">現在我們有 Wiki/CLAUDE.md 和 Wiki/tools/ 裡面的工具，以及寫第一篇論文條目的經驗。接下來，請你把 Papers 裡面的另外 5 篇論文條目寫出來，讓寫作規則更確定</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>第一句話就把任務定性：<strong>「這就是壓力測試——五篇跑完，規則哪裡撐不住就會現形。」</strong>
+        然後宣告工作方式：一次吸收一篇、全程照 <code>CLAUDE.md</code> 走、摩擦記進 log。</li>
+        <li>先列 <code>Papers/</code> 看實際有什麼，並讀了兩支工具程式的原始碼——確認手上的工具能做什麼，再開工。</li>
+        <li>建任務清單，然後<strong>一次把五篇的文字全部抽出來</strong>（一個指令、八個工具呼叫），
+        而不是抽一篇寫一篇。</li>
+        <li>從 2015 那篇開始，抽出五張圖之後，<strong>照規則逐張打開確認內容再命名</strong>——不靠頁碼猜。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/09-write-five-more.png" style="width:764px"
+           alt="Agent 接到寫五篇條目的指令，先列出資料夾與工具，抽出全部文字，再逐張開圖確認">
+      <figcaption><b>說明</b>「Read 5 files」那一行就是它在逐張看圖——五張圖、五次讀取。
+      這是規則書寫進去的動作，現在它照做了。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>這一步的指令有一個關鍵的尾巴：「<strong>讓寫作規則更確定</strong>」。</p>
+      <p>它告訴 Agent 這五篇不只是產出，還是<strong>測試</strong>——寫的時候要留意哪條規則卡住、
+      哪條規則多餘。少了這個尾巴，Agent 只會交五篇條目；有了它，Agent 會順便交一份規則的體檢報告。</p>
+      <p>五篇跑完的結果：八區塊結構全部撐住，包括三篇工具論文；先前預測會撞牆的「圖說逐項全譯」沒撞。
+      真正長出來的新規則，都不是事先想得到的——請看下一步。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section class="step" id="s11">
+    <div class="step-head">
+      <span class="step-num">11</span>
+      <h2>發現漏了圖的 panel 標記</h2>
+    </div>
+
+    <div class="prose">
+      <p>五篇條目交出來之後，你打開 Obsidian 逐篇看。看到 Kaleido 那篇的 Fig 2 時，發現一件事：</p>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/10-missing-panel-labels.png" style="width:539px"
+           alt="Obsidian 中的 Kaleido Fig 2：全腦視圖與 Kenyon 細胞的放大比較，圖上沒有 A、B、C 標記，但下方圖說引用了 a、b、c 與 1 到 3">
+      <figcaption><b>說明</b>圖說寫著「a：由 FlyCircuit 資料庫……」「b、c：Kenyon 細胞的萼部……」
+      「1 至 3：箭頭 1 與 3 之間區域的放大比較」——但圖上一個字母、一個數字都沒有。
+      讀者根本對不上哪塊是 a、哪塊是 b。</figcaption>
+    </figure>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">你放截圖的時候有時把圖的 panel 標記給漏了，例如 2018 Kaleido 那篇，Fig.2, 3 的各子圖沒有 A, B, C...等編號，這樣在閱讀圖說時會搞不清楚是哪個，整體檢查一次並修正</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>先診斷原因，一句話講清楚：<strong>panel 字母常在 PDF 的文字層，點陣圖層抽不到</strong>——
+        所以 <code>pdfimg.py</code> 抽出來的圖天生就少了這些字。</li>
+        <li>沒有只修你點名的兩張，而是<strong>寫了一支檢查腳本掃全部六篇、31 張圖</strong>：
+        對每張圖偵測「圖的範圍內、文字層裡有沒有獨立的 A–H 字母」，有就代表點陣抽取必缺。</li>
+        <li>腳本第一版排序有問題（同一頁兩張圖時要按位置取，不是按面積），修了再跑。</li>
+        <li>對缺字母的圖改用<strong>頁面渲染</strong>重建——把圖區連同旁邊的文字層一起「拍」下來，
+        字母、圖例都會在。Fig 3 第一次重建裁到左緣的圖例，擴大範圍再渲染一次。</li>
+        <li>結果分三類：三張要修（2018 的 Fig 2、3、4）、二十幾張本來就好（字母烙在圖裡）、
+        還有<strong>三張是論文自己沒印字母</strong>（2024 那篇的 Fig 2、4、5，圖說引用了 (A)–(F)，圖面上根本沒有）。
+        最後一類不修圖，在解讀裡明說落差、給欄序對應。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/11-check-panels-script.png" style="width:747px"
+           alt="Agent 診斷 panel 字母在 PDF 文字層、寫檢查腳本掃全部圖、修排序問題、重建缺字母的圖">
+      <figcaption><b>說明</b><code>Created check_panels.py +77</code>——一支 77 行的檢查工具。
+      它的存在意義是把「你看到一張有問題」變成「全庫每一張都查過」。</figcaption>
+    </figure>
+
+    <div class="tools">
+      <h3>這一步動用的程式</h3>
+      <dl>
+        <dt><span class="tag hit">自己寫</span>check_panels.py</dt>
+        <dd>掃描每篇論文的每張圖，比對圖區內的 PDF 文字層有無獨立 panel 字母；有缺的以頁面渲染重建候選圖。</dd>
+      </dl>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/12-panel-labels-fixed.png" style="width:556px"
+           alt="修復後的 Kaleido Fig 2：A、B、C 三個 panel 標記與放大區編號 1、2、3 都已出現">
+      <figcaption><b>說明</b>同一張圖修復後的樣子。紅框是解說用的標示——A（全腦）、B（Kaleido 配色）、C（隨機配色），
+      放大區的 1、2、3 也回來了。圖說現在對得上圖。</figcaption>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p><strong>規則是從這種地方長出來的。</strong></p>
+      <p>「抽出來的圖不等於論文的圖」這件事，寫規則書的時候誰也想不到。它是<strong>做了六篇、
+      有人實際去讀</strong>之後才浮出來的。發現之後，它變成一條有具體判準的規則
+      （文字層在圖區內有字母 → 點陣抽取必缺 → 改用頁面渲染），還附了一支能自動檢查的工具。</p>
+      <p>另外注意 Agent 的處理範圍：你指了兩張，它掃了 31 張。<strong>發現一個錯，就假設同類的錯不只一個</strong>——
+      這是維護知識庫該有的反射動作。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 12 ============ -->
+  <section class="step" id="s12">
+    <div class="step-head">
+      <span class="step-num">12</span>
+      <h2>檔頭太長，加上本機 PDF 連結</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">再補一個之前漏掉的規則：在檔頭的部分要有本機的 PDF 連結（知識庫為本機自用而不上網，不會有著作權問題）。還有我覺得檔頭太長了，改一下：
+
+1. 把「type」拿掉（因為這裡都是 paper所以不需要）
+2. 「year」、「journal」、「doi」合併：格式 Current Biology 21(1), 1–11 (2011). doi: 10.1016/j.cub.2010.11.056 <本機全文 PDF 檔連結>
+3. 「own_work」變成一個 tag，不要獨佔一欄</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>三項一起改，六個條目全套用（<code>Edited 7 files</code>——六篇加 log）。檔頭從九欄縮到五欄。</li>
+        <li>PDF 連結用 <code>file:///</code> 絕對路徑，路徑裡的空格轉成 <code>%20</code>。</li>
+        <li>但這一版<strong>沒有活過下一輪</strong>。你在 Obsidian 裡一看：doi 和 PDF 都不是超連結，點不動。</li>
+        <li>Agent 查出原因：Obsidian 的屬性面板只在「<strong>整個值是一條網址</strong>」時才渲染成可點連結，
+        混在文字裡的網址全變死字；而且 <code>doi: 10.x</code> 本身不是網址，要 <code>https://doi.org/</code> 開頭才行。</li>
+        <li>第二版：doi 和 pdf 各自獨立一欄——可以點了，但檔頭又變長。</li>
+        <li>第三版（定案）：<strong>檔頭回到五欄，連結移到內文的標題區</strong>——
+        「DOI: 10.xxx・全文 PDF」一行，內文的 markdown 連結不受屬性面板限制，可以自訂顯示文字。</li>
+        <li>最後一關：<code>file:///</code> 對 Obsidian 是外部連結，點了跳安全確認、交給系統程式開；
+        你要的是<strong>在 Obsidian 頁面內開</strong>。這需要 PDF 在 vault 裡面——於是把 <code>Papers/</code>
+        複製一份進 <code>Wiki/papers/</code>，連結改成內部連結，點了直接在分頁裡用內建檢視器開。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/13-header-first-version.png" style="width:756px"
+           alt="使用者要求精簡檔頭並加本機 PDF 連結，Agent 改成五欄，合併欄位裡帶著 file:/// 路徑">
+      <figcaption><b>說明</b>這是第一版：<code>journal</code> 一欄塞了期刊、doi、PDF 路徑三樣東西。
+      看起來精簡，實際上點不開——下一輪就被推翻。</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/14-header-final.png" style="width:619px"
+           alt="Obsidian 中 Kaleido 條目的最終樣子：屬性面板五欄，標題區有可點的 DOI 與全文 PDF 連結">
+      <figcaption><b>說明</b>定案的樣子。上半是屬性面板——五欄，乾淨；下半是內文標題區——
+      DOI 和「全文 PDF」都是超連結，PDF 點了在 Obsidian 內開。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>這一條規則其實改了三版才定案，為了避免教材過於冗長，我們省略了其中一些過程。
+      在此提醒讀者：<strong>規則的修改往往不是一步到位，經常要來回好幾次，才能確定。</strong></p>
+      <p>下次有人問「為什麼 PDF 連結放內文不放檔頭」，答案不是「規定就這樣」，是三行有根據的理由。
+      <strong>規則附理由，改的時候才知道哪些前提還成立、哪些已經變了。</strong></p>
+      <p>另一件事：這條規則是<strong>你</strong>加的，不是 Agent 提的。規則書是共同演化的——
+      Agent 從實作摩擦長規則，你從使用體驗長規則，兩邊都會進 log。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 13 ============ -->
+  <section class="step" id="s13">
+    <div class="step-head">
+      <span class="step-num">13</span>
+      <h2>回顧規則書，決定包 skill</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">好，這六個條目我 OK 了。再來回顧一下：
+
+1. Wiki/CLAUDE.md 有需要更新嗎？
+2. 可以包「寫條目」的 skill 了吧？
+
+最後提醒：「果蠅 connectome」並非這個知識庫唯一的主題，未來可能持續擴充，所以不要限定領域</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>回顧 <code>CLAUDE.md</code>，只更新兩處，而且每一處都附出處：
+          <ul>
+            <li>鐵則 3 從「數字不可盲信」擴為「數字、<strong>符號、公式</strong>不可盲信」——出處是這五篇裡實際發生的：
+            2015 那篇抽出來的極性數值負號整批遺失、2021 那篇的公式碎裂成散片。</li>
+            <li>〈不在這裡的東西〉那一節整節改掉，改為指向 skill——因為它寫的「還沒定案、等三篇以上再包」已經過期，
+            現在就是在做這件事。</li>
+          </ul>
+        </li>
+        <li>其餘六條鐵則、log 規則、語言風格都還站得住，<strong>沒動</strong>。</li>
+        <li>把條目寫作規範包成 skill：<code>.claude/skills/ingest-paper/</code>，
+        內含 <code>SKILL.md</code>（規範全文）和 <code>scripts/</code>（兩支工具程式的副本——規則跟工具一起帶走）。</li>
+        <li>照你的提醒做了<strong>兩層保險</strong>：skill 全文沒有任何果蠅或連結體專屬的規則（連舉例都用通用寫法）；
+        <code>CLAUDE.md</code> 裡也明文寫下「skill 內不得出現領域專屬規則」，未來修 skill 的人會看到。</li>
+        <li>主動加了一段誠實的註記：原本訂的包裝條件是「三篇以上、<strong>且至少一篇非連結體領域</strong>」——後半沒滿足，
+        六篇全在同一個生態圈。你裁定現在包，所以下一批論文的第一篇就是這個 skill 的壓力測試。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/15-claudemd-and-skill.png" style="width:769px"
+           alt="Agent 回答 CLAUDE.md 只更新兩處（附出處表格），以及 skill 已包好的目錄結構">
+      <figcaption><b>說明</b>表格右欄「出處」是重點——鐵則 3 為什麼要擴，指得出是哪兩篇論文的哪個問題。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>回顧規則書的時候，「<strong>沒動</strong>」跟「動了」一樣是結論。六條鐵則跑了六篇論文還站得住，
+      這句話本身就是資訊——它們通過了測試。</p>
+      <p>唯一動的鐵則 3，改的是<strong>範圍</strong>不是內容：原本只講數字，現在符號和公式也算。
+      這是規則最健康的長法——不是新增一條，是把已有的一條依新證據擴一點。</p>
+      <p>「不要限定領域」這句提醒很重要。六篇都是果蠅，寫出來的規則很容易不知不覺帶上果蠅的假設。
+      Agent 用「連舉例都用通用寫法」＋「在 CLAUDE.md 明文禁止」兩層保險回應——
+      <strong>但真正的檢驗要等第一篇不同領域的論文進來</strong>，它自己也這樣說了。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 14 ============ -->
+  <section class="step" id="s14">
+    <div class="step-head">
+      <span class="step-num">14</span>
+      <h2>親自確認 skill 的內容</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">我要確認這個 skill 的內容</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>把 150 行的 <code>SKILL.md</code> 全文攤出來，然後給一張<strong>七節結構表</strong>——
+        每一節寫了什麼、<strong>規則來源是哪一步</strong>：檔名與 frontmatter 來自「這兩天的三版迭代」、
+        標題區來自「今天的連結攻防」、固定結構來自「六篇全數驗證」……</li>
+        <li>列出<strong>四個它自己做的判斷、你可以否決的點</strong>：字數要不要寫死、
+        「原刊圖面缺陷不修圖只明說」這條要不要當正式規則、觸發詞寬窄、scripts 副本與 tools 並存的漂移風險。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/16-skill-structure.png" style="width:751px"
+           alt="Agent 讀出 SKILL.md 並列出七節結構表，每節附內容摘要與規則來源">
+      <figcaption><b>說明</b>「規則來源」這一欄就是第 02 步「出處欄」的延續——skill 裡的每一節都指得回它是從哪個摩擦長出來的。</figcaption>
+    </figure>
+
+    <details class=digest>
+      <summary>SKILL.md 全文（150 行）<span class=hint>點此展開</span></summary>
+      <div class=digest-body>
+        <pre class=skill-src>---
+name: ingest-paper
+description: 把一篇論文 PDF 吸收成知識庫條目（領域不限）。當使用者要求 ingest 論文、寫論文條目、處理新進 PDF 時使用。涵蓋條目結構、圖的三層記錄、批判層寫作、完成定義與收尾動作。
+---
+
+# 論文條目寫作
+
+把一篇論文 PDF 寫成知識庫的完整條目。**領域不限**——本規範不得依賴任何特定學門的慣例。
+常駐鐵則（原始資料唯讀、數字符號核對、推測標示等）在 `Wiki/CLAUDE.md`，此處不重複。
+
+## 流程總覽
+
+```
+抽全文 → 通讀 → 抽圖 → 逐張開圖驗證 → 寫條目 → 收尾（PDF 副本、index、log）
+```
+
+## 工具
+
+在 `Wiki/` 下執行（需 `pip install pymupdf`）：
+
+```bash
+python tools/pdftxt.py &lt;輸入.pdf&gt; &lt;輸出.txt&gt;     # 全文轉 UTF-8，繞過 Windows cp950
+python tools/pdfimg.py &lt;輸入.pdf&gt; &lt;輸出目錄&gt; [最大頁碼] [最小邊長px]   # 抽內嵌圖
+```
+
+新環境沒有這兩支時，本 skill 的 `scripts/` 內附副本。
+
+## 一、檔名與 frontmatter
+
+- 檔名：`年份-第一作者-識別詞.md`（識別詞＝工具名、資料庫名或主題短詞，英數）
+- 圖檔目錄：`assets/&lt;第一作者小寫&gt;&lt;年份&gt;/`，圖命名 `fig1`…`figN` 依自然順序
+- frontmatter **固定五欄**，不多不少：
+
+```yaml
+---
+title: "英文完整標題"        # 不可省略、不可縮寫
+title_zh: "中文標題"
+authors: [姓 名縮寫, …]      # 全列，不用 et al.
+journal: "期刊 卷(期), 頁 (年)"   # 線上先行版等特例括號註明
+tags: [主題詞…, own-work]    # 自己的論文加 own-work；不設 type/year/doi/pdf 欄
+---
+```
+
+## 二、標題區
+
+```markdown
+# 英文完整標題
+
+**中文標題**
+
+第一作者, 次要作者, et al. *期刊* 卷(期), 頁 (年)
+DOI: [10.xxx/…](https://doi.org/10.xxx/…)・[[papers/&lt;原始檔名&gt;.pdf|全文 PDF]]
+（同等貢獻、通訊作者、開放授權等資訊，一行括號）
+```
+
+- **先把 PDF 從正本資料夾複製到 `Wiki/papers/`**——內部連結才能在 Obsidian 頁面內開啟。
+  正本永遠以原始資料夾為準（見鐵則 1）
+- DOI 用完整 `https://doi.org/` 網址才可點
+
+## 三、固定結構（順序不變）
+
+```
+一句話結論 → 為什麼重要 → 摘要（原文＋中文翻譯）→ 科普文 → 專業文
+→ 疑點與待追 → 圖檔來源 → 相關頁面
+```
+
+| 區塊 | 要求 |
+|---|---|
+| 一句話結論 | **必須帶關鍵數字**，一段話講完論文做了什麼、得到什麼 |
+| 為什麼重要 | 講它**跟知識庫其他頁的關係**（在哪條研究線、影響哪些條目），不是它在領域裡的地位——後者摘要就有 |
+| 摘要 | 原文**完整照登不節錄**，翻譯與原文分節並列 |
+| 科普文 | 約 2,000–2,500 字，高中生程度，**不放圖**（純文字就能讀懂），少形容詞，可用比喻 |
+| 專業文 | 3,000 字以上，六節固定：概述（主要問題／發表時的領域現狀／重要性）、方法、結果、討論、問題與限制、未來 |
+| 疑點與待追 | 每條**可行動**（寫明回查什麼、問什麼），指向未來會讀的東西 |
+| 圖檔來源 | 版權聲明必寫（出版社與授權條款；CC-BY 者註明標註義務） |
+| 相關頁面 | 集中列出全部 `[[連結]]`；連到還不存在的頁面是正常的（待寫標記） |
+
+- 科普文與專業文**不可互相複製段落**——同一件事對不同讀者要分別寫
+- 工具／方法類論文的「結果」一節映射為「演算法＋示範案例＋定量驗證」，六節標題不變
+
+## 四、圖
+
+**圖全部放專業文**，每張三層記錄：
+
+```markdown
+![Figure N](assets/&lt;dir&gt;/figN.jpeg)
+
+&gt; **原始圖說（Figure N. 英文標題）**
+&gt; 逐 panel 完整翻譯——(A)…(B)…不可摘要，圖說是日後檢索的入口。
+&gt;
+&gt; **解讀**：寫原文沒說的東西（重要性排序、閱讀陷阱、證據等級、
+&gt; 這份資料保證不到的範圍）。複述圖說等於沒寫。
+```
+
+抽圖後的**強制驗證**（三個實際踩過的坑）：
+
+1. **逐張開圖確認內容與圖號對應**，不可用頁碼推測
+2. **與原 PDF 頁面比對完整性**——示意板、箭頭標註常是向量層，`pdfimg.py` 抽不到；
+   panel 字母（A、B、C…）與圖例常在文字層，點陣圖也沒有。
+   快篩法：檢查圖 bbox 範圍內的 PDF 文字層有無獨立的 A–H 字母，有＝點陣必缺
+3. 缺板缺字母時**改用頁面渲染**重建：
+
+```python
+import pymupdf
+doc = pymupdf.open(pdf); page = doc[頁碼]
+bbox = pymupdf.Rect(page.get_image_info()[k]["bbox"])   # 同頁多圖依 y 座標分辨
+clip = pymupdf.Rect(bbox)
+for w in page.get_text("words"):                        # 併入圖區的文字層元素
+    r = pymupdf.Rect(w[:4])
+    if r.intersects(bbox + (-60, -16, 16, 6)) and r.height &lt; 20:
+        clip |= r
+pix = page.get_pixmap(matrix=pymupdf.Matrix(3, 3), clip=clip)
+pix.save("figN.png")   # 注意排除頁首頁尾與圖說欄，渲染後再開圖確認一次
+```
+
+4. **原刊圖面自身的缺陷**（圖說引用了 panel 字母但圖上沒印）：不修圖，
+   在解讀開頭明說落差並給對應方式（例：左起第 1 欄＝(A)）
+- 表格一律轉 markdown 不可截圖（跨論文比數據靠它）；公式用 LaTeX；
+  流程示意圖用 mermaid 自繪，不抽原圖
+
+## 五、數字與公式
+
+- 誤差與樣本數**連著記**：`93% ± 2%（n=33）`——沒有 n 與 ± 的百分比不可單獨引用
+- **口徑跟著數字走**：同一件事有多個數字時（不同定義、不同分母、摘要與正文不一致），
+  標明各自口徑，不可混用；分母是外插值時要說
+- 帶符號數值（負號、±）與公式抽取後逐符號對照原文——文字層會整批吃掉負號、打散公式
+
+## 六、批判層（條目價值高於原文的地方）
+
+- 〈問題與限制〉分三類：**方法內在／取樣與統計／定義與內部一致性**
+- **必須有作者沒說的批評**——只複述論文自承的 limitations 等於沒寫
+- 原文**內部矛盾**用 ⚠️ 標記：寫明矛盾內容、回查位置，並規定引用該數字時一併標註疑點
+- 每張圖的解讀標出**這份資料保證不到的範圍**
+- 跨論文警覺（讀同一研究線多篇時）：
+  - **計數漂移**——同一物件在不同論文的數量、單位悄悄改變，逐一對照並記入疑點
+  - **假說硬化**——前作的 putative／推測，被後作直接當事實或分類名使用
+- 發表文獻本身也會錯（錯引、圖號錯、圖面缺標記）——發現就記，不憑「已發表」放行
+
+## 七、完成定義（checklist）
+
+- [ ] PDF 已複製至 `Wiki/papers/`，標題區「全文 PDF」內部連結可開
+- [ ] frontmatter 五欄、檔名合慣例
+- [ ] 八個區塊齊全且順序正確
+- [ ] 摘要原文完整＋翻譯
+- [ ] 每張主圖三層記錄；逐張開圖驗證過對應與完整性
+- [ ] 數字帶誤差／樣本數／口徑；符號公式已對照原文
+- [ ] 有作者沒說的批評；內部矛盾已標 ⚠️
+- [ ] `[[連結]]` 已建（含待寫頁面）；相關頁面一節齊全
+- [ ] `index.md` 新增一列（頁面、一句話、圖數）
+- [ ] `log.md` 追加一筆——**記摩擦**（卡在哪、放棄什麼、規則候選），不只記做了什麼
+</pre>
+      </div>
+    </details>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>Agent 包好的東西，你要親自看過。</strong>它是唯一的作者，你是總編輯——但總編輯還是要審稿。</p>
+      <p>審的時候有一個省力的做法：不要從第一行讀到最後一行，先看結構表，再看它自己列出來的「可否決的點」。
+      Agent 把自己拿不準的地方標出來，你的注意力就該放在那裡。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 15 ============ -->
+  <section class="step" id="s15">
+    <div class="step-head">
+      <span class="step-num">15</span>
+      <h2>如何觸發 Skill</h2>
+    </div>
+
+    <div class="prose">
+      <p>Skill 包好、內容確認過之後，接下來要知道怎麼用它。這一步沒有截圖，直接說明。</p>
+      <p>觸發 skill 有兩種方式，兩條路都通：</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>方式</th><th>怎麼做</th><th>性質</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>指令</td>
+            <td>在輸入框打 <code>/ingest-paper</code>，後面可以接目標，例如
+              <code>/ingest-paper Papers-2/LICONN.pdf</code></td>
+            <td><strong>強制載入</strong>——不管你怎麼描述任務，這份規範一定進來</td>
+          </tr>
+          <tr>
+            <td>自然語言</td>
+            <td>直接說「ingest 這篇論文」「把這個 PDF 寫成條目」「處理新進的論文」</td>
+            <td><strong>自動匹配</strong>——Agent 比對 skill 的 <code>description</code>，判斷任務相符就自己載入</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose" style="margin-top:1.6rem;">
+      <p>自然語言之所以能觸發，是因為 <code>SKILL.md</code> 開頭的 frontmatter 有一欄 <code>description</code>——
+      它寫的就是「什麼情況下該用這個 skill」。Agent 看到任務跟描述對得上，就會載入。
+      所以那一欄不是註解，是<strong>觸發條件</strong>；寫得太窄會漏觸發、太寬會誤觸發。</p>
+      <p>兩個實務上要知道的事：</p>
+      <ul>
+        <li><strong>生效範圍</strong>：skill 放在專案根的 <code>.claude/skills/</code>，工作目錄在這個專案（或其子資料夾）
+        的工作階段都能用。</li>
+        <li><strong>生效時機</strong>：skill 清單通常在工作階段啟動時載入，剛建好的 skill 可能要開新的工作階段才會出現——
+        跟第 01 步講的「<code>CLAUDE.md</code> 中途改了不會立刻生效」是同一件事。</li>
+      </ul>
+    </div>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>「指令」和「自然語言」的差別，就是<strong>你確定要用</strong>和<strong>讓 Agent 判斷要不要用</strong>的差別。</p>
+      <p>知道自己在做什麼的時候，打斜線指令最省事，不會有判斷失誤。
+      但自然語言觸發的價值在於：你不必記得每一個 skill 的名字——講清楚任務，該進來的規範自己會進來。
+      這正是把規範從 <code>CLAUDE.md</code> 搬進 skill 的另一個好處：<strong>常駐的東西要你記得它在；
+      按需載入的東西，只要你描述得出任務就夠了。</strong></p>
+    </aside>
+  </section>
+
+  <!-- ============ 16 ============ -->
+  <section class="step" id="s16">
+    <div class="step-head">
+      <span class="step-num">16</span>
+      <h2>Skill 可以寫多長</h2>
+    </div>
+
+    <div class="prose">
+      <p>最後一個問題，把這一集的主線收攏起來——規則書要短，那 skill 呢？</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">跟 CLAUDE.md 比起來，skill 可以寫很長？</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>先修正問題的前提：可以長很多，但原因不是「skill 有比較大的額度」，是<strong>付費時機不同</strong>。</li>
+        <li><code>CLAUDE.md</code> 每一輪對話都在場——問個小問題也付、改個錯字也付，所以每一行都要問
+        「這行在<strong>所有</strong>工作裡都用得到嗎」。</li>
+        <li>Skill 只在觸發時載入。你 ingest 論文的時候，那 150 行是該任務的工作說明書，全部會用到——
+        <strong>同一份文字，在對的時機出現是必要成本，在錯的時機出現就是稅</strong>。</li>
+        <li>但長度仍有上限，來自兩個和 <code>CLAUDE.md</code> 相同的機制：稀釋還是會發生（150 行膨脹到 500 行，關鍵規則一樣被沖淡）；
+        而且 skill 載入時 <code>CLAUDE.md</code> 也在場，兩者是<strong>疊加</strong>的。</li>
+        <li>給一個判斷方式：<code>CLAUDE.md</code> 的目標是<strong>四十行都被執行</strong>；
+        skill 的目標是<strong>做完這個任務不用再翻別的東西</strong>。前者求短，後者求夠——「夠」通常比「短」長，但不是越長越好。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/17-skill-length.png" style="width:754px"
+           alt="Agent 解釋 skill 可以較長的原因是付費時機不同，並說明長度仍有上限">
+      <figcaption><b>說明</b>「同一份文字，在對的時機出現是必要成本，在錯的時機出現就是稅」——這句話就是第 05、06 步那個分類判準的另一種說法。</figcaption>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">這一集的收束</span>
+      <p>整集從「CLAUDE.md 是什麼」問起，中間繞過規則怎麼分類、怎麼驗證、怎麼從摩擦長出來，最後回到同一個問題：<strong>一份給 AI 的文件，什麼時候該短、什麼時候可以長？</strong></p>
+      <p>答案不在字數，在<strong>它什麼時候被讀</strong>。常駐的東西付常駐的代價，所以求短；按需載入的東西只在需要時付費，所以求夠。</p>
+      <p>這也是為什麼「先問清楚 CLAUDE.md 是什麼」那一步這麼值得——搞懂它是被貼進對話、每輪都收費的 context，後面所有關於長短、分類、該寫不該寫的判斷，都從這一個事實推得出來。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 收尾 ============ -->
+  <section class="closing">
+    <h2>這一集學到什麼</h2>
+
+    <div class="prose">
+      <p>上一集留下的結論是「規則要從摩擦裡長出來」。這一集回答的是接下來那個更難的問題：
+      <strong>摩擦已經累積了，然後呢？</strong></p>
+      <p>答案不是「全部寫下來」。是<strong>先問每一條從哪裡來，再問它什麼時候會被用到</strong>。</p>
+    </div>
+
+    <h3>關於寫規則的三個觀察</h3>
+    <ul class="obs">
+      <li><b>每條規則都要有出處</b>你給的、撞出來的、慣例、預防。填不出出處的規則，
+      就是上一集被「作廢」推翻的那一種——看起來專業，實際上建立在推測上。</li>
+      <li><b>分類看載入時機，不看重要性</b>常駐的進 <code>CLAUDE.md</code>，
+      任務專屬的打包成 skill。用「重不重要」來分會得到完全相反的答案。</li>
+      <li><b>節制不是什麼都不寫</b>已經驗證過的通則現在就寫；只跑過一次的等累積。
+      同一份材料，不同的證據厚度，該有不同的處置。</li>
+    </ul>
+
+    <h3>關於你的角色</h3>
+    <div class="prose">
+      <p>這一集你做的事有四件：<strong>把名詞問清楚</strong>、<strong>要求列出規則</strong>、
+      <strong>問了那個分類問題</strong>、<strong>驗收</strong>。</p>
+      <p>規則是 Agent 歸納的，出處是它標的，分類判準也是它提的。但<strong>「這應該寫 CLAUDE.md
+      還是寫 skill」這一問是你問的</strong>——而那一問決定了整份文件的形狀。</p>
+      <p>上一集最關鍵的動作是<strong>否決</strong>，這一集是<strong>提問</strong>。
+      兩者的共同點是：都發生在 Agent 大量產出<em>之前</em>。</p>
+    </div>
+
+    <h3>這一集的產出</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>項目</th><th>狀態</th><th>內容</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Wiki/CLAUDE.md</td><td>新增</td><td>常駐規則，含六條鐵則</td></tr>
+          <tr><td>Wiki/index.md</td><td>新增</td><td>知識庫目錄</td></tr>
+          <tr><td>Wiki/tools/</td><td>歸位</td><td>pdftxt.py · pdfimg.py · md2pdf.py</td></tr>
+          <tr><td>Tutorial/tools/</td><td>歸位</td><td>inline_img.py</td></tr>
+          <tr><td>skill ingest-paper</td><td>已包裝</td><td>SKILL.md ＋ 兩支工具程式副本；領域中立，待不同領域的論文檢驗</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h3>檢驗一下</h3>
+        <p>十題單選，答完每一題立刻告訴你對錯與理由。答錯不扣分，
+        重點是看懂為什麼。</p>
+      </div>
+      <a class="cta-btn" href="ep02-quiz.html"
+         data-remote="EP02_QUIZ_ARTIFACT_URL">
+        開始測驗 →
+      </a>
+    </div>
+
+    <script>
+    // 發布在 claude.ai 時，同資料夾的相對連結不存在，改指向線上版本。
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        a.href = a.getAttribute('data-remote');
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

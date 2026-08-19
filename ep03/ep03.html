@@ -1,0 +1,1710 @@
+<meta charset="utf-8">
+<title>把條目倉庫變成知識庫</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+             system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- 開場 ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- 通用文字 ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* 補充區塊 */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* 可收合版本 */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- 影片 ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- 圖例 ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- 目錄 ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- 步驟 ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* 三種聲音 */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* 工具盒 */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* 出處標籤 —— EP02 專用 */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* 截圖 */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* 截圖以統一比例縮放（同一解析度截的，字才會一樣大），不強制撐滿版面 */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* 教學重點 */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- 收尾 ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  .voice.full { border-left-style: dashed; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP03</div>
+    <h1>把條目倉庫變成知識庫</h1>
+    <p class="standfirst">
+      上一集寫好了規則書，也用它產出六篇論文條目。但六個檔案放在資料夾裡，
+      不叫知識庫——那叫倉庫。這一集把它變成真正的 wiki：領域、主題、條目三層各就各位，
+      新論文丟進去就能被吸收，頁面之間彼此連得到。
+    </p>
+    <div class="meta-row">
+      <span>12 個步驟</span>
+      <span>Claude Code · Fable 5</span>
+      <span>Windows 11</span>
+      <span>承接 EP02</span>
+    </div>
+  </header>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/HvZeFE9MWLY"
+       target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="影片開頭畫面：把條目倉庫變成知識庫">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">播放教學影片　·　11 分 36 秒　·　在 YouTube 開啟 ↗</span>
+    </a>
+    <figcaption>
+      <b>教學影片</b>
+      <span>先看影片建立整體概念，再往下讀十二個步驟的細節。</span>
+    </figcaption>
+  </figure>
+
+  <script>
+  // 影片播放：從網頁伺服器開啟時直接內嵌，否則開新分頁到 YouTube。
+  // YouTube 拒絕來自 file:// 的嵌入（錯誤 153），claude.ai 的 CSP 也會擋外部 iframe，
+  // 因此這兩種情況一律走連結。
+  (function () {
+    var ID = 'HvZeFE9MWLY';
+    var box = document.querySelector('a.video-frame');
+    if (!box) return;
+
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;   // 保持純連結行為
+
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = '把條目倉庫變成知識庫';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; ' +
+                'gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.allowFullscreen = true;
+
+      var ok = false;
+      f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f);
+      box.classList.add('playing');
+
+      // 保險：若嵌入被擋（未知的 CSP 環境），還原封面並提示改用連結
+      setTimeout(function () {
+        if (ok) return;
+        f.remove();
+        box.classList.remove('playing');
+        var note = document.createElement('p');
+        note.className = 'video-note';
+        note.textContent = '這個環境不允許內嵌播放，請點封面在 YouTube 觀看。';
+        box.parentNode.appendChild(note);
+      }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>怎麼讀這一頁</h2>
+    <div class="legend-item">
+      <span class="swatch h"></span>
+      <span><b>你的指令</b>完整照登，一字未改。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch a"></span>
+      <span><b>Agent 做了什麼</b>不只是回答內容，還包括它先量了什麼、提了哪些選項、哪些被你否決。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>當時的畫面</b>實際截圖，只是示意——通常只拍到回應的前半。截圖之後的藍綠色區塊「回應的完整重點」補上截圖沒拍到的部分，然後才是教學重點。</span>
+    </div>
+  </section>
+
+  <nav class="toc">
+    <h2>十二個步驟</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>先別動手：看清楚現況</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>兩件事要你裁決</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>條目搬家，試點一頁</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>領域 → 主題：新首頁</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>收件匣與登記簿</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>壓力測試：五篇新論文</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>規則在撞牆的當下就寫</span></a></li>
+      <li><a href="#s08"><span class="n">08</span><span>三個領域、九個主題</span></a></li>
+      <li><a href="#s09"><span class="n">09</span><span>首頁太擠：表格改條列</span></a></li>
+      <li><a href="#s10"><span class="n">10</span><span>更新履歷</span></a></li>
+      <li><a href="#s11"><span class="n">11</span><span>把連結做完整</span></a></li>
+      <li><a href="#s12"><span class="n">12</span><span>Skill 的邊界</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <h2>先別動手：看清楚現況</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">這是現在知識庫的樣子，看起來只是「論文列表」，然後「連結到各論文條目頁面」。我想要把它變成 wiki 的樣子，index 應該是「領域→主題概念」，領域以目前的內容而言，可能只有「果蠅連結體」而已，而「主題概念」可以從現有六篇論文中萃取出來。<br><br>告訴我你打算怎麼做，先別動手</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>沒有立刻提方案。第一個動作是<strong>把六篇條目裡已經埋下的 <code>[[連結]]</code> 全部掃一遍</strong>，
+        看哪些概念被幾篇連到、彼此怎麼交錯——它說這是「規劃的依據，不是動手」。</li>
+        <li>掃完的結論：六篇裡已經有 9 個待寫的概念連結（FlyCircuit 六篇都連、LPU 四篇、標準腦與影像對位四篇……）。
+        <strong>主題不是憑空發明的，是寫條目時自然浮出來的。</strong></li>
+        <li>然後提出計畫：<strong>三層</strong>——領域 index → 主題頁（5 個，是「地圖」）→ 概念頁（約 11 個，是「條目」）→ 論文頁不動。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 出發點</span>
+      <img loading="lazy" decoding="async" src="screenshots/01-index-as-paper-list.png" style="width:950px"
+           alt="Obsidian 裡的 index 頁面：標題「論文」下方是一張六列的表格，每列是一篇論文條目、一句話摘要與圖數">
+      <figcaption><b>說明</b>這就是「倉庫」的樣子：index 只有一張論文表，六個條目平鋪在 Wiki 根目錄。
+      條目本身寫得很滿，但頁與頁之間沒有中間層。</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · Agent 的計畫</span>
+      <img loading="lazy" decoding="async" src="screenshots/02-plan-before-acting.png" style="width:684px"
+           alt="Agent 回覆：先掃六篇的 wiki 連結，指出 index 是論文列表而 wiki 該以概念為節點；提出三層計畫：領域 index、主題頁 5 個、概念頁約 11 個">
+      <figcaption><b>說明</b>注意「Map all wiki-links across the six papers」那一行——先量再說。
+      下方的計畫是<strong>三層</strong>，下一步會被砍成兩層。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>計畫的其餘部分：<strong>五個主題</strong>各講什麼——FlyCircuit 資料庫（六篇共用的地基）、腦區劃分（LPU／hub 的定義與檢驗）、影像處理管線（對位、分割、追蹤）、網路分析（三張尺度不同的網路）、視覺化與檢索。這五個名字之後一個都沒改。</li>
+        <li>約 11 個概念頁候選（FlyCircuit、LPU、標準腦與影像對位、rich club、small world、模組化分析、SPIN 極性預測、中尺度連結體、hemibrain……），每個附一句定義；論文頁不動。</li>
+        <li>index 的改法：領域 → 主題各一行；論文列表降級到頁尾。</li>
+        <li>最後停下來列出「兩個要你先裁決的」——見下一步。</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>「先別動手」四個字，讓你在 Agent 大量產出之前看到它的方案。</strong>
+      這一集的結構決定全部發生在這個時間點——之後只是執行。</p>
+      <p>另一件事：Agent 沒有從腦袋裡掏出「果蠅連結體有哪些主題」，
+      它去數了條目裡已經有的連結。<strong>寫條目時多埋一個 <code>[[概念]]</code> 連結是划算的</strong>——
+      那些連結在這一步變成了結構的證據。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head">
+      <span class="step-num">02</span>
+      <h2>兩件事要你裁決</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <p>計畫的最後，它自己停下來，列出<strong>兩個不該由它決定的問題</strong>：</p>
+      <ol>
+        <li>「果蠅連結體」這個領域名對不對——六篇裡有三篇是工具論文，叫「果蠅連結體」簡潔、叫「果蠅腦影像與連結體」誠實。</li>
+        <li>概念清單誰決定——那 11 個是它從連結裡抽的，但「hub 要不要獨立成頁還是併進 LPU」這種事需要領域直覺。
+        它自己說：<strong>「概念清單是人審過的，不是 Agent 全權決定的。」</strong></li>
+      </ol>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">1. 維持「果蠅連結體」，因為以後這個知識庫還會繼續擴增，到時候再看是否拆分、合併或修改<br>
+      2. 我覺得目前還是兩層就好，現在的內容用你列出的 5 個主題即可。每個主題用「科普文」的風格來寫，至少 1500 字，不設字數上限。一樣請用白話、直接的敘事方式，言簡意賅，廢話不要太多，形容詞只用在客觀的比較、評價上，不要太浮濫或煽情，這是我自己要讀的，沒有要騙流量<br>
+      3. 日後繼續擴充時，如果有些主題需要擴充到三層，再個別處理，以後再說<br>
+      4. 另外，各論文的頁面是不是應該另開目錄來放，不要全部丟在 Wiki/ 的根目錄裡</p>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/03-two-decisions.png" style="width:697px"
+           alt="Agent 列出「兩個要你先裁決的」：領域名稱、誰決定概念清單；下方是使用者的四點回覆；再下方 Agent 整理成兩層結構的目錄樹">
+      <figcaption><b>說明</b>上半是 Agent 提出的兩個問題，中間是四點裁決，下半它已經把結構改成<strong>兩層</strong>：
+      <code>index.md</code>（領域 → 五個主題各一行）＋ <code>topics/</code>。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>把四點裁決整理成執行計畫：兩層目錄樹——<code>index.md</code>（領域 → 五個主題各一行）、<code>topics/</code> 五頁（當時還打算用中文檔名）；主題頁規格：科普文、1,500 字起、每頁末尾〈相關主題〉互連。</li>
+        <li>對第 4 點提出選擇：A. 條目搬進 <code>papers/</code> 與原始 PDF 同住；B. 另開目錄。並問主題頁檔名要中文還是英文。</li>
+        <li>明說暫時不動的：概念頁（第三層）依你的裁決不建，那 9 個 <code>[[概念]]</code> 連結保留為懸空，是日後的候選。</li>
+      </ul>
+    </div>
+
+<aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p><strong>結構是人定的，Agent 負責提出選項並執行。</strong></p>
+      <p>Agent 提三層，你砍成兩層——理由是「以後再看」。這不是它算錯，是<strong>它沒有你對這座知識庫未來的想像</strong>。
+      「這是我自己要讀的，沒有要騙流量」這一句，之後每一頁的文風都從這裡來。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head">
+      <span class="step-num">03</span>
+      <h2>條目搬家，試點一頁</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（承上）</span>
+      <p>對第 4 點它問了一個選擇題：論文條目要搬進哪裡——A. <code>papers/</code>（跟原始 PDF 放一起）還是 B. 另開目錄？
+      它同時提出主題頁檔名要用中文還是英文。</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">關於 4，不是放進 Wiki/papers/，那是原始資料，而是另外開一個來放 md 檔，所以答案是 B。主題頁檔名還是用英文，免得誤解專業術語</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>開 <code>entries/</code>，六篇條目搬進去。<strong>Obsidian 的 <code>[[頁名]]</code> 依檔名解析、不看路徑</strong>，
+        所以 74 個條目間的互連一個都不用改；只有條目內的圖片路徑（<code>assets/</code> → <code>../assets/</code>，34 處）
+        和 PDF 連結（6 處）要修。改完跑腳本驗證全庫連結。</li>
+        <li><strong>不是五頁一起寫，先寫一頁試點</strong>：<code>topics/flycircuit-database.md</code>，約 2,200 字。
+        寫完把「這一頁的寫法」講出來給你看——七節的結構、風格（形容詞只出現在客觀判斷）、數字全部連回條目。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/04-entries-dir-and-pilot-topic.png" style="width:698px"
+           alt="Agent 回覆「B、英文檔名，清楚」，先搬論文頁進 entries/ 改全庫連結驗證，再建立 flycircuit-database.md 試點頁並說明這一頁的寫法：七節結構與風格">
+      <figcaption><b>說明</b>「試點寫好了……正文約 2,200 字」之後那段「這一頁的寫法」，
+      是給你驗收用的——你看過定調，其餘四頁才照這個樣子寫。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>搬家的驗證結果：74 個條目間互連一個不用改；圖片路徑 34 處、PDF 連結 6 處改完；跑一遍全庫連結，零壞連結。</li>
+        <li>試點頁的七節：它是什麼 → 怎麼建起來的（三個技術＋driver 偏差）→ 三個版本的資料量表 → 各篇論文拿它做什麼（建／用／做工具）→ 三處對不起來的數字 → 資料的邊界 → 相關主題。</li>
+        <li><strong>這一頁比六篇條目多出來的東西</strong>：版本對照表、41／43 LPU 與 28,573 計數的跨論文對照、driver 偏差如何一路傳到 2019 年的 rich club 結論——單看任何一篇都看不到。</li>
+        <li>末尾問：「這個樣子 OK 嗎？OK 我就照這個寫其餘四頁。」</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>量產之前先試點一頁。</strong>五頁一起寫、寫完你才說「風格不對」，代價是五頁重來；
+      一頁試點、看過再量產，代價是一頁。這跟上一集「先問清楚再寫規則書」是同一個原則。</p>
+      <p>順帶一提：「主題頁檔名用英文」不是美學。中文檔名裡的專業術語一翻譯就可能歧義，
+      英文檔名讓 <code>[[network-analysis]]</code> 這種連結在任何地方都不會被誤解。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head">
+      <span class="step-num">04</span>
+      <h2>領域 → 主題：新首頁</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">可以，繼續做完</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>照試點的樣子寫完另外四頁：<code>brain-region-parcellation</code>、<code>image-processing-pipeline</code>、
+        <code>network-analysis</code>、<code>visualization-and-retrieval</code>。每頁 2,000–2,600 字，
+        檔頭四欄（title／domain／sources／tags）——<strong><code>sources</code> 列出這頁引用的條目，是日後反查「哪些主題該更新」的依據</strong>。</li>
+        <li>index 改成「領域 → 主題」的表：每個主題一句話、來源哪幾篇。論文列表從首頁消失。</li>
+        <li>回頭改規則：CLAUDE.md 加一條「<strong>ingest 一篇論文要動的不只一頁</strong>——寫條目、還要回頭更新受影響的主題頁」；
+        skill 的完成定義加一項「主題頁已更新，做完才算 ingest 完成」。</li>
+        <li>你隨後補了兩個小修正：首頁檔頭有兩個「Index」，要它取個好名字（→「研究參考文獻知識庫」）；
+        頁尾的「來源」區塊不要（以後會長太大）。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/05-index-domain-topics-table.png" style="width:674px"
+           alt="新首頁：標題「研究參考文獻知識庫」，說明依領域→主題組織，「果蠅連結體」領域下方一張五列表格：主題、一句話、來源">
+      <figcaption><b>說明</b>從「六篇論文的表」變成「一個領域、五個主題的表」。這一版還有「來源」欄和年份——
+      第 09 步會拿掉。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>完工回報：四頁各 2,000–2,600 字；每頁末尾〈這個主題還沒解決的事〉集中各條目的疑點，是下一輪 lint 的起點；五頁互連。</li>
+        <li>規則同步：CLAUDE.md 目錄樹加 <code>topics/</code>、<code>entries/</code>；新增「ingest 要回頭更新受影響的主題頁」；skill 完成定義加一項。log 記下「五個主題是從六篇的待寫連結反推出來的」。</li>
+        <li>你隨後兩點：首頁兩個「Index」→ 它提了幾個名字，定為「研究參考文獻知識庫」；頁尾「來源」區塊拿掉——首頁不列論文，條目的入口是主題頁。這一條也進了 skill 的完成定義（「index 不逐篇列條目」）。</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>條目倉庫和 wiki 的差別，不在有沒有主題頁，在「新東西進來時要動幾頁」。</strong>
+      倉庫是每篇論文一個檔案、互不相干；wiki 是一篇論文進來，它對哪些主題有新證據、推翻或補充了什麼，那幾頁就得改。
+      這一步把這件事寫進規則書，之後的每一次 ingest 都受它約束。</p>
+      <p>主題頁比條目多出來的東西才是它存在的理由：版本對照表、跨論文對不起來的數字、
+      同一件事在不同論文的說法——這些單看任何一篇都看不到。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head">
+      <span class="step-num">05</span>
+      <h2>收件匣與登記簿</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">以後我會持續把新的論文丟進 Wiki/papers/ 裡，每次叫你更新，你就會去那邊找出還沒處理過的論文，新增論文條目、並且視需求修改或擴增「主題概念」、新增「領域」等。所以你得要有個記錄檔</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>先講清楚這改變了什麼：<code>Wiki/papers/</code> 從「副本」變成「<strong>收件匣</strong>」——你丟進去、它來認領。
+        「找出還沒處理過的」要變成一個機械動作：掃資料夾、對登記簿、差集就是待辦。</li>
+        <li>建 <code>registry.md</code>：六篇補登進去。<strong>比對鍵是 PDF 檔名一字不差</strong>；每列記條目名、領域、影響的主題、日期。
+        另設一張「略過」表——刻意不處理的也要登記，否則每次都會被當成待辦。</li>
+        <li>寫 <code>tools/pending.py</code>：掃 <code>papers/</code> 對 <code>registry.md</code>，印出差集；順便警告「登記簿有、磁碟沒有」的檔案。跑一次：六篇全登記、無待辦。</li>
+        <li>把流程寫進規則：CLAUDE.md 新增〈「更新」的定義〉四步（pending → 每篇載入 skill → 立刻登記 → log），
+        以及「新領域的判斷」；skill 完成定義加「登記」一項。</li>
+        <li>它還問了一個問題：鐵則 1 原本說原始資料在專案根目錄的 <code>Papers/</code>，現在收件匣是 <code>Wiki/papers/</code>——
+        鐵則要改指哪裡？你選 A：<code>Wiki/papers/</code> 就是唯一來源，唯讀原則不變。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/06-inbox-and-registry.png" style="width:687px"
+           alt="Agent 回覆：Wiki/papers/ 從副本變成收件匣；建 registry.md 補登六篇；寫 pending.py 跑差集；把流程寫進 CLAUDE.md 與 skill">
+      <figcaption><b>說明</b>四個動作一氣呵成：定義 → 登記簿 → 差集工具 → 寫進規則。
+      「工具正常（六篇全登記、無待辦）」是它自己驗過才往下走。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>登記簿的欄位：PDF 檔名（比對鍵）、條目、領域、影響的主題、處理日期；「略過」表：檔名、理由、日期。</li>
+        <li>CLAUDE.md 新增的〈「更新」的定義〉：1. <code>pending.py</code> 差集　2. 每篇載入 skill（寫條目 → 更新主題頁 → 需要時開新主題、新領域）　3. 每篇做完<strong>立刻</strong>登記——「這一步漏了，下次它會再被當成待辦」　4. log 記摩擦。加上「新領域的判斷」：接不上任何主題就開新領域，領域名先用最直白的。</li>
+        <li>鐵則 1 的問題：原本指向專案根目錄的 <code>Papers/</code>，現在收件匣是 <code>Wiki/papers/</code>——A. 改指 <code>Wiki/papers/</code> 為唯一來源；B. 兩者並列。你選 A。唯讀原則不變：對收件匣只讀不寫、只登記。</li>
+      </ul>
+    </div>
+
+<div class="tools">
+      <h3>這一步寫的程式</h3>
+      <dl>
+        <dt>Wiki/tools/pending.py</dt>
+        <dd>掃 <code>papers/</code>、對 <code>registry.md</code> 裡反引號括起的 PDF 檔名，印出未登記的差集；
+        登記簿有而磁碟沒有的檔案另外警告。</dd>
+        <dt>Wiki/registry.md</dt>
+        <dd>不是程式，是資料——但它是 <code>pending.py</code> 的另一半。兩張表：已處理、略過。</dd>
+      </dl>
+    </div>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>為什麼要一張明表，而不是讓 Agent 從檔案樹推斷「這篇處理過沒」？</strong>
+      Agent 當時的回答值得記：「有沒有對應條目」可以從檔名猜，但猜法會隨命名慣例漂移，
+      而且無法表達「刻意略過」。一張明表把「已處理」變成<strong>事實</strong>而非<strong>推論</strong>。</p>
+      <p>這一步之後，「更新」不再是一句模糊的話——它有定義、有工具、有登記，
+      而且寫在每次都載入的規則書裡。下一步就要拿真的論文來測。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head">
+      <span class="step-num">06</span>
+      <h2>壓力測試：五篇新論文</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">好，我丟新論文進去了，更新</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>跑 <code>pending.py</code>：五篇待處理。快速翻過檔名與摘要就知道——<strong>全部不在原本的「果蠅連結體」裡</strong>
+        （EM 分割、哺乳類光學連結體、神經光子學）。它自己點名：這正是上一集留下的那個條件——「skill 要等一篇非連結體領域的論文來檢驗」。</li>
+        <li>不是一篇一篇硬讀。<strong>開五個子代理各通讀一篇、回報結構化摘要</strong>——五篇合計六十幾萬字元，
+        不進主上下文。等待期間先做不依賴摘要的事：抽五篇的圖、把五個 PDF 檔名一字不差記下來當登記鍵
+        （Neurophotonics 那篇檔名裡有一個 em dash，它特別註記「登記時用 Python 寫入不手打」）。</li>
+        <li>五份摘要回來後才規劃：五篇不是「五個新領域」，是三件事——一篇同領域新主題（蕈狀體，資料換 EM）、
+        三篇一個新領域兩個主題（EM 分割 ＋ 膨脹顯微鏡連結體）、一篇獨立領域（植入式記錄）。你確認後才逐篇 ingest。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/07-update-five-pending.png" style="width:694px"
+           alt="Agent 回覆：Found unprocessed PDFs，五篇待處理全是新領域、正是那個壓力測試；ran 5 agents 各讀一篇；同時抽圖、記錄含非 ASCII 字元的檔名">
+      <figcaption><b>說明</b>「Ran a command, ran 5 agents, used 2 tools」——五個子代理平行讀論文，
+      主代理趁這段時間做別的事。「五個子代理正在各自通讀，完成後會通知我」是它自己說的分工。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>等待子代理期間先抽圖，結果很差：FFN 只抽到 3 張、LICONN 抽到 92 張碎片、Neurophotonics 的向量圖抽不到——決定全部改走頁面渲染。</li>
+        <li>五份摘要回來後的判讀：五篇不是「五個新領域」，是三件事——sciadv（蕈狀體 PN→KC，同領域新主題、資料換 EM）；FFN＋LSD＋LICONN（互相引用、LICONN 用 FFN，一個新領域兩個主題）；Neurophotonics Perspective（跟所有東西無關）。</li>
+        <li>提出三個要你裁決的問題：Neurophotonics (a) 獨立成領域 或 (b) 掛在連結體底下；Nature 系列 Extended Data 十張要不要三層記錄；抽圖失效的處理。等你回覆才開工。</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>「更新」兩個字就啟動了整條流程</strong>——因為第 05 步把定義寫進了規則書。你不用再說「去 papers/ 看看有什麼新的、對一下登記簿、每篇照 skill 做」，
+      這些都在 CLAUDE.md 裡了。這就是規則書「每一輪都在場」的價值。</p>
+      <p>子代理的用法也值得看：五篇論文的全文如果都塞進主對話，後面的判斷會被稀釋。
+      讓子代理各讀一篇、只回報摘要，主代理保持清醒——但它也提醒自己，<strong>摘要不能替代原文</strong>，
+      寫條目時仍要回去抓原文的摘要與圖說。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head">
+      <span class="step-num">07</span>
+      <h2>規則在撞牆的當下就寫</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（承上）</span>
+      <p>五份摘要回來後，它把三個要你裁決的問題一起提出：Neurophotonics 那篇是 Perspective（觀點文），沒有方法、結果——
+      獨立成一個領域，還是掛在連結體底下？Nature 系列的 Extended Data 圖十張，要不要每張三層記錄？
+      以及抽圖工具在這五篇幾乎全部失效（FFN 只抽到 3 張、LICONN 抽到 92 張碎片）。</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">Neurophotonics 那篇：(a)<br><br>
+      撞牆點：<br>
+      當論文本身格式跟「專業文」格式不符合時（如 Perspective），不用硬套，依原文結構處理<br>
+      Extended Data: 只在專業文引用不獨立記錄<br>
+      抽圖失效時走頁面渲染，注意希臘字跟英文的區別，確保正確</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li><strong>三項裁決先寫進 skill，再開工。</strong>它自己說這是「規則從摩擦長出來的即時實例」。</li>
+        <li>開始第一篇（sciadv，同領域）。抽圖走頁面渲染，寫了一支新工具 <code>pdffig.py</code>：依圖說位置找圖頁、裁圖區、把文字層的 panel 字母與圖例一起渲染進去。</li>
+        <li>途中兩個老朋友：heredoc 把 <code>\n</code> 解成真換行（改用 Edit 修那一行）、Windows cp950 編碼錯誤（改寫進 UTF-8 檔案）。
+        它一句「教材裡的老朋友」帶過，沒有停下來。</li>
+        <li>後面四篇的抽圖也各有狀況：bioRxiv 早期版的文字層每個空格帶零寬空格、Neuron 的圖說在圖上方——工具的自動判斷失敗，改手動指定頁碼裁圖。
+        它把這些寫進 skill：「找圖說頁這一步無法完全自動化，渲染後逐張開圖確認仍是必要步驟」。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/08-three-rulings-into-skill.png" style="width:684px"
+           alt="使用者的三項裁決；Agent 回覆「三項裁決收到，寫進 skill 再開工」，接著開始 sciadv 的頁面渲染抽圖，遇到 heredoc 與 cp950 問題">
+      <figcaption><b>說明</b>「Wrote the three user-decided rules into the skill」發生在「Skill 更新完。開始第一篇」之前——
+      順序是刻意的。下面兩行紅色的 <code>ran</code> 是失敗的指令，它各用一句話說明改法。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>sciadv 的四張主圖走頁面渲染，逐張開圖確認 panel 字母與圖例都在；條目 <code>2025-Cheng-MBHybridNetwork</code> 寫完立刻登記；回頭在 <code>network-analysis</code> 加一節「從 EM 連結體看回來」。</li>
+        <li>兩篇之後把手動的「找圖說頁 → 裁圖區 → 併入文字層」包成 <code>pdffig.py</code>；實測五篇：三種排版能自動，bioRxiv 早期版（每個空格帶零寬空格 U+200B）與 Neuron（圖說在圖上方）需手動指定頁碼——「找圖說頁這一步無法完全自動化」寫進 skill。</li>
+        <li>Neurophotonics 的文字層錯得最系統性：µ→m 幾十處、Δ→D、Φ→4、×→3、負號與上標遺失——每個單位對照渲染圖還原；條目〈疑點〉列了 12 處內部不一致。</li>
+      </ul>
+    </div>
+
+<div class="tools">
+      <h3>這一步寫的程式</h3>
+      <dl>
+        <dt>Wiki/tools/pdffig.py</dt>
+        <dd>以頁面渲染抽主圖：搜圖說找圖頁、裁圖區、併入文字層字母與圖例。Sci Adv／Nature／Nat Methods 排版可自動；
+        bioRxiv（零寬空格）與圖說在上方的排版需手動指定頁碼。已登記進 CLAUDE.md 工具表與 skill，取代 <code>pdfimg.py</code> 成為優先工具。</dd>
+      </dl>
+    </div>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>規則不是收尾時才寫，是撞到牆的那一刻寫。</strong>三項裁決若等五篇做完再補進 skill，
+      中間四篇會各自用各自的辦法處理 Perspective 和 Extended Data，事後很難統一。先寫進去，後面四篇就照著走。</p>
+      <p>「Perspective 不硬套六節」這一條還有另一層意義：上一集包 skill 時特別要求「不綁定任何領域」，
+      但當時六篇全是同一種格式的實驗論文。<strong>這一次才是它第一次真的被不同格式的論文檢驗</strong>——
+      而它需要修，這是正常的。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="step" id="s08">
+    <div class="step-head">
+      <span class="step-num">08</span>
+      <h2>三個領域、九個主題</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（沒有新指令）</span>
+      <ul>
+        <li>五篇逐一 ingest：每篇寫完<strong>立刻登進 registry.md</strong>——不等全部做完。這是第 05 步規則書寫的「這一步漏了，下次它會再被當成待辦」。</li>
+        <li>四個新主題頁：<code>mushroom-body-connectivity</code>（果蠅連結體底下）、
+        <code>em-neuron-segmentation</code> 與 <code>expansion-microscopy-connectomics</code>（新領域「連結體重建方法」）、
+        <code>implantable-neurophotonics</code>（新領域「植入式腦活動記錄」）。</li>
+        <li><strong>三個既有主題頁回頭改內文</strong>：網路分析加「資料完整度決定你看到的網路結構」（新論文的下採樣實驗，可回頭檢驗 2019 年那篇 TPR 0.40 的部分圖）；
+        影像處理管線加密集標記路線的指向；FlyCircuit 資料庫加 hemibrain 與 LICONN 的定位。這就是第 04 步那條規則的實際執行。</li>
+        <li>index 加兩個領域區塊；CLAUDE.md 的領域描述從「一個領域五個主題」改成三個領域；log 記這一輪的摩擦。</li>
+        <li>五篇之間也長出交叉：hemibrain 連結體是 FFN 分割的產物、LSD 與 FFN 用同一資料集可直接對數字、LICONN 用 FFN——
+        <strong>兩個領域之間有實質的線</strong>，不是硬湊在一起的。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/09-index-three-domains.png" style="width:828px"
+           alt="Obsidian 首頁：果蠅連結體領域表格增為六列（新增蕈狀體嗅覺迴路連結，來源 2025），下方出現「連結體重建方法」新領域區塊">
+      <figcaption><b>說明</b>左側檔案樹多了 <code>entries/</code>、<code>topics/</code>、<code>registry</code>。
+      表格第六列「蕈狀體嗅覺迴路連結」是同領域的新主題；再往下捲是兩個新領域。
+      「前六篇全部依賴 FlyCircuit；第七篇換成 hemibrain」這句，下一步會被拿掉。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>完工回報的表：五篇條目各自的落點——Cheng 2025 → 果蠅連結體新主題；FFN 2017（bioRxiv 預印本，明標）與 LSD 2023 → 新領域「連結體重建方法」；LICONN 2025 → 同領域另一主題，同時是 FFN 的應用、也是 FlyCircuit 稀疏路線的對照；Moreaux 2020 → 新領域「植入式腦活動記錄」。</li>
+        <li>收穫四點：五篇讀完再規劃比邊做邊猜穩；三條裁決已進 skill；<code>pdffig.py</code> 已登記進 CLAUDE.md 工具表與 skill；文字層符號錯誤擴寫進鐵則 3 的說明。</li>
+        <li>兩件請你看：<code>2025-Cheng-MBHybridNetwork</code> 是你們實驗室的論文，批判層（單一個體、一維分群、模擬極簡、行為相關的循環風險）你最有資格判斷；skill 的領域中立這次才真的被三個領域測過。</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>新領域怎麼判斷？</strong>規則書寫的是：一篇論文若跟現有領域的任何主題都接不上，就開新領域；領域名先用最直白的，日後再合併或拆分。
+      這一輪三個結果都出現了——接得上（蕈狀體）、開新領域但彼此有關（重建方法）、完全獨立（植入式記錄）。</p>
+      <p>skill 的「領域中立」在這裡才算真的通過：三個領域、實驗論文與觀點文都跑過，沒有撞到果蠅專屬的假設。上一集包 skill 時許下的條件，這一集兌現。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section class="step" id="s09">
+    <div class="step-head">
+      <span class="step-num">09</span>
+      <h2>首頁太擠：表格改條列</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">現在知識庫的首頁長這樣，我想做一些修改：<br><br>
+      1. 「主題」那裡不要用表格的方法，看起來太擁擠了<br>
+      2. 不需要「來源」那一欄，以後論文越來越多，寫年份根本沒有辨識度，像第一個「全部 6 篇」也不對了<br>
+      3. 所以「領域」大標題與說明底下，條列「主題」，用 &lt;主題&gt;：&lt;一句話&gt; 這樣的格式呈現即可</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>三個表格改成條列，格式統一為 <code>[[主題]]：一句話</code>。</li>
+        <li>不只拿掉「來源」欄——<strong>順手把說明段裡「前六篇全部依賴 FlyCircuit；第七篇換成 hemibrain」和「六篇共用的地基」也改成不帶計數的說法</strong>。
+        同一個道理：論文一多，這些數字就過期。</li>
+        <li>把這個格式寫進 CLAUDE.md 目錄樹對 index 的描述：「每個領域一段說明，底下條列『[[主題]]：一句話』；不列論文、不寫年份計數」。
+        順便發現舊描述還寫著「論文條目列在頁尾〈來源〉」——那是第 04 步你已經否決的設計，一併修掉。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 指令與動作</span>
+      <img loading="lazy" decoding="async" src="screenshots/10-index-table-to-list.png" style="width:684px"
+           alt="使用者三點修改指令；Agent 回覆：把三個表格改成條列、拿掉會過期的計數描述、把格式寫進 CLAUDE.md 並修掉舊描述">
+      <figcaption><b>說明</b>「Compacted conversation · saved 976.8k tokens」——對話太長被壓縮過，它讀 <code>index.md</code> 重新確認現況再改。
+      最後一行「這個格式應該固定下來，寫進 CLAUDE.md」是它自己加的。</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 改完的首頁</span>
+      <img loading="lazy" decoding="async" src="screenshots/11-index-list-view.png" style="width:820px"
+           alt="Obsidian 首頁改為條列：果蠅連結體領域下六個主題各一行，格式為「主題：一句話」，沒有來源欄；下方是連結體重建方法領域">
+      <figcaption><b>說明</b>同一個首頁，表格變條列、來源欄消失、說明句「近年延伸到 EM 連結體上的突觸級分析」不再帶篇數。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>三個領域區塊全改條列；主題名後面用「：」，所以一句話裡原本的冒號改成破折號，避免撞在一起。</li>
+        <li>拿掉的不只「來源」欄：果蠅連結體說明句「前六篇全部依賴 FlyCircuit；第七篇換成 hemibrain」→「近年延伸到 EM 連結體上的突觸級分析」；FlyCircuit 一句話「六篇共用的地基」→「這條研究線共用的地基」。</li>
+        <li>掃了主題頁與 skill 有沒有殘留「〈來源〉」「全部 6 篇」之類的舊描述——沒有；CLAUDE.md 目錄樹對 index 的描述改成「每個領域一段說明，底下條列『[[主題]]：一句話』；不列論文、不寫年份計數」，「ingest 要加進 index 的〈來源〉」那句也一併改掉。</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>結構頁不寫會過期的數字。</strong>「全部 6 篇」在第七篇進來的當天就錯了。年份、篇數這類東西放在會長大的頁面上，就是埋一個定時炸彈。</p>
+      <p>另一件事：你的指令只有三點，Agent 多做了一步——<strong>把格式寫進規則書</strong>。不寫的話，下一次 ingest 開新主題時，它可能又長回表格。
+      改一次頁面是修現況，改規則書才是修未來。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="step" id="s10">
+    <div class="step-head">
+      <span class="step-num">10</span>
+      <h2>更新履歷</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">接著要有一個「更新履歷」頁面，敘述知識庫的更新歷程，並且在首頁的大標題「研究參考文獻知識庫」下方加一個「更新履歷」連結</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>先看 <code>log.md</code> 有哪些輪次，用它當原料——它區分了兩種紀錄的角色：<strong>log 是給維護者看的摩擦記錄，履歷是給讀者看的「這座庫怎麼長的」</strong>。</li>
+        <li>寫 <code>changelog.md</code>：最新在上，每一輪固定寫「收錄」（哪幾篇、連到條目）和「結構變化」（領域／主題怎麼變）。開頭一句話說明分工並連到 log。</li>
+        <li>首頁標題下方加 <code>[[changelog|更新履歷]]</code>；CLAUDE.md 目錄樹登記 changelog，
+        「更新」流程第 4 步加上「changelog 加一段」——<strong>以後每輪 ingest 會自動續寫，不用你再提醒</strong>。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 指令與動作</span>
+      <img loading="lazy" decoding="async" src="screenshots/12-changelog-request.png" style="width:694px"
+           alt="使用者要求更新履歷頁面；Agent 回覆先看 log.md 用它當原料，區分 log 給維護者、履歷給讀者，建立 changelog.md 並加首頁連結、寫進 CLAUDE.md">
+      <figcaption><b>說明</b>四點回報的最後一點：「CLAUDE.md 目錄樹登記了 changelog，『更新』流程第 4 步加上『changelog 加一段』」。
+      新頁面要活下去，得讓規則書知道它存在。</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 履歷頁</span>
+      <img loading="lazy" decoding="async" src="screenshots/13-changelog-page.png" style="width:656px"
+           alt="Obsidian 的更新履歷頁：說明給讀者看、細節在 log；2026-08-18 第二批五篇——收錄四點、結構變化、其他">
+      <figcaption><b>說明</b>截圖這一版把「首頁改條列」寫在 08-18 那一輪底下——後來發現日期不對（那是 08-19 的事），拆成獨立一輪。
+      履歷的日期要對，否則它就只是另一份 log。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>履歷的四輪（當時）：08-18 第二批五篇（領域 1→3、主題 5→9）；08-18 條目倉庫變 wiki＋收件匣登記簿；08-17 第一批補齊六篇＋skill 定型；08-16 第一篇條目與第一版規則。每輪固定「收錄」與「結構變化」兩欄。</li>
+        <li>目錄樹的兩行改成一組對照：<code>changelog.md</code>「給讀者看的成長史」、<code>log.md</code>「給維護者看的摩擦記錄」。</li>
+        <li>後續修正：首頁改條列與連結補全是 08-19 的事，從 08-18 那輪拆出來成獨立一輪——「履歷的日期要對，否則它就只是另一份 log」。</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>兩種紀錄，兩種讀者。</strong>log 記摩擦、否決、試錯，是規則的來源，也是這門課教材的原料；履歷記「收了什麼、結構怎麼變」，是給翻開知識庫的人看的。
+      混在一起，兩邊的讀者都會找不到要的東西。</p>
+      <p>「加一個頁面」這件事的完整版有三步：寫頁面、加入口、<strong>寫進規則書讓它以後自動續寫</strong>。少了第三步，這頁下個月就停在今天。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section class="step" id="s11">
+    <div class="step-head">
+      <span class="step-num">11</span>
+      <h2>把連結做完整</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">檢查所有的頁面，把彼此的超連結做完整（我看了一下目前的狀態，還能有更多連結）</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li><strong>先做一張連結矩陣</strong>——主題→主題、主題→條目、條目→主題、條目→條目——看誰連了誰、誰該連但沒連。不憑印象補。</li>
+        <li>矩陣揭露三類缺口：<strong>六篇早於主題頁寫成的條目完全沒有連回主題頁</strong>（它們的〈相關頁面〉只有概念候選與其他條目——「先有條目後長主題」的必然遺留）；
+        主題頁之間幾組漏連（腦區劃分↔蕈狀體、網路分析↔視覺化）；條目間反向連結缺（hemibrain 是 FFN 分割的產物——FFN 條目連了 Cheng，Cheng 條目沒連 FFN）。</li>
+        <li>要寫「為什麼相關」的一句話，所以先抓每篇條目正文裡提到其他條目的上下文，確保理由對得上原文；然後兩支腳本批次改 11 篇條目與 9 個主題頁。</li>
+        <li>條目的〈相關頁面〉定型為四行：<strong>所屬主題／另見主題／相關條目（每條附一句為什麼相關）／概念</strong>。改完重跑矩陣驗證，沒有壞連結。</li>
+        <li>刻意保留幾組單向連結（例如 Perspective 那篇對 Kaleido 的「引用陷阱」只從一邊連過去）——它說：<strong>「對稱不是目標，讀者從任一端出發都找得到路才是。」</strong></li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/14-link-matrix.png" style="width:685px"
+           alt="Agent 回覆：先做一張連結矩陣看誰連了誰；抓條目正文的上下文確保理由對得上；建 relink_entries.py 改 11 篇條目、relink_topics.py 改主題頁與首頁與 skill；重跑矩陣驗證">
+      <figcaption><b>說明</b>「Ran 4 commands」是矩陣，「Ran 2 commands, read ctx.txt」是抓上下文，之後才是兩支改檔腳本。
+      改之前先量、改之後再量一次。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>矩陣改前的數字：六篇舊條目連回主題頁 <strong>0 個</strong>；改後每篇 3–7 個。主題頁之間從每頁 2–6 個升到 4–8 個。</li>
+        <li>正文加的實質連結：Cheng 的 hemibrain 標明「由 FFN 分割，見 [[2017-Januszewski-FFN]]」；2011／2015／2019 的〈未來〉指向 Cheng 與 LICONN；2019 加「以 NR 重建網路看 TPR 是否改變」；首頁加登記簿連結。</li>
+        <li>兩個判斷、明說可推翻：概念候選連結（FlyCircuit、LPU、rich club、hemibrain 等 11 個）維持懸空——是你先前裁定的第三層待寫標記，只在概念行加註「內容目前在所屬主題頁裡」；刻意保留幾組單向連結。第二輪又補回四組值得對稱的（2015↔2021、2024↔FFN、LICONN↔Kaleido、網路分析→植入式記錄）。</li>
+        <li>格式寫進 skill（〈相關頁面〉四行＋「被連到的既有條目也要回連」）；log 記一筆、履歷加一段。</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>先量再改。</strong>「還能有更多連結」是一個印象；連結矩陣把它變成一張表，哪裡缺、缺幾個、是不是系統性的，一目了然。改完再跑一次，就知道補齊了沒。</p>
+      <p>「為什麼相關」那一句話是關鍵。沒有理由的連結列表在 11 篇時還能看，到 50 篇就是噪音。
+      這也是為什麼它把格式寫進 skill，並在完成定義加一項「被本篇連到的既有條目也要回連本篇」——下一篇進來時就不會再欠。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 12 ============ -->
+  <section class="step" id="s12">
+    <div class="step-head">
+      <span class="step-num">12</span>
+      <h2>Skill 的邊界</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">「格式已寫進 skill」你有寫新 skill 嗎？</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <p>沒有——是改既有的 <code>ingest-paper</code>，兩處：結構表裡「相關頁面」那一列，和完成定義 checklist。
+      它接著自己劃了一條線：這兩處是<strong>寫條目時</strong>用的，放在 <code>ingest-paper</code> 裡是對的；
+      但今天做的另一件事——全庫連結矩陣、找漏連——是 <strong>lint 動作，不屬於 ingest</strong>，那支矩陣腳本目前是即席寫的、沒有進 <code>tools/</code>。
+      如果要「檢查連結」變成可重複觸發的動作，那才需要一個新的 skill。</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">目前 ingest-paper skill 會做哪些事？</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <p>讀 <code>SKILL.md</code>，一張表列出七節各管什麼（工具、檔名與 frontmatter、標題區、固定結構、圖、數字與公式、批判層、完成定義），
+      並說明它<strong>不做</strong>的：找待處理的 PDF（那在 CLAUDE.md 的「更新」流程）、全庫 lint。
+      然後主動指出一個缺口：<strong>主題頁該怎麼寫沒有寫在任何規則裡</strong>——那次是試點一頁你看過定調的，寫法只留在 log。下一輪 ingest 要開新主題，會靠記憶。</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">更新的部分有放在這個 skill 裡嗎？</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <p>「更新」分兩層：<strong>入口</strong>（pending → 迴圈 → 登記 → 履歷）在 CLAUDE.md，因為每一輪都要在場；
+      <strong>每一篇怎麼處理</strong>（寫條目 → 更新主題頁 → 登記 → log）在 skill，因為只在寫條目時載入。
+      registry 兩邊都寫——重複但無害，這一步漏了代價高。changelog 只在 CLAUDE.md——履歷是「一輪」的事，不是「一篇」的事。</p>
+      <p>你說「好」，它把主題頁寫法補成 skill 第七節（檔名、四欄檔頭、科普文風格、末尾兩節、index 格式），完成定義順延為第八節並指過去。</p>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/15-skill-boundary.png" style="width:687px"
+           alt="使用者問「你有寫新 skill 嗎？」；Agent 回覆沒有，是改既有的 ingest-paper 兩處，並劃分 lint 與 ingest 的界線；使用者再問 skill 會做哪些事，Agent 讀 SKILL.md 說明">
+      <figcaption><b>說明</b>「Searched 所屬主題|回連本篇」——它用搜尋證明改在哪兩行。
+      接著那段「這兩處是給寫條目時用的……但今天做的另一件事是 lint 動作」，是它自己劃的邊界。</figcaption>
+    </figure>
+
+    
+
+    <div class="voice v-agent full">
+      <span class="voice-label">回應的完整重點 · 截圖之後</span>
+      <ul>
+        <li>skill 七節各管什麼（一張表）：工具／檔名與 frontmatter／標題區／固定結構八區塊／圖的三層與六條驗證／數字與公式／批判層三分類與跨論文警覺／完成定義 13 項。不做的：找待處理 PDF、主題頁寫法、全庫 lint。</li>
+        <li>「更新」的兩層：入口在 CLAUDE.md、每篇收尾在 skill；registry 兩邊都寫（重複但無害）；changelog 只在 CLAUDE.md；新領域／新主題的判斷只在 CLAUDE.md 一段話——<strong>主題頁怎麼寫沒有規範，是缺口</strong>。</li>
+        <li>你說「好」之後補的第七節：檔案（<code>topics/</code> 英文 kebab-case、四欄檔頭、<code>sources</code> 反查用）、寫法（科普文、1,500 字起、多出來的東西才是存在理由、開頭引言、末尾〈還沒解決的事〉與〈相關主題〉、更新既有頁改內文不只加連結）、index 格式（不寫年份篇數）。完成定義順延為第八節並指過去；skill 的 description 加「主題頁的新開與更新」。</li>
+      </ul>
+    </div>
+
+<aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>「你有寫新 skill 嗎？」是驗收。</strong>Agent 說「格式已寫進 skill」，這句話有兩種可能，你問清楚是哪一種。
+      問完得到的不只是答案，還有它自己劃出來的邊界：什麼屬於 ingest、什麼屬於 lint、什麼屬於「更新」的入口。</p>
+      <p>這條邊界用的判準跟上一集一模一樣——<strong>載入時機</strong>。每輪都要在場的進 CLAUDE.md，寫條目時才用的進 skill，
+      可重複觸發但獨立的動作（lint）等它真的重複發生再包。而它主動指出「主題頁寫法只留在 log」——一條只在 log 裡的規則，等於沒有規則。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 收尾 ============ -->
+  <section class="closing">
+    <h2>這一集學到什麼</h2>
+
+    <div class="prose">
+      <p>上一集的產出是規則書和六篇條目。這一集回答的是：<strong>有了條目，然後呢？</strong></p>
+      <p>答案是三件事：長出中間層（主題頁）、定義「更新」（收件匣 → 登記簿 → 每篇動不只一頁）、
+      讓頁面彼此連得到。做完這三件，它才從一堆檔案變成一座 wiki。</p>
+    </div>
+
+    <h3>關於建 wiki 的三個觀察</h3>
+    <ul class="obs">
+      <li><b>結構是人定的</b>Agent 提三層、量連結、列選項；兩層還是三層、領域叫什麼、文風怎麼寫，是你裁決的。
+      「先別動手」讓這些裁決發生在產出之前。</li>
+      <li><b>「更新」要有定義</b>收件匣、登記簿、差集工具、四步流程，寫進每輪都在場的規則書——
+      之後「更新」兩個字就能啟動整條流程。而 ingest 一篇論文要動的不只一頁，這是倉庫與 wiki 的分水嶺。</li>
+      <li><b>改一次頁面是修現況，改規則書才是修未來</b>首頁改條列、加履歷頁、連結四行格式——每一次 Agent 都順手把格式寫進 CLAUDE.md 或 skill。
+      不寫，下一輪就長回原樣。</li>
+    </ul>
+
+    <h3>關於你的角色</h3>
+    <div class="prose">
+      <p>這一集你做的事：<strong>叫它先別動手</strong>、<strong>裁決結構</strong>、<strong>定義「更新」</strong>、<strong>丟五篇論文進去測</strong>、
+      <strong>看首頁不順眼就改</strong>、<strong>追問「你有寫新 skill 嗎」</strong>。</p>
+      <p>Agent 做的事更多——掃連結、寫九個主題頁、五篇 ingest、寫兩支工具、做連結矩陣。但每一個結構性的決定都是你下的，
+      而且都下在它動手之前。上一集的關鍵動作是<strong>提問</strong>，這一集是<strong>裁決</strong>。</p>
+    </div>
+
+    <h3>這一集的產出</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>項目</th><th>狀態</th><th>內容</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Wiki/topics/</td><td>新增</td><td>9 個主題頁，三個領域；英文檔名、四欄檔頭、科普文</td></tr>
+          <tr><td>Wiki/entries/</td><td>搬入＋新增</td><td>6 篇搬入、5 篇新 ingest，共 11 篇；〈相關頁面〉四行格式</td></tr>
+          <tr><td>Wiki/index.md</td><td>重寫</td><td>領域 → 主題條列，不列論文、不寫計數；標題下連更新履歷與登記簿</td></tr>
+          <tr><td>Wiki/registry.md</td><td>新增</td><td>論文處理登記簿：已處理 11 篇＋略過表</td></tr>
+          <tr><td>Wiki/changelog.md</td><td>新增</td><td>更新履歷，給讀者；與 log.md 分工</td></tr>
+          <tr><td>Wiki/CLAUDE.md</td><td>更新</td><td>〈「更新」的定義〉四步、新領域判斷、index 格式、鐵則 1 改指 Wiki/papers/</td></tr>
+          <tr><td>skill ingest-paper</td><td>更新</td><td>三項撞牆規則、相關頁面四行、主題頁寫法（第七節）、完成定義加登記與回連</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>這一集寫的程式</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>程式</th><th>位置</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>pending.py</code></td><td>Wiki/tools/</td><td>掃 papers/ 對 registry.md，列出未登記的 PDF</td></tr>
+          <tr><td><code>pdffig.py</code></td><td>Wiki/tools/</td><td>頁面渲染抽主圖，含文字層 panel 字母；取代 pdfimg.py 成為優先工具</td></tr>
+          <tr><td>連結矩陣腳本</td><td>即席（scratchpad）</td><td>主題／條目四向連結統計；未歸位——Agent 註記「下一輪 lint 還要用，該進 tools/」</td></tr>
+        </tbody>
+      </table>
+      <p style="color:var(--ink-soft);font-size:.92rem;margin-top:.6rem;">沒有安裝新的軟體；PDF 處理仍用 PyMuPDF（上一集裝的）。子代理（讓五個 Agent 各讀一篇）是 Claude Code 內建功能，不是外掛。</p>
+    </div>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h3>檢驗一下</h3>
+        <p>十題單選，答完每一題立刻告訴你對錯與理由。答錯不扣分，
+        重點是看懂為什麼。</p>
+      </div>
+      <a class="cta-btn" href="ep03-quiz.html"
+         data-remote="EP03_QUIZ_ARTIFACT_URL">
+        開始測驗 →
+      </a>
+    </div>
+
+    <div class="next">
+      <b>下一集</b>　知識庫建好了，裡面有十一篇論文、九個主題。EP04 反過來用它：
+      <strong>從知識庫的內容建立一門新課程</strong>——主題頁怎麼變成課綱、條目怎麼變成講義、
+      哪些是 Agent 能生成的、哪些仍然要你決定。
+    </div>
+
+    <script>
+    // 發布在 claude.ai 時，同資料夾的相對連結不存在，改指向線上版本。
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        a.href = a.getAttribute('data-remote');
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

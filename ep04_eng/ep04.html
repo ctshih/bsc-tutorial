@@ -1,0 +1,1630 @@
+<meta charset="utf-8">
+<title>Building a Course out of the Knowledge Base</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
+           "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- General text ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* Supplementary blocks */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* Collapsible variant */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- Video ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- Legend ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- Table of contents ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- Steps ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* The three voices */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* Tools box */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* Origin tags */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* Screenshots */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* Screenshots scale uniformly (captured at one resolution, so text is the same size) */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* Takeaways */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- Closing ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  .voice.full { border-left-style: dashed; }
+  .closing ol.think { max-width: var(--col); padding-left: 1.4rem; display:flex; flex-direction:column; gap:.7rem; }
+  .closing ol.think li { line-height:1.7; color: var(--ink); }
+  .closing ol.think li::marker { font-family: var(--mono); color: var(--ink-faint); }
+
+  /* ===== English-edition additions (tools/english-edition.css) ===== */
+
+/* English-edition styles for a tutorial page (extracted from ep01_eng, shared by every epNN_eng)
+
+   Append the whole file to the end of that episode's Chinese <style> block, and change two things:
+     --sans / --serif  put the Latin faces first
+     body line-height  1.78 -> 1.68 (English does not need the looser leading)
+
+   .edition          the "About this edition" note in the header
+   .v-human .orig    the prompt's original wording, under its English translation
+   details.transcript / .tr-*   the English transcript panel under a screenshot
+   .table-note       the small note under a table */
+
+/* ---------- Edition note ---------- */
+
+  .edition {
+    margin: 2.2rem 0 0;
+    padding: 1.1rem 1.4rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .93rem;
+    line-height: 1.6;
+  }
+  .edition b { color: var(--ink); }
+  .edition p { margin: 0 0 .5rem; }
+  .edition p:last-child { margin-bottom: 0; }
+
+/* the original wording, verbatim */
+  .v-human .orig {
+    margin: .8rem 0 0;
+    padding-top: .65rem;
+    border-top: 1px dashed var(--human-rule);
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    white-space: pre-wrap;
+  }
+  .v-human .orig .orig-label {
+    display: block;
+    font-size: .62rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--human);
+    opacity: .85;
+    margin-bottom: .2rem;
+    font-weight: 600;
+  }
+
+/* English transcript of a screenshot */
+
+  details.transcript {
+    max-width: 52rem;
+    margin: .9rem 0 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    font-size: .9rem;
+    line-height: 1.55;
+  }
+  details.transcript > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: .7rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  details.transcript > summary::-webkit-details-marker { display: none; }
+  details.transcript > summary::marker { content: ""; }
+  details.transcript > summary::before {
+    content: "\2212";
+    font-family: var(--mono);
+    font-size: .95rem;
+    line-height: 1;
+    width: 1.2rem; height: 1.2rem;
+    flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.transcript:not([open]) > summary::before { content: "+"; }
+  details.transcript > summary .hint {
+    margin-left: auto;
+    font-size: .64rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+    text-transform: none;
+  }
+  details.transcript[open] > summary { border-bottom: 1px solid var(--rule-soft); }
+  .tr-body { padding: 1rem 1.2rem 1.1rem; }
+  .tr-body > :last-child { margin-bottom: 0; }
+  .tr-body p { margin: 0 0 .55rem; }
+  .tr-body .tr-user {
+    /* the user's prompt: a bubble on the right, sized to its text, like the real UI */
+    display: block;
+    width: fit-content;
+    max-width: 78%;
+    margin: 0 0 .9rem auto;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: .55rem .9rem;
+    white-space: pre-wrap;
+    color: var(--ink);
+  }
+  .tr-tool {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    margin: .3rem 0 .6rem;
+  }
+  .tr-tool.fail { color: #B3341F; }
+  .tr-tool .diff-add { color: #2E7D32; }
+  .tr-tool .diff-del { color: #B3341F; }
+  .tr-h { font-weight: 600; margin: .85rem 0 .3rem; }
+  .tr-quote {
+    margin: .3rem 0 .7rem;
+    padding: .1rem 0 .1rem .9rem;
+    border-left: 2px solid var(--rule);
+    color: var(--ink-soft);
+  }
+  .tr-pane { border-top: 1px dashed var(--rule); padding-top: .8rem; margin-top: 1rem; }
+  .tr-pane:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+  .tr-pane-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--agent);
+    font-weight: 600;
+    margin-bottom: .45rem;
+  }
+  .tr-note { color: var(--ink-faint); font-size: .82rem; }
+  .tr-cut { color: var(--ink-faint); }
+  .tr-body table { min-width: 0; font-size: .85rem; margin: .3rem 0 .8rem; }
+  .tr-body th, .tr-body td { padding: .38rem .6rem; }
+  .tr-body td:first-child { font-family: var(--sans); font-size: .85rem; white-space: normal; }
+  .tr-body dl.kv {
+    margin: 0 0 .8rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .2rem .9rem;
+    font-size: .85rem;
+  }
+  .tr-body dl.kv dt { font-family: var(--mono); color: var(--ink-faint); font-size: .8rem; }
+  .tr-body dl.kv dd { margin: 0; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .tr-tool.fail, :root:not([data-theme="light"]) .tr-tool .diff-del { color: #F0907A; }
+    :root:not([data-theme="light"]) .tr-tool .diff-add { color: #7BC47F; }
+  }
+  :root[data-theme="dark"] .tr-tool.fail, :root[data-theme="dark"] .tr-tool .diff-del { color: #F0907A; }
+  :root[data-theme="dark"] .tr-tool .diff-add { color: #7BC47F; }
+
+  .table-note {
+    font-size: .82rem;
+    color: var(--ink-faint);
+    margin: .5rem 0 0;
+  }
+
+</style>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP04 · English edition</div>
+    <h1>Building a Course out of the Knowledge Base</h1>
+    <p class="standfirst">
+      The knowledge base is built: eleven papers, nine topics. It is not only an encyclopedia you can
+      look things up in — the “topic concepts” already worked out inside it are a ready-made syllabus.
+      This episode takes the first topic, <strong>the FlyCircuit database</strong>, as the demonstration:
+      how a topic page becomes seven lessons, how an entry becomes lecture notes, what the Agent can
+      generate, and what still has to be your decision.
+    </p>
+    <div class="meta-row">
+      <span>7 lessons</span>
+      <span>Source: Wiki/topics/flycircuit-database.md</span>
+      <span>Claude Code · Fable 5</span>
+      <span>Follows on from EP03</span>
+    </div>
+  </header>
+
+  <aside class="edition">
+    <p><b>About this edition.</b> This is the English version of EP04. The session it records was
+    conducted in Traditional Chinese; prompts are given in English with the original wording underneath,
+    and the passages quoted from the knowledge base use the wording of its English edition. Unlike
+    EP01–EP03 there are no session screenshots here — <b>the figures on this page are the papers' own
+    figures and were already in English</b>, so nothing has been retouched and no transcript is needed.
+    The knowledge base this course is built from is available in English as <code>Wiki_Eng/</code>, in
+    particular the topic page <code>topics/flycircuit-database.md</code> that this episode turns into a
+    course, so you can read the source material itself rather than a description of it.</p>
+  </aside>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/0nX4NSlVFKU" data-remote="https://youtu.be/0nX4NSlVFKU"
+       target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="Opening frame of the video: Building a Course out of the Knowledge Base">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">Play the tutorial video　·　16 min 19 s　·　watch on YouTube ↗</span>
+    </a>
+    <figcaption>
+      <b>Tutorial video</b>
+      <span>Watch the video first for the big picture, then read the seven lessons below for the details.</span>
+    </figcaption>
+  </figure>
+
+  <script>
+  // Video playback: embed inline when served from a web server, otherwise open in a new tab.
+  // YouTube refuses embeds from file:// (error 153) and claude.ai's CSP blocks external
+  // iframes, so both of those cases fall back to a plain link.
+  // The YouTube ID is filled in after upload; until then the card links to the local mp4.
+  (function () {
+    var ID = '0nX4NSlVFKU';
+    var box = document.querySelector('a.video-frame');
+    if (!box || !ID) return;
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = 'Building a Course out of the Knowledge Base';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.allowFullscreen = true;
+      var ok = false;
+      f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f);
+      box.classList.add('playing');
+      setTimeout(function () {
+        if (ok) return;
+        f.remove(); box.classList.remove('playing');
+        var note = document.createElement('p');
+        note.className = 'video-note';
+        note.textContent = 'Inline playback is not allowed here — click the poster to watch on YouTube.';
+        box.parentNode.appendChild(note);
+      }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>How to read this page</h2>
+    <div class="legend-item">
+      <span class="swatch h"></span>
+      <span><b>From the knowledge base</b>A passage copied from the topic page, not a word changed —
+      this is the raw material of the course.</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch a"></span>
+      <span><b>Numbers and sources</b>The key numbers this lesson uses, and which entry each of them
+      comes from.</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>What to remember here</b>The takeaway of the lesson — not a recap, but why it is worth
+      learning.</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>Figures from the knowledge base</b>Original figures from the papers, picked out of the
+      entries, each labeled with its entry and its original figure number; the caption says only what to
+      look at, and the full panel-by-panel translation stays in the entry.</span>
+    </div>
+  </section>
+
+  <section class="step" id="s00" style="border-top:none;padding-top:0;">
+    <div class="step-head">
+      <span class="step-num">00</span>
+      <h2>Why Teach from the Knowledge Base</h2>
+    </div>
+    <div class="prose">
+      <p>The last three episodes turned a batch of papers into a wiki: entries are the evidence, topic
+      pages are the backbone, the front page is the map. There are two ways to read it. The first is to
+      use it as an encyclopedia — look something up whenever it occurs to you, follow a topic page to an
+      entry and an entry back to a topic page. The second is to <strong>use it to teach yourself</strong>:
+      a topic page is already a general-audience article about what a subject is doing, in seven sections,
+      with every number linked back to an entry and a list of open questions at the end. Is that not a
+      syllabus?</p>
+      <p>That is what this episode does. The source material is a single page —
+      <code>Wiki/topics/flycircuit-database.md</code> — and its seven sections become seven lessons; the
+      eight entries it cites become the numbers and sources in the lecture notes; its “Open questions”
+      section becomes the questions to think about at the end; the “three numbers that don't line up” it
+      records become quiz questions. <strong>The Agent lays out the structure, links the numbers back to
+      their sources, and rewrites the text in the voice of a lecture; what the course teaches, how deep it
+      goes, and which sentence is the point — those are still yours to decide.</strong> At the foot of the
+      page is a table showing which section of the topic page each lesson came from.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">From the knowledge base · the topic page's opening</span>
+      <p>The foundation shared by six papers. This page covers what it is, how it was built, how much is
+      in each version, which part of it each paper used — and three places where the numbers do not line
+      up across papers.</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>The only difference between a wiki's topic page and a course is <strong>where the reader
+      stands</strong>: the first is for you, who already have the context, to look things up in; the second
+      walks someone without the context through it from the start. Same content, different order and
+      different voice. So the syllabus does not have to be invented —
+      <strong>the topic page's seven sections are the seven lessons</strong>.</p>
+    </aside>
+  </section>
+
+  <nav class="toc">
+    <h2>The seven lessons</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>What It Is: A Brain Photographed One Neuron at a Time</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>How It Was Built: Three Techniques and One Bias</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>Three Versions, and How the Data Grew</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>What Each of the Six Papers Does with It</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>Three Numbers That Don't Line Up</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>The Limits of the Data</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>Two New Routes: EM and Expansion Microscopy</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <h2>What It Is: A Brain Photographed One Neuron at a Time</h2>
+    </div>
+    <div class="prose">
+      <p>FlyCircuit is a public image database of single neurons from the fly brain (at flycircuit.tw).
+      Each record in it is <strong>the complete volumetric image of one neuron</strong>: genetic techniques
+      make only one (or very few) neurons in a fly brain fluoresce, its three-dimensional shape is imaged,
+      and it is then registered into the coordinate system of a “standard brain”. Repeat that tens of
+      thousands of times and you have an image library of tens of thousands of neurons in one coordinate
+      system.</p>
+      <p>Why does it deserve a lesson? Because of the first six papers in this knowledge base's
+      “Drosophila connectome” domain, <strong>not one fails to depend on it</strong>. The 2011 paper built
+      it; the five that follow either use its data for analysis or build tools for it. To understand the
+      relationships among those six papers, you first have to know what this database is, how much data is
+      in each version, and where its quality limits lie.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">From the knowledge base</span>
+      <p>Each record in it is the complete volumetric image of one neuron: genetic techniques make only
+      one (or very few) neurons in a fly brain fluoresce, its three-dimensional shape is imaged, and it is
+      then registered into a standard-brain coordinate system. Repeat tens of thousands of times and you
+      have a library of tens of thousands of neurons in one coordinate system.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2011-Chiang-FlyCircuit · Figure 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig1.jpg" style="width:760px" alt="Figure 1 of the 2011 paper: three fluorescent neurons in one sample brain, the segmentation result, and the neurons put back; on the right, seven neurons from different driver lines shown together in the standard brain">
+      <figcaption><b>What to look at</b>Column A, top to bottom: one sample brain with three fluorescent neurons in it → each one cut out separately → the cut-out neurons put back into the original brain. C shows seven neurons from different driver lines and different flies placed into one standard brain — <strong>this is what the database sets out to do</strong>. B is the number of neurons collected at the time.</figcaption>
+    </figure>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Numbers and sources</span>
+      <ul>
+        <li><strong>One record = the 3D image of one neuron</strong>, not a photograph — entry 2011-Chiang-FlyCircuit</li>
+        <li>The paper that built it: Chiang et al., <em>Current Biology</em> 2011; the standard brain was segmented into <strong>58</strong> morphologically distinguishable neuropils</li>
+        <li>Papers that depend on it: 2011, 2015, 2018, 2019, 2021, 2024 — the topic page's <code>sources</code> field</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>The word “database” makes it easy to picture a table. FlyCircuit's unit is
+      <strong>the volumetric image of one neuron</strong> — every number that follows (sixteen thousand,
+      twenty-eight thousand) counts neurons, not flies and not photographs. Lesson 05 shows that even the
+      papers themselves once confused the unit.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head">
+      <span class="step-num">02</span>
+      <h2>How It Was Built: Three Techniques and One Bias</h2>
+    </div>
+    <div class="prose">
+      <p><strong>Light up one neuron at a time.</strong> The MARCM genetic technique makes fluorescent
+      protein express in only a very small number of random neurons. Each fly brain has only one or a few
+      bright neurons and everything else dark, and the bright one is imaged with a confocal microscope.
+      The method is not difficult; the scale is — imaging sixteen thousand neurons means dissecting,
+      staining and imaging thousands of flies.</p>
+      <p><strong>A standard brain.</strong> Sixteen thousand neurons come from sixteen thousand different
+      flies, and every brain differs slightly in size and shape. To put them into one coordinate system,
+      you first need a “standard brain” as the base map. The team did <strong>not</strong> take the
+      approach of averaging dozens of brains — averaging blurs the image and makes boundaries disappear —
+      but computed the average outer shape from 34 samples and then picked, from the real samples, the one
+      closest to that average to serve as the model. The price is that the standard brain is, in the end,
+      one individual.</p>
+      <p><strong>Image registration.</strong> Each single-neuron image is “pasted” onto the standard brain
+      by a mathematical transformation. This step has error, and the paper measured it: checked with VAM
+      neurons, which every fly has and whose projection path is fairly fixed, whole-brain registration
+      alone puts the terminals in the correct position 69% of the time, rising to 95% if a second, finer
+      registration is done locally. <strong>That number is the accuracy ceiling for all the cross-individual
+      analysis that follows.</strong></p>
+      <p><strong>A bias that is often overlooked.</strong> Neurons are labeled by Gal4 drivers — which
+      neurons made it into the database is determined by the drivers used, not by uniform sampling of the
+      whole brain. The 2011 paper did the arithmetic itself: nine drivers together label more than one
+      hundred and fifty thousand neurons, fifty percent more than the estimated total for the whole brain,
+      meaning the drivers do not faithfully reflect endogenous expression. This bias is carried along with
+      the data into every downstream analysis.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">From the knowledge base</span>
+      <p>The team did not take the approach of averaging dozens of brains (averaging blurs the image and
+      makes boundaries disappear); instead they picked from the real samples the one closest to the average
+      and used it as the model.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2011-Chiang-FlyCircuit · Figure 2</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig2.jpg" style="width:760px" alt="The nine steps of making the standard brain: imaging, a signed distance map to obtain the average inner and outer brain surfaces, picking the best-matching representative brain, segmenting the neuropils, and setting the coordinate system">
+      <figcaption><b>What to look at</b>B–F compute the average inner and outer brain surfaces from 34 samples; <strong>G is the crucial step</strong> — the average is used to pick the closest real brain, rather than being used as the brain; H then segments it into 58 neuropils, and I puts the origin of the coordinate system at the center of the ellipsoid body.</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2011-Chiang-FlyCircuit · Figure 4</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig4.jpg" style="width:760px" alt="The registration accuracy test: VAM neurons from ten flies, global versus local registration compared, and a bar chart with Global at about 69% and Local at about 95%">
+      <figcaption><b>What to look at</b>B is the same neuron type (VAM) from ten different flies; in C the left side is whole-brain registration and the right side local registration, where the fibers clearly draw together; <strong>the two bars in D are where 69% and 95% come from</strong> (mean ± SEM, n=10). F shows the landmark center points of ten samples scattered around the corresponding point on the standard brain — that scatter is the error itself.</figcaption>
+    </figure>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Numbers and sources</span>
+      <ul>
+        <li>Standard brain: average surfaces computed from <strong>34 samples</strong>, then one real brain selected; one female and one male, six days old — 2011 entry, “Methods”</li>
+        <li>Registration error: whole-brain <strong>69%</strong> (±10%, n=10) → local <strong>95%</strong> (±3%); mushroom-body landmark error <strong>3.9 → 1.1 µm</strong> — 2011 entry</li>
+        <li>Registration method: global affine, <strong>12 degrees of freedom</strong>; the local two-step registration is an option, while the whole library gets the global pass first — 2011 entry, “Methods”</li>
+        <li>Driver bias: nine drivers together label <strong>&gt;150,000 neurons</strong>, 50% more than the whole-brain estimate — 2011 entry; the 2015 entry lists thirteen drivers</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>Of the three techniques, <strong>the registration error is the number to remember</strong>: 69%
+      and 95% are not this paper's score, they are the accuracy ceiling of the whole dataset —
+      brain-region-level analysis holds up under it, but any inference that relies on spatial precision
+      below the neuropil is outside what the data guarantee. And the other two facts — that the standard
+      brain is one individual, and that the drivers decide who gets into the database — are stated plainly
+      in the paper, yet are easy to forget are still in force when you read the papers that follow.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head">
+      <span class="step-num">03</span>
+      <h2>Three Versions, and How the Data Grew</h2>
+    </div>
+    <div class="prose">
+      <p>FlyCircuit was not built once and left alone. The six papers use three different versions, and
+      what separates the versions is more than quantity.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Version</th><th>Year</th><th>Single-neuron images</th><th>What was added</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td>1.0</td><td>2011</td><td>about 16,000</td><td>The database itself, the standard brain, 58 neuropils</td><td>2011-Chiang-FlyCircuit</td></tr>
+          <tr><td>1.1</td><td>2015</td><td>23,579 (18,179 female + 5,400 male)</td><td><strong>Axon/dendrite polarity annotation for every neuron</strong> (the SPIN method), and standard-brain coordinates for every image</td><td>2015-Shih-InfoFlow</td></tr>
+          <tr><td>1.2</td><td>2019</td><td>28,573 (22,834 female)</td><td>Quantity</td><td>2019-Shih-CommunityStructure</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>The polarity annotation added in 1.1 is the crucial part: once you know which end is input and
+      which is output, you can build a <strong>directed</strong> network — the precondition for the
+      information-flow analysis of the 2015 paper.</p>
+      <p>So, are twenty-eight thousand neurons enough? The whole fly brain has roughly one hundred to one
+      hundred and thirty thousand neurons (the papers estimate it differently), and version 1.2 is about a
+      fifth of that. The 2011 paper answered this with a “finite-size analysis”: a random subset of one
+      tenth of the dataset reproduces more than 0.97 of the cross-region connectivity pattern of the full
+      set. That is, for mesoscale brain-region connectivity, the internal redundancy of this dataset is
+      high enough. <strong>But note what that argument proves</strong>: it compares its own subset against
+      its own full set, so it proves the dataset is internally consistent, not that it is representative of
+      the four fifths that were never sampled.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2011-Chiang-FlyCircuit · Figure 6</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig6.jpg" style="width:760px" alt="Whole-brain interregional connectivity: the connectivity matrix, the clustering, a wiring diagram of 58 neuropils, the C(n) curve of the finite-size analysis, and the power-law distribution of connection counts">
+      <figcaption><b>What to look at</b>The whole figure is the 2011 mesoscale connectivity map; for this lesson, look at <strong>panel F</strong>: the filled circles are the real data, whose correlation coefficient is already close to 1 at a sample size of about one tenth, while the open circles are a random network, which does not catch up until 95%. Panel G explains why — the connection counts follow a power law, so a few nodes carry a great many connections and sparse sampling still catches the skeleton.</figcaption>
+    </figure>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Numbers and sources</span>
+      <ul>
+        <li>1.0 → 1.1 → 1.2: <strong>16,000 → 23,579 → 28,573</strong>; female 18,179 (3,355 LN + 14,824 PN) → 22,834 — 2015 and 2019 entries</li>
+        <li>Finite-size analysis: at a subset above <strong>10%</strong> of the total the correlation coefficient is <strong>&gt; 0.97</strong>; a random network does not reach that until 95% — 2011 entry, reading of Fig 6F</li>
+        <li>Whole-brain neuron count: the 2011 paper says “one hundred thousand”, the topic page says “about 135,000” — <strong>both conventions are in the knowledge base, so state which one you are citing</strong></li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>When you cite any FlyCircuit count, <strong>state the version</strong>. “FlyCircuit has twenty-odd
+      thousand neurons” was right in 2015 and an undercount by 2019. And a finer point: “a tenth of the
+      data reproduces 97%” sounds like “the data are enough”, but what it actually says is “the data are
+      internally very consistent” — two different things, and the second does not guarantee the first.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head">
+      <span class="step-num">04</span>
+      <h2>What Each of the Six Papers Does with It</h2>
+    </div>
+    <div class="prose">
+      <p>The relationships of the six papers to FlyCircuit fall into three kinds:</p>
+      <p><strong>Building it</strong> — the 2011 paper. It produced version 1.0 and did the first round of
+      analysis on that data: a mesoscale connectivity map of 41 LPUs, 6 hubs and 58 neural tracts.</p>
+      <p><strong>Using it for analysis</strong> — two papers. The 2015 paper uses the 12,995 projection
+      neurons of the female brain in version 1.1 to build a directed weighted network of 49 nodes (LPU
+      level); the 2019 paper uses the 22,834 female-brain neurons of version 1.2 to build a neuron-level
+      network, with 19,902 nodes after removing the nodes outside the strongly connected component. The two
+      are the same set of graph-theoretic tools run at two scales.</p>
+      <p><strong>Building tools for it</strong> — three papers. In 2018 Kaleido solves “how to look at ten
+      thousand neurons at once”; in 2021 NeuroRetriever automates manual segmentation, running over all
+      22,037 raw brain images and retrieving 28,125 neurons; in 2024 LYNSU segments not neurons but
+      neuropils, using the other channel of the images, run over all 22,835 female brains. What the three
+      tool papers have in common is that <strong>validation is at whole-database scale</strong>, not on
+      selected good-looking cases.</p>
+      <p>There is something easy to confuse hidden here: “raw brain images” and “single-neuron images” are
+      two different numbers. One raw brain image may contain more than one neuron — the 2021 paper
+      retrieved 28,125 neurons from 22,037 raw images, a ratio of about 1.28. So when you say how many
+      records FlyCircuit has, make clear whether you are counting brains or neurons.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Relationship</th><th>Paper</th><th>Version and scale used</th><th>What it did</th></tr></thead>
+        <tbody>
+          <tr><td>Built it</td><td>2011 Chiang</td><td>1.0, about 16,000</td><td>The standard brain, and a connectivity map of 41 LPUs and 58 tracts</td></tr>
+          <tr><td rowspan="2">Analysis</td><td>2015 Shih</td><td>1.1, 12,995 projection neurons</td><td>A 49-node directed weighted network, five modules, a rich club</td></tr>
+          <tr><td>2019 Shih</td><td>1.2, 22,834 → 19,902 nodes</td><td>A neuron-level network, eight communities, not small-world</td></tr>
+          <tr><td rowspan="3">Tools</td><td>2018 Wang (Kaleido)</td><td>A random 10,000</td><td>Flattened image layers + Monte Carlo color assignment</td></tr>
+          <tr><td>2021 Shih (NeuroRetriever)</td><td>22,037 raw images → 28,125 neurons</td><td>Automatic segmentation; 65.8% good enough to enter the database directly</td></tr>
+          <tr><td>2024 Hsu (LYNSU)</td><td>22,835 female brains</td><td>Automatic neuropil segmentation, IoU 0.833</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · Building it: entry 2011-Chiang-FlyCircuit · Figure 5</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig5.jpg" style="width:640px" alt="A whole-brain map of LPUs and hubs: whether each neuropil has its own population of LNs, the spatial distribution of the putative LPUs, the hubs that lack LNs, and the two combined filling most of the brain">
+      <figcaption><b>What to look at</b>The product of the paper that “built it”: B is the 41 putative LPUs (brain regions with local circuitry of their own), C is the hubs that lack LNs, and D is the two together filling most of the brain. The 41 in Lesson 05's “41 or 43” comes from this figure.</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · Using it: entry 2019-Shih-CommunityStructure · Fig. 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/shih2019-fig1.jpg" style="width:560px" alt="The neuron-level network: one dot per neuron, split into eight communities; the heat maps below show which LPUs each community's dendrites and axons innervate">
+      <figcaption><b>What to look at</b>One of the papers that “use it for analysis”: a is the 19,902-node network split into eight communities by modularity maximization; b shows which of the 49 LPUs each community's dendrites (top) and axons (bottom) land in — this is where the correspondence between communities and functional modules is read off.</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · Building tools: entry 2018-Wang-Kaleido · Fig. 2</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig2.jpg" style="width:600px" alt="Kaleido: a connectome composed from ten thousand single-neuron images, with an enlarged view of the calyx comparing energy-optimized color assignment against random color assignment">
+      <figcaption><b>What to look at</b>One of the papers that “build tools for it”: a is ten thousand FlyCircuit neurons displayed at once; b and c enlarge the calyx of the Kenyon cells, with Kaleido's color assignment on the left and random color assignment on the right — at the arrows, neighboring cell bodies cannot be told apart under random coloring.</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>One database, three ways of using it. The most useful thing for a reader is to keep this table in
+      mind: whenever you see a paper citing a FlyCircuit number, first ask whether it is
+      <strong>building</strong>, <strong>using</strong>, or <strong>tooling</strong> — that decides whether
+      the number is a property of the database, an input to an analysis, or the output of a tool. 28,125 is
+      NeuroRetriever's output, not the size of the database.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head">
+      <span class="step-num">05</span>
+      <h2>Three Numbers That Don't Line Up</h2>
+    </div>
+    <div class="prose">
+      <p>This lesson is reading practice. None of the three problems would surface from any single paper;
+      they only become visible when the six are lined up together — which is exactly why the topic page
+      exists.</p>
+      <p><strong>One. Are there 41 LPUs or 43?</strong> The 2011 original says “41 LPUs, 6 hubs”; the 2015
+      paper, citing it, says “43 LPUs plus 6 interconnecting units”, 49 nodes in total. 41 plus the four
+      pairs of LN-lacking neuropils listed in the 2011 main text (eight) is also 49. The totals match and
+      the classification differs — some units appear to have been reassigned between the two papers, but
+      which two units changed category is not accounted for in either main text. And the 2011 paper is
+      internally inconsistent in one place of its own: the abstract says 6 hubs, while the main text lists
+      four pairs (eight).</p>
+      <p><strong>Two. Is 28,573 brains or neurons?</strong> The 2019 paper says v1.2 “hosts 28,573 images
+      of single neurons”; the 2021 paper says v1.2 is “22,037 raw brain images, 28,573 manually segmented
+      single-neuron images” — the two agree, and 28,573 is neurons. But the 2024 paper writes “hosts images
+      from 28,573 Drosophila brains”, where the unit has become brains. Going by the 2021 data, the number
+      of brain images should be 22,037, and this sentence in 2024 is probably a slip. The “22,835 female
+      brains” analyzed in that same 2024 paper differs by one from 2019's “22,834 female neurons”, and the
+      units differ too; the reasonable conjecture is that they refer to the same batch of data, one
+      counting brains and the other neurons, with one of them counting one item too many or too few — but
+      this is a conjecture.</p>
+      <p><strong>Three. 28,125 versus 28,573.</strong> The automatic segmentation in the 2021 paper
+      retrieved 28,125 neurons, 448 fewer than the 28,573 of the manually segmented library, and the text
+      does not account for where those 448 went.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">From the knowledge base</span>
+      <p>I have recorded all three of these in the “Open questions and follow-ups” section of each paper's
+      page; they are collected here because they are essentially the same thing: the same database,
+      described with different measurement conventions in different years and different papers. Any future
+      citation of a FlyCircuit count should state the version and the unit.</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">Numbers and sources</span>
+      <ul>
+        <li>41 vs 43: 41 + 8 = 49 = 43 + 6 — recorded in the “Open questions and follow-ups” of both the 2011 and 2015 entries, each pointing at the other</li>
+        <li>The unit of 28,573: 2019 “single neurons”, 2021 “single-neuron images”, 2024 “brains” — the 2024 entry marks this ⚠️ “the third time this knowledge base has hit a cross-paper counting problem”</li>
+        <li>The 448: 28,573 − 28,125 — 2021 entry, “Open questions”; status: to be checked</li>
+      </ul>
+    </div>
+    <aside class="point hero">
+      <span class="voice-label">If you remember one thing, remember this</span>
+      <p><strong>When you cite any count, state the version and the unit.</strong></p>
+      <p>Not one of these three is a case of “somebody got the sum wrong”; all of them are
+      <strong>different measurement conventions</strong> — classification, unit, time of sampling. This is
+      common in published literature, and the value of a knowledge base is that it lines them up where you
+      can see them. That reflex is useful for reading papers in any field.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head">
+      <span class="step-num">06</span>
+      <h2>The Limits of the Data</h2>
+    </div>
+    <div class="prose">
+      <p>FlyCircuit data have three inherent limitations. They are not flaws of any one paper; they are
+      properties of the optical single-neuron imaging route — remember them before you read these six
+      papers.</p>
+      <p><strong>Synapses are not visible.</strong> The resolution of light microscopy is not enough. So
+      all “connections” are inferred from spatial co-localization — if the fibers of two neurons enter the
+      same region, they are taken to have an opportunity for contact; whether an actual synapse exists, and
+      its direction and number, are unknown. The 2019 paper uses “less than one micrometer apart” as its
+      connection criterion; checked against a batch of neurons that had been anatomically described in
+      detail, it <strong>catches only forty percent of the true connections</strong> (with a false-positive
+      rate of two percent). This is the premise behind every network conclusion in that paper.</p>
+      <p><strong>Direction is predicted.</strong> The polarity annotation from version 1.1 onward comes
+      from SPIN, a method that judges dendrite and axon from morphology. Its accuracy is not quantified in
+      any of these six papers.</p>
+      <p><strong>Sampling is biased.</strong> The driver problem from Lesson 02.</p>
+      <p>Taken together, these three points mean that what FlyCircuit gives is a connectivity map that is
+      <strong>mesoscale, directed but with predicted directions, and biased in sampling</strong>. Within
+      that positioning it does very well; any inference beyond that positioning needs care.</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">Numbers and sources</span>
+      <ul>
+        <li>Connection criterion: axon-to-dendritic-spine-segment distance <strong>&lt; 1 µm</strong>; validation set of 442 PB-related neurons; <strong>TPR 0.40, FPR 0.02</strong> — 2019 entry</li>
+        <li>What TPR 0.40 means: a <strong>partial map</strong> missing six tenths of the true connections, not a wrong map stuffed with false ones — a negative statement (“A and B are not connected”) carries far less evidential weight than a positive one — 2019 entry, “Problems and limitations”</li>
+        <li>SPIN accuracy: not quantified in any of the six papers — topic page, “The limits of the data”; listed as the first item under “Open questions” on the network-analysis topic page</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>The order of the three limits is not arbitrary: <strong>synapses are not visible</strong> decides
+      what the word “connection” means, <strong>direction is predicted</strong> decides how much the word
+      “directed” can be trusted, and <strong>sampling is biased</strong> decides how representative “whole
+      brain” is. Keep those three sentences at hand while reading the network conclusions of 2015 and 2019,
+      and every conclusion will grow a “given these premises” in front of it by itself.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head">
+      <span class="step-num">07</span>
+      <h2>Two New Routes: EM and Expansion Microscopy</h2>
+    </div>
+    <div class="prose">
+      <p>FlyCircuit cannot see synapses — so what can? Electron-microscopy (EM) connectomes — hemibrain,
+      FlyWire — supplied synapse-level resolution and directionality around 2020. The relationship between
+      the two is complementary: optics gives the whole-brain skeleton and an interface for genetic
+      manipulation, EM gives precise local wiring. This knowledge base already has one analysis using
+      hemibrain (2025 Cheng, the PN→KC connectivity of the mushroom body) — same lab, data switched to EM,
+      question pushed down to the synapse level in a single brain region.</p>
+      <p>There is also a third route: LICONN, in 2025, uses expansion microscopy to let light microscopy
+      achieve EM-level dense reconstruction, with a molecular readout on top. It is optical like
+      FlyCircuit, but its strategy is the opposite — FlyCircuit sidesteps the resolution problem with
+      <strong>sparse labeling</strong>, LICONN solves it head-on with <strong>expansion</strong>. Sparse
+      gives the whole-brain skeleton, dense gives local synapses.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2025-Tavakoli-LICONN · Fig. 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/tavakoli2025-fig1.jpg" style="width:520px" alt="LICONN: a dense reconstruction of about one million cubic micrometres of mouse somatosensory cortex, 79 example cells, with synaptic molecular labels; enlargements show intracellular structure and a primary cilium">
+      <figcaption><b>What to look at</b>The expansion-optics route: a small block of mouse cortex (about 396×109×22 µm³ at native scale), expanded roughly 16-fold and then densely reconstructed with a light microscope; on the right of a, even the molecules on either side of a synapse can be labeled. <strong>It sees what FlyCircuit cannot</strong> — at the price of seeing only a small block.</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2025-Cheng-MBHybridNetwork · Fig. 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/cheng2025-fig1.jpg" style="width:600px" alt="The PN-to-KC synaptic connectivity matrix derived from hemibrain data, showing an L shape; the G score of connection preference; and the distribution of how many PNs each class of KC receives">
+      <figcaption><b>What to look at</b>The EM route: same lab, data switched to hemibrain. A is the <strong>synapse-level</strong> PN→KC connectivity matrix, and that L shape is the finding of the whole paper — invisible in FlyCircuit's co-localization inference.</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>FlyCircuit (sparse optical)</th><th>hemibrain / FlyWire (EM)</th><th>LICONN (expansion optical)</th></tr></thead>
+        <tbody>
+          <tr><td>What you see at once</td><td>One neuron, whole brain</td><td>All neurons, a local volume</td><td>All neurons, a local volume</td></tr>
+          <tr><td>A “connection” is</td><td>An inference from spatial co-localization</td><td>A synapse you can see</td><td>A synapse you can see, plus molecular labels</td></tr>
+          <tr><td>Direction</td><td>Predicted from morphology (SPIN)</td><td>Synapse polarity observed directly</td><td>Observed directly</td></tr>
+          <tr><td>Where to start in the knowledge base</td><td>This topic</td><td>Mushroom-body olfactory connectivity · EM neuron segmentation</td><td>Expansion-microscopy connectomics</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>This lesson is only two paragraphs on the topic page, but it is the whole course's exit:
+      FlyCircuit has not been superseded, it has been <strong>placed</strong>. Knowing where it sits on the
+      map is what tells you which questions to bring here and which to take to another topic page. That is
+      also why a topic page ends with “Related topics” — by the time the course reaches here, the next
+      course is already scheduled.</p>
+    </aside>
+  </section>
+
+  <!-- ============ Closing ============ -->
+  <section class="closing">
+    <h2>What this course teaches</h2>
+
+    <div class="prose">
+      <p>Seven lessons on one database. Not how impressive it is, but <strong>what it is, how much is in
+      each version, who does what with it, which numbers don't line up, and where its guarantees stop</strong>.
+      Those five questions are worth asking of any database you are going to depend on for a long time.</p>
+    </div>
+
+    <h3>Three reflexes for reading FlyCircuit papers</h3>
+    <ul class="obs">
+      <li><b>State the version, state the unit</b>16,000 / 23,579 / 28,573 are three versions; 28,573 is
+      neurons, not brains; 22,037 is raw images. When you see a number, ask those two things first.</li>
+      <li><b>Every “connection” has an invisible “putative” in front of it</b>Co-localization is not a
+      synapse, and TPR 0.40 makes it a partial map. Positive statements are credible; negative statements
+      have to be discounted.</li>
+      <li><b>Three premises follow you all the way through</b>Registration error 69→95%, the standard brain
+      being one individual, and the drivers deciding who gets into the database — they do not go away just
+      because the downstream papers stop mentioning them.</li>
+    </ul>
+
+    <h3>Questions to think about (from the topic page's “Open questions”)</h3>
+    <ol class="think">
+      <li>The fate of the 448 neurons (28,573 − 28,125) is not accounted for in the text. If you were
+      reviewing the 2021 paper, which table would you ask the authors to add?</li>
+      <li>“A one-tenth subset reproduces 0.97” proves internal consistency, not representativeness. Design
+      an experiment that would test representativeness for the neurons that were never sampled — what
+      external data would it need?</li>
+      <li>The EM connectome (FlyWire) is public. To use it to validate SPIN's polarity prediction, what
+      would you have to align first?</li>
+    </ol>
+
+    <h3>How this course grew out of the knowledge base</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Lesson</th><th>Which section of the topic page</th><th>What the Agent did</th><th>What the human decided</th></tr></thead>
+        <tbody>
+          <tr><td>00</td><td>The opening quote</td><td>Rewrote it as “why teach this at all”</td><td>That this episode teaches the idea “a topic page is a syllabus”</td></tr>
+          <tr><td>01</td><td>What it is</td><td>Added a paragraph on why it deserves a lesson</td><td>—</td></tr>
+          <tr><td>02</td><td>How it was built</td><td>One paragraph each for the three techniques and the driver bias; every number checked back against the entries</td><td>That the registration error is the number to remember in this lesson</td></tr>
+          <tr><td>03</td><td>Three versions</td><td>A table, plus the “is it enough” argument and its limits</td><td>That “internally consistent ≠ representative” needs saying separately</td></tr>
+          <tr><td>04</td><td>How each paper uses it</td><td>Split into build / use / tool, plus a comparison table</td><td>—</td></tr>
+          <tr><td>05</td><td>Three numbers that don't line up</td><td>Copied almost verbatim, with “If you remember one thing” added</td><td>That this is the heart of the course — reading practice</td></tr>
+          <tr><td>06</td><td>The limits of the data</td><td>The three limits plus the positioning sentence; the meaning of TPR 0.40 filled in from the 2019 entry</td><td>That the order of the three limits is logical and should be spelled out</td></tr>
+          <tr><td>07</td><td>The last two paragraphs (EM, LICONN)</td><td>Expanded into a three-route comparison table</td><td>That a course needs an exit, pointing at other topics</td></tr>
+          <tr><td>Questions to think about</td><td>“Open questions” on other topic pages + “Open questions” in the entries</td><td>Picked three and rewrote them as questions</td><td>—</td></tr>
+          <tr><td>Quiz</td><td>The three numbers that don't line up, the limits of the data, the versions</td><td>Wrote ten questions</td><td>Test judgment, not recall; scatter the position and the length of the correct answers</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>The division of labour in one sentence: <strong>the Agent lays out the structure, links back to
+      the sources, and rewrites the voice; the human decides what to teach, how deep to go, and which
+      sentence is the point.</strong> There are eight more topic pages in the knowledge base, and the same
+      method can be run eight more times.</p>
+    </div>
+
+    <h3>What this episode produced</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td>Tutorial web page</td><td>This page: seven lessons, questions to think about, and the mapping table</td></tr>
+          <tr><td>Tutorial video</td><td>Custom slides plus nine paper figures taken from the knowledge-base entries, each credited; TTS narration</td></tr>
+          <tr><td>Self-check quiz</td><td>Ten questions testing judgment about the content of FlyCircuit</td></tr>
+          <tr><td>Knowledge base</td><td><strong>Not changed</strong> — this episode only reads, never writes; the one new discrepancy found (whole-brain neuron count, 100,000 vs 135,000) is recorded in Lesson 03 on this page</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color:var(--ink-soft);font-size:.92rem;max-width:var(--col);">
+      <b>Figure credits</b>　The nine figures on this page are the papers' own figures, taken from the knowledge-base entries that extracted them; each is labeled with its entry and its original figure number. Copyright belongs to the original publishers and authors (Current Biology / Elsevier, Neuroinformatics / Springer Nature, Nature, Science Advances); they are reproduced here for teaching.</p>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h3>Check yourself</h3>
+        <p>Ten multiple-choice questions on the content of FlyCircuit — the conventions behind the numbers,
+        the limits of the data, and how the papers use it. After each answer you immediately see whether
+        you were right, and why.</p>
+      </div>
+      <a class="cta-btn" href="ep04-quiz.html"
+         data-remote="EP04_ENG_QUIZ_ARTIFACT_URL">
+        Start the quiz →
+      </a>
+    </div>
+
+    <div class="next">
+      <b>Next episode</b>　To be decided. Eight more topic pages are waiting in the knowledge base —
+      brain-region parcellation, image-processing pipeline, network analysis, visualization and retrieval,
+      mushroom-body olfactory connectivity, EM neuron segmentation, expansion-microscopy connectomics,
+      implantable neurophotonic probes — and every one of them can be turned into a course the same way.
+    </div>
+
+    <script>
+    // When published on claude.ai, same-folder relative links don't exist; point them at the online versions.
+    // Placeholders of the form EP04_ENG_… mean "not published yet" and are left alone.
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        var r = a.getAttribute('data-remote');
+        if (!r || /^EP\d\d_/.test(r)) return;
+        a.href = r;
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

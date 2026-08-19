@@ -1,0 +1,516 @@
+<meta charset="utf-8">
+<title>EP05 Quiz</title>
+<style>
+  :root {
+    --paper:#F7F8F7; --surface:#FFFFFF; --surface-2:#EFF2F1;
+    --ink:#16171A; --ink-soft:#576063; --ink-faint:#8A9496;
+    --rule:#DCE1DF; --rule-soft:#E9EDEB;
+    --human:#9A5B08; --human-bg:#FDF6EC;
+    --agent:#0C625F; --agent-bg:#EDF5F4; --agent-rule:#7FBAB6;
+    --wrong:#A8331E; --wrong-bg:#FCF1EE; --wrong-rule:#E0A797;
+    --shadow:0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif TC",serif;
+    --sans:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,"Noto Sans TC","Microsoft JhengHei",sans-serif;
+    --mono:"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+      --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+      --rule:#2A3336; --rule-soft:#222A2D;
+      --human:#E4A75C; --human-bg:#241C11;
+      --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+      --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+    --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+    --rule:#2A3336; --rule-soft:#222A2D;
+    --human:#E4A75C; --human-bg:#241C11;
+    --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+    --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:0 1.5rem 5rem;}
+
+  header.top{
+    padding:3.5rem 0 1.6rem; display:flex; flex-direction:column; gap:.7rem;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(1.9rem,5vw,2.7rem);
+    line-height:1.12; margin:0; letter-spacing:-.015em;
+  }
+  .sub{margin:0; color:var(--ink-soft); font-size:1rem;}
+
+  /* progress */
+  .bar{
+    display:flex; gap:.3rem; margin:1.8rem 0 2.2rem;
+  }
+  .bar i{
+    flex:1; height:5px; border-radius:3px; background:var(--rule);
+    transition:background .3s ease;
+  }
+  .bar i.done{background:var(--agent);}
+  .bar i.miss{background:var(--wrong);}
+  .bar i.now{background:var(--ink-faint);}
+
+  .meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--mono); font-size:.78rem; color:var(--ink-faint);
+    margin-bottom:1rem;
+  }
+
+  /* question */
+  .q{
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; padding:1.8rem 1.9rem; box-shadow:var(--shadow);
+  }
+  .q h2{
+    font-family:var(--serif); font-size:1.35rem; line-height:1.4;
+    margin:0 0 1.5rem; font-weight:600; text-wrap:balance;
+  }
+  .opts{display:flex; flex-direction:column; gap:.6rem;}
+  .opt{
+    display:flex; gap:.9rem; align-items:flex-start; width:100%;
+    text-align:left; font:inherit; color:inherit;
+    background:var(--paper); border:1px solid var(--rule);
+    border-radius:5px; padding:.85rem 1rem; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .opt:hover:not(:disabled){border-color:var(--agent-rule); background:var(--surface-2);}
+  .opt:active:not(:disabled){transform:translateY(1px);}
+  .opt:disabled{cursor:default;}
+  .opt:focus-visible{outline:2px solid var(--agent); outline-offset:2px;}
+  .opt .key{
+    font-family:var(--mono); font-size:.78rem; font-weight:600;
+    color:var(--ink-faint); flex:none; padding-top:.22em;
+    min-width:1.1rem;
+  }
+  .opt.pick-right{background:var(--agent-bg); border-color:var(--agent);}
+  .opt.pick-right .key{color:var(--agent);}
+  .opt.pick-wrong{background:var(--wrong-bg); border-color:var(--wrong);}
+  .opt.pick-wrong .key{color:var(--wrong);}
+  .opt.reveal{border-color:var(--agent); border-style:dashed;}
+  .opt.dim{opacity:.45;}
+
+  /* feedback */
+  .fb{
+    margin-top:1.4rem; padding:1.1rem 1.2rem; border-radius:5px;
+    border-left:3px solid var(--agent); background:var(--agent-bg);
+  }
+  .fb.no{border-left-color:var(--wrong); background:var(--wrong-bg);}
+  .fb .verdict{
+    font-family:var(--mono); font-size:.7rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; color:var(--agent);
+    display:block; margin-bottom:.55rem;
+  }
+  .fb.no .verdict{color:var(--wrong);}
+  .fb p{margin:0; font-size:.97rem; line-height:1.6;}
+
+  /* buttons */
+  .actions{margin-top:1.6rem; display:flex; gap:.8rem; align-items:center; flex-wrap:wrap;}
+  button.go{
+    font:inherit; font-weight:600; font-size:.97rem;
+    background:var(--ink); color:var(--paper); border:0;
+    padding:.7rem 1.5rem; border-radius:5px; cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  button.go:hover{opacity:.86;}
+  button.go:focus-visible{outline:2px solid var(--agent); outline-offset:3px;}
+  button.ghost{
+    background:transparent; color:var(--ink-soft);
+    border:1px solid var(--rule);
+  }
+  .hint{font-family:var(--mono); font-size:.72rem; color:var(--ink-faint);}
+
+  /* results */
+  .score{
+    text-align:center; padding:2.5rem 1.5rem 2rem;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; box-shadow:var(--shadow);
+  }
+  .score .n{
+    font-family:var(--serif); font-size:4.2rem; line-height:1;
+    font-weight:600; letter-spacing:-.03em;
+  }
+  .score .n b{color:var(--agent);}
+  .score .of{color:var(--ink-faint); font-size:1.6rem;}
+  .score .verdict{
+    margin:1rem 0 0; font-size:1.1rem; color:var(--ink-soft); text-wrap:balance;
+  }
+  .review{margin-top:2.2rem;}
+  .review h3{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+    margin:0 0 1rem;
+  }
+  .miss-item{
+    border:1px solid var(--rule); border-left:3px solid var(--wrong);
+    border-radius:5px; padding:1rem 1.2rem; margin-bottom:.8rem;
+    background:var(--surface);
+  }
+  .miss-item .qq{font-weight:600; margin:0 0 .5rem; line-height:1.45;}
+  .miss-item .ans{margin:0; font-size:.93rem; color:var(--ink-soft); line-height:1.6;}
+  .miss-item .ans b{color:var(--agent); font-weight:600;}
+  .allgood{
+    padding:1.2rem; border:1px dashed var(--agent-rule); border-radius:5px;
+    color:var(--agent); text-align:center; font-size:.97rem;
+  }
+  .backlink{
+    margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--rule-soft);
+    font-size:.9rem; color:var(--ink-faint);
+  }
+  .backlink a{color:var(--agent);}
+
+  @media (max-width:34rem){
+    body{font-size:16px;}
+    .q{padding:1.4rem 1.2rem;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">BSC Tutorial · EP05 · English edition</div>
+    <h1>Self-check Quiz</h1>
+    <p class="sub">Ten multiple-choice questions. After each answer you immediately see whether you were right, and why. Wrong answers cost nothing — the point is to understand the reasoning.</p>
+  </header>
+
+  <div class="bar" id="bar"></div>
+  <div class="meta">
+    <span id="counter">Question 1 of 10</span>
+    <span class="hint">Press 1–4 to answer　·　Enter for the next question</span>
+  </div>
+
+  <main id="stage"></main>
+
+  <p class="backlink">
+    Forgot something? Go back to the
+    <a href="ep05.html"
+       data-remote="EP05_ENG_ARTIFACT_URL">EP05 tutorial page</a>, or rewatch the
+    <a href="https://youtu.be/Aq6cJ5bDl7o" data-remote="https://youtu.be/Aq6cJ5bDl7o" target="_blank" rel="noopener">tutorial video ↗</a>.
+  </p>
+
+</div>
+
+<script>
+// When published on claude.ai, same-folder relative links don't exist; point them at the online versions.
+// Placeholders of the form EP05_ENG_… mean "not published yet" and are left alone.
+(function () {
+  if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+  document.querySelectorAll('a[data-remote]').forEach(function (a) {
+    var r = a.getAttribute('data-remote');
+    if (!r || /^EP\d\d_/.test(r)) return;
+    a.href = r;
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var QUIZ = [
+    {
+      q: "Kaleido has to display ten thousand neurons at once, and the first bottleneck is memory. What is its first trick?",
+      opts: [
+        "Compress each neuron's image into a skeleton, storing only the centerline and the branch points, and rebuild it at load time",
+        "Load only the neurons currently in view and page the rest out to disk",
+        "Drop the resolution to a quarter of the original",
+        "Draw them all into one and the same 3D image, so that the file size is set only by the resolution of the standard brain"
+      ],
+      a: 3,
+      why: "“Flatten the layers.” Give up one object per neuron and draw them all into the same picture; memory is then decoupled from the number of neurons. The price is that individual neurons can no longer be handled separately, so the paper left a lookup channel open: every lit pixel belongs to exactly one neuron (winner-take-all), and clicking it reports the NeuronID."
+    },
+    {
+      q: "Kaleido's energy function is E = Σ 1/(d_ij · min(Δ_ij, 360°−Δ_ij)). Which kind of pair contributes most to the total energy?",
+      opts: [
+        "Pairs far apart in space whose hues also differ a great deal",
+        "Pairs far apart in space but very close in hue",
+        "Pairs close in space whose hues are also very close",
+        "All pairs contribute the same; E depends only on the number of neurons"
+      ],
+      a: 2,
+      why: "d is in the denominator and so is the hue difference — when both are small the energy is at its largest. That is exactly the case to be penalized: two neurons wound around each other wearing almost the same color. What the Monte Carlo does is swap hue angles over and over to push the energy of such pairs down."
+    },
+    {
+      q: "In the reproduction, the Agent did two things before writing any code: read the Kaleido entry in the knowledge base, and open one data file to look at its header. What did those two things have in common?",
+      opts: [
+        "Making sure the licensing of both the knowledge-base entry and the data files was in order, so they could go into public teaching material afterwards",
+        "Giving the Agent something to write in the README",
+        "Because without those two steps the program will not run",
+        "Pinning down the specification (the paper's seven steps) and the data format first, to save the time that guessing wrong would cost later"
+      ],
+      a: 3,
+      why: "The paper released no code, so the only basis for reproducing it is the seven steps and the energy function copied down in the entry; and the format of the data (AmiraMesh, ushort, HxZip, BoundingBox) is there in the file header for the opening. Those two things took less than a minute, and what they saved was the half hour of guessing the format wrong later. The first step of agentic coding is not writing code."
+    },
+    {
+      q: "Running the whole pipeline produced IndexError: index 280 is out of bounds for axis 1 with size 269. What was the root of the problem?",
+      opts: [
+        "The file for the 280th neuron was corrupt",
+        "The 100 .am files are each a cropped sub-volume of a different size, yet the first version took the shape of the first neuron as the canvas",
+        "The x, y, z order of the AmiraMesh was read backwards, so the y axis got the x axis's length of 542 and the index naturally overran",
+        "The zlib decompression length was computed wrongly"
+      ],
+      a: 1,
+      why: "The error message says “axis 1 has length 269 yet there is an index of 280” — some neuron's coordinates fall outside the volume of the first one. Check the headers: 100 files, 100 different lattice sizes, 100 BoundingBoxes. What step 1 of the paper, “transfer into the standard brain”, means on this batch of data is: use the BoundingBox to put every neuron back into the same coordinate system. A step that is one sentence in the paper can be the whole problem on real data."
+    },
+    {
+      q: "Run with the paper's move (each step touches only the currently highest-energy pair), the Monte Carlo goes 20,000 steps and the energy curve stops falling after about 3,000. What did the Agent do next?",
+      opts: [
+        "Judged it converged and used the result as it stood",
+        "Raised the step count to 200,000 and ran it again",
+        "Ran a small experiment comparing three kinds of move, adopted the better one, but kept a switch for the paper's original",
+        "Switched to an optimization method other than simulated annealing, a genetic algorithm for instance"
+      ],
+      a: 2,
+      why: "Touching only the worst pair makes the search circle among the same few neurons and stick in a local minimum. The Agent mixed in purely random swaps and made a table of p = 0 / 0.5 / 1 × three step counts × three seeds: the mixed move reaches lower energy (1.263 vs 1.292) and varies less. The default was changed to mixed, but --p-random 0 restores the paper's original — a reproduction is not a transcription, but a change needs a switch and needs to be written down."
+    },
+    {
+      q: "The first version of the rotating animation came out with a grid of stripes (moiré fringes). The program gave no error message of any kind, and the array shapes and value ranges were all normal. What does that tell you?",
+      opts: [
+        "The data itself carries periodic noise, a striping artifact left over from the scanning",
+        "Visual output has to be accepted by eye — the numbers being right does not mean the picture is right",
+        "There is a bug in numpy's projection function",
+        "72 frames are too few; it should be 360"
+      ],
+      a: 1,
+      why: "Moiré fringes come from scaling by a non-integer factor: periodically, some columns of pixels are allotted no voxel at all. This is not a problem with the data and not a bug in a function, it is a sampling problem — and it only comes to light if the image is rendered and looked at. The agentic-coding loop has to contain output you can look at, or the Agent cannot catch this kind of error on its own, the kind that comes with no error message."
+    },
+    {
+      q: "The second fix for the moiré fringes was to “draw at twice the resolution and scale back down”, and the whole image came out darker. Why?",
+      opts: [
+        "The wrong color space was used when scaling down",
+        "The Lanczos filter cut away all the high frequencies, and the brightness of the fine fibers went with them",
+        "The empty pixels between voxels were averaged in as well, so the lit points were diluted by black ones",
+        "Twice the resolution exceeds the color depth of the display"
+      ],
+      a: 2,
+      why: "After the enlargement each voxel still occupies only one pixel, with nothing but empty space around it; scaling back down averages those empty pixels in and the image darkens, most visibly at 0° and 180°, where the x direction is sparsest. What the third version does: fix 1 voxel = 2 pixels, draw every point as a 2×2 block (no gaps), then scale back down with Lanczos. All three versions are kept in the docstring."
+    },
+    {
+      q: "The reproduction puts the same 100 neurons side by side under Kaleido coloring and random coloring, and the difference is less dramatic than the paper's 10,000. How does the teaching material handle this?",
+      opts: [
+        "Change the angle, crop a different region, keep going until it looks very different, and put that in the material",
+        "Change the count to 10,000 and run it again",
+        "Leave the comparison figure out and show only Fig. 2 of the paper",
+        "Say plainly that the difference is small, explain why, and then use the hue ring to measure the effect of the algorithm"
+      ],
+      a: 3,
+      why: "100 neurons versus 10,000 is a difference in data density, not a difference in the algorithm. Say so honestly, then find a figure that does isolate the effect: one point per neuron on the hue ring, with a gray line to its nearest spatial neighbor — in the Kaleido version those lines are visibly stretched much further apart. When the result falls short of expectations, do not force it; that is the same rule in a paper entry and in teaching material."
+    },
+    {
+      q: "What does the course say the difference is between vibe coding and agentic coding?",
+      opts: [
+        "Vibe coding: you state the requirement, the AI generates, the human looks at the result. Agentic coding: the AI plans, executes, looks at the output, revises and reports back, all by itself",
+        "Vibe coding is for beginners, agentic coding is for engineers",
+        "They are the same thing under two different names",
+        "Vibe coding needs no human involvement at all; agentic coding is the opposite — every step has to be confirmed item by item by a human and signed off before it can go on"
+      ],
+      a: 0,
+      why: "The difference is the loop. In this episode you gave one instruction, and the twelve steps in between (read the spec, look at the data, write, hit a wall, align, run an experiment, three versions of the fix) were all walked by the Agent itself, judged against output it produced itself — error messages, numbers, pictures. The human gives the goal and the boundaries, and looks at the finished thing."
+    },
+    {
+      q: "The human did very little in this episode: one instruction, hand over the data, look at the result. Which decisions does the course say “the Agent will not make on its own”?",
+      opts: [
+        "Whether to use numpy or some other numerical package",
+        "Wanting the three-view figure and the rotating animation, remembering to include figures, where the code goes, not pushing to GitHub — the deliverables and the boundaries",
+        "How many steps to run the Monte Carlo for",
+        "Which font to draw the energy curve in"
+      ],
+      a: 1,
+      why: "The deliverables and the boundaries belong to the human; the loop belongs to the Agent. Packages, step counts, fonts — the Agent decides these for itself (and explains why); but “this episode needs a rotating animation”, “do not push it to GitHub”, “the previous episode had no figures and has to be redone” are decisions outside its loop — it gets them from your instruction, or from your feedback once you have looked at the result."
+    }
+  ];
+
+  var LETTER = ["A", "B", "C", "D"];
+  var stage = document.getElementById("stage");
+  var bar = document.getElementById("bar");
+  var counter = document.getElementById("counter");
+  var i = 0, answered = false, correct = 0, misses = [];
+
+  QUIZ.forEach(function () {
+    bar.appendChild(document.createElement("i"));
+  });
+
+  function paintBar() {
+    [].forEach.call(bar.children, function (el, n) {
+      el.className = n < i ? (misses.some(function (m) { return m.n === n; }) ? "miss" : "done")
+                           : (n === i ? "now" : "");
+    });
+  }
+
+  function render() {
+    answered = false;
+    var item = QUIZ[i];
+    counter.textContent = "Question " + (i + 1) + " of " + QUIZ.length;
+    paintBar();
+
+    var box = document.createElement("section");
+    box.className = "q";
+
+    var h = document.createElement("h2");
+    h.textContent = item.q;
+    box.appendChild(h);
+
+    var list = document.createElement("div");
+    list.className = "opts";
+    item.opts.forEach(function (text, n) {
+      var b = document.createElement("button");
+      b.className = "opt";
+      b.type = "button";
+      b.innerHTML = '<span class="key">' + LETTER[n] + '</span><span></span>';
+      b.lastChild.textContent = text;
+      b.addEventListener("click", function () { choose(n, box, list); });
+      list.appendChild(b);
+    });
+    box.appendChild(list);
+
+    stage.innerHTML = "";
+    stage.appendChild(box);
+  }
+
+  function choose(n, box, list) {
+    if (answered) return;
+    answered = true;
+    var item = QUIZ[i];
+    var right = n === item.a;
+    if (right) correct++;
+    else misses.push({ n: i, picked: n });
+
+    [].forEach.call(list.children, function (el, k) {
+      el.disabled = true;
+      if (k === n) el.classList.add(right ? "pick-right" : "pick-wrong");
+      else if (k === item.a && !right) el.classList.add("reveal");
+      else el.classList.add("dim");
+    });
+
+    var fb = document.createElement("div");
+    fb.className = "fb" + (right ? "" : " no");
+    var v = document.createElement("span");
+    v.className = "verdict";
+    v.textContent = right ? "Correct" : "The correct answer is " + LETTER[item.a];
+    var p = document.createElement("p");
+    p.textContent = item.why;
+    fb.appendChild(v); fb.appendChild(p);
+    box.appendChild(fb);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    var go = document.createElement("button");
+    go.className = "go";
+    go.textContent = i === QUIZ.length - 1 ? "See results" : "Next question";
+    go.addEventListener("click", next);
+    act.appendChild(go);
+    box.appendChild(act);
+    go.focus();
+    paintBar();
+  }
+
+  function next() {
+    if (i === QUIZ.length - 1) { results(); return; }
+    i++;
+    render();
+  }
+
+  function results() {
+    i = QUIZ.length;
+    paintBar();
+    counter.textContent = "Finished";
+
+    var pct = correct / QUIZ.length;
+    var verdict = pct === 1 ? "All correct. You've got the key points of this episode."
+      : pct >= 0.8 ? "Solid. Look over the ones you missed and you're done."
+      : pct >= 0.5 ? "The main ideas are there. Consider rewatching acts three and four."
+      : "Consider rewatching the video, especially the part on “rules should grow out of friction”.";
+
+    var wrap = document.createElement("div");
+
+    var sc = document.createElement("div");
+    sc.className = "score";
+    sc.innerHTML = '<div class="n"><b>' + correct + '</b><span class="of"> / ' + QUIZ.length + '</span></div>';
+    var vp = document.createElement("p");
+    vp.className = "verdict";
+    vp.textContent = verdict;
+    sc.appendChild(vp);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    act.style.justifyContent = "center";
+    var again = document.createElement("button");
+    again.className = "go";
+    again.textContent = "Try again";
+    again.addEventListener("click", function () {
+      i = 0; correct = 0; misses = []; render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    act.appendChild(again);
+    sc.appendChild(act);
+    wrap.appendChild(sc);
+
+    var rev = document.createElement("div");
+    rev.className = "review";
+    var h3 = document.createElement("h3");
+    h3.textContent = misses.length ? "Questions you missed" : "Review";
+    rev.appendChild(h3);
+
+    if (!misses.length) {
+      var ok = document.createElement("div");
+      ok.className = "allgood";
+      ok.textContent = "No questions missed.";
+      rev.appendChild(ok);
+    } else {
+      misses.forEach(function (m) {
+        var item = QUIZ[m.n];
+        var d = document.createElement("div");
+        d.className = "miss-item";
+        var q = document.createElement("p");
+        q.className = "qq";
+        q.textContent = (m.n + 1) + ". " + item.q;
+        var a = document.createElement("p");
+        a.className = "ans";
+        a.innerHTML = "You chose " + LETTER[m.picked] + "; the correct answer is <b>" +
+                      LETTER[item.a] + "</b>.";
+        var w = document.createElement("p");
+        w.className = "ans";
+        w.style.marginTop = ".5rem";
+        w.textContent = item.why;
+        d.appendChild(q); d.appendChild(a); d.appendChild(w);
+        rev.appendChild(d);
+      });
+    }
+    wrap.appendChild(rev);
+
+    stage.innerHTML = "";
+    stage.appendChild(wrap);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (i >= QUIZ.length) return;
+    if (!answered && /^[1-4]$/.test(e.key)) {
+      var btns = stage.querySelectorAll(".opt");
+      var n = parseInt(e.key, 10) - 1;
+      if (btns[n]) { btns[n].click(); e.preventDefault(); }
+    } else if (answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+      var go = stage.querySelector("button.go");
+      if (go) { go.click(); e.preventDefault(); }
+    }
+  });
+
+  render();
+})();
+</script>

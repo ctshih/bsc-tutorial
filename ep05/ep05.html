@@ -1,0 +1,1338 @@
+<meta charset="utf-8">
+<title>復刻 Kaleido</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+             system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- 開場 ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- 通用文字 ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* 補充區塊 */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* 可收合版本 */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- 影片 ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- 圖例 ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- 目錄 ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- 步驟 ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* 三種聲音 */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* 工具盒 */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* 出處標籤 —— EP02 專用 */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* 截圖 */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* 截圖以統一比例縮放（同一解析度截的，字才會一樣大），不強制撐滿版面 */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* 教學重點 */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- 收尾 ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  .voice.full { border-left-style: dashed; }
+  .closing ol.think { max-width: var(--col); padding-left: 1.4rem; display:flex; flex-direction:column; gap:.7rem; }
+  .closing ol.think li { line-height:1.7; color: var(--ink); }
+  .closing ol.think li::marker { font-family: var(--mono); color: var(--ink-faint); }
+  pre.code { background:#141A1C; color:#DCE6E4; border-radius:6px; padding:1rem 1.2rem; font-family:var(--mono); font-size:.82rem; line-height:1.55; overflow-x:auto; max-width:52rem; margin:1rem 0 1.4rem; }
+  pre.code .c { color:#7E948F; } pre.code .k { color:#8FD3CC; } pre.code .s { color:#E0B98A; } pre.code .n { color:#C9B6FF; }
+  figure.shot video { display:block; width:100%; max-width:100%; height:auto; border:1px solid var(--rule); border-radius:4px; background:#000; }
+  .exp { max-width:52rem; }
+  .exp table { font-size:.9rem; }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP05</div>
+    <h1>復刻 Kaleido</h1>
+    <p class="standfirst">
+      一篇論文、一百顆神經元影像、一句指令。這一集做兩件事：把 Kaleido 這篇論文講清楚——
+      上萬顆神經元怎麼同時看、怎麼讓鄰居穿不同顏色的衣服；然後讓 Agent 從零把程式寫出來、跑出三視圖和旋轉動畫。
+      過程中撞的牆都留著，因為這一集還要講第三件事：<strong>agentic coding 到底是怎麼一回事</strong>。
+    </p>
+    <div class="meta-row">
+      <span>3 部分 · 13 步</span>
+      <span>資料：FlyCircuit 隨機 100 顆</span>
+      <span>Claude Code · Fable 5</span>
+      <span>承接 EP04</span>
+    </div>
+  </header>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/CsLOYgDzTfk" target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="影片開頭畫面：復刻 Kaleido">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">播放教學影片　·　10 分 26 秒　·　在 YouTube 開啟 ↗</span>
+    </a>
+    <figcaption><b>教學影片</b><span>先看影片建立整體概念，再往下讀每一步的細節與程式。</span></figcaption>
+  </figure>
+
+  <script>
+  (function () {
+    var ID = 'CsLOYgDzTfk';
+    var box = document.querySelector('a.video-frame');
+    if (!box) return;
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = '復刻 Kaleido';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin'; f.allowFullscreen = true;
+      var ok = false; f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f); box.classList.add('playing');
+      setTimeout(function () { if (ok) return; f.remove(); box.classList.remove('playing');
+        var note = document.createElement('p'); note.className = 'video-note';
+        note.textContent = '這個環境不允許內嵌播放，請點封面在 YouTube 觀看。'; box.parentNode.appendChild(note); }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>怎麼讀這一頁</h2>
+    <div class="legend-item"><span class="swatch h"></span><span><b>你的指令／論文原文</b>照登，一字未改。第二部分只有一句指令，其餘步驟是 Agent 自己走的。</span></div>
+    <div class="legend-item"><span class="swatch a"></span><span><b>Agent 做了什麼</b>讀了什麼、寫了什麼、撞到什麼、怎麼改。含程式片段。</span></div>
+    <div class="legend-item"><span class="swatch s"></span><span><b>當時的畫面</b>這一集沒有對話截圖——畫面是 Agent 每一步實際產出的圖與終端輸出。</span></div>
+  </section>
+
+  <nav class="toc">
+    <h2>三部分，十三步</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>論文：十萬顆神經元怎麼一起看</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>論文：第一招，把圖層壓平</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>論文：第二招，讓鄰居穿不同顏色</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>論文：顏色也可以是資料，以及侷限</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>復刻：一句指令，先讀規格、先看資料</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>復刻：讀檔器與稀疏化，小步驗證</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>復刻：撞牆——100 個檔案、100 種尺寸</span></a></li>
+      <li><a href="#s08"><span class="n">08</span><span>復刻：第一張對的圖</span></a></li>
+      <li><a href="#s09"><span class="n">09</span><span>復刻：Monte Carlo 卡住了，做個實驗</span></a></li>
+      <li><a href="#s10"><span class="n">10</span><span>復刻：Kaleido 配色 vs 隨機配色</span></a></li>
+      <li><a href="#s11"><span class="n">11</span><span>復刻：旋轉動畫的兩個坑</span></a></li>
+      <li><a href="#s12"><span class="n">12</span><span>成品：三視圖、旋轉動畫、程式庫</span></a></li>
+      <li><a href="#s13"><span class="n">13</span><span>Agentic coding 是怎麼一回事</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head"><span class="step-num">01</span><h2>論文：十萬顆神經元怎麼一起看</h2></div>
+    <div class="prose">
+      <p>Kaleido（Wang, Chen, He, Wang, Shih, Chiang, <em>Neuroinformatics</em> 2018）是 FlyCircuit 研究線的第一篇<strong>工具論文</strong>。前面的論文累積了十萬量級的單神經元影像，但「同時看見上萬顆神經元」這件事在技術上是卡住的：每顆神經元的影像檔約一百 MB，十三萬顆全載入要 10 TB 量級的記憶體；而且就算載得動，市售 3D 軟體同時渲染的物件數也有上限。</p>
+      <p>論文的解法有兩個部分，各對付一個瓶頸：<strong>記憶體</strong>與<strong>顏色</strong>。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">論文摘要原文（節）</span>
+      <p>A formidable challenge is to simultaneously visualize a large number of distinguishable single-neuron images, with reasonable processing time and memory for file management and 3D rendering. […] Kaleido maximizes color contrast between neighboring neurons so that individual neurons can be easily distinguished.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2018-Wang-Kaleido · Fig. 2</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig2.jpg" style="width:640px" alt="Kaleido：一萬顆單神經元影像合成的連結體，與 calyx 的放大比較：能量最佳化配色 vs 隨機配色">
+      <figcaption><b>看什麼</b>a 是 FlyCircuit 一萬顆神經元同時顯示在一張圖裡；b、c 放大 Kenyon 細胞的 calyx——左邊 Kaleido 配色、右邊隨機配色，箭頭處相鄰的胞體在隨機配色下撞色。這張圖就是整篇論文要解決的兩個問題：<strong>載得動、分得開</strong>。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>工具論文的價值要從「它解決了什麼卡住的事」來讀。Kaleido 把「視覺化上萬神經元」從硬體問題變成演算法問題——這是第 02、03 步的兩招。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head"><span class="step-num">02</span><h2>論文：第一招，把圖層壓平</h2></div>
+    <div class="prose">
+      <p>處理「載不動」的辦法，是<strong>放棄「每顆神經元一個物件」</strong>。Kaleido 把選定的神經元全部畫進同一張 3D 影像——像把 Photoshop 裡一萬個圖層壓平成一張。壓平之後檔案大小只由那張圖的解析度（標準腦空間）決定，跟裡面畫了幾顆神經元幾乎無關：一萬顆和一千顆佔的記憶體差不多。</p>
+      <p>代價也明確：壓平後個別神經元不能再單獨操作。論文的補救是留一條反查通道——同一個 voxel 被多顆神經元佔據時只記錄強度最高的那一顆（winner-take-all），所以每個亮著的像素都對應唯一一顆神經元，點它就能回報 NeuronID。</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">數字與出處</span>
+      <ul>
+        <li>單顆影像約 <strong>10² MB</strong>；全腦約 13 萬顆 → 天真載入 <strong>10 TB</strong> 量級 —— 條目〈概述〉</li>
+        <li>記憶體由標準腦空間主導；距離與能量矩陣 O(N²) 為次要項；實測至 <strong>10⁴ 顆</strong> —— 條目〈方法〉</li>
+        <li>輸出解析度可調，建議 <strong>2048×1024×128</strong>；輸出 AmiraMesh／OME-TIFF 回接通用軟體</li>
+      </ul>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2018-Wang-Kaleido · Fig. 5</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig5.jpg" style="width:640px" alt="Kaleido 使用者介面：提交工作的頁面與結果頁，含切片檢視器與神經元身分辨識">
+      <figcaption><b>看什麼</b>b 的結果頁有切片檢視器和「神經元身分辨識」——那就是反查通道。先看全景找目標，再抽單顆細看。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>「壓平」換來的是<strong>記憶體與數量脫鉤</strong>，付出的是<strong>失去單顆操作</strong>。工具論文幾乎都在做這種交換；讀的時候要同時看到買到什麼、付出什麼。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head"><span class="step-num">03</span><h2>論文：第二招，讓鄰居穿不同顏色</h2></div>
+    <div class="prose">
+      <p>一萬顆神經元要各自可辨認，就得上不同的顏色。隨機上色的問題是：兩顆緊緊纏在一起的神經元完全可能抽到幾乎一樣的顏色。這本質上是地圖著色問題的親戚——相鄰的國家不能同色——差別在「相鄰」有遠近程度、顏色是連續的色相環。</p>
+      <p>Kaleido 把它變成物理問題。每一對神經元之間有一條「不舒服程度」：<strong>離得越近、顏色又越像，就越不舒服</strong>。全部配對加總得到總能量，再用 Monte Carlo 反覆交換顏色——能量下降就接受、偶爾容忍暫時變差——直到「空間上的鄰居在色相環上離得遠遠的」。</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">論文的七步（之後復刻就照這個）</span>
+      <ol>
+        <li>單神經元影像轉入標準腦；同一 voxel 只記最強的那顆</li>
+        <li>每顆隨機取 100 個 voxel；對第一顆的每個點找第二顆最近的點，兩組互算取平均 → 距離矩陣 D</li>
+        <li>選配色模式：自動（by distance）／讀檔／隨機／灰階</li>
+        <li>N 顆的色相角均勻分布 θ(i)=360°·i/N；能量 <strong>E = Σ<sub>i&lt;j</sub> 1 / ( d<sub>ij</sub> · min(Δ<sub>ij</sub>, 360°−Δ<sub>ij</sub>) )</strong></li>
+        <li>Monte Carlo：隨機初始；每步挑目前能量最高的配對之一，與另一隨機神經元互換色相角；接受機率 min(1, e<sup>−βΔE</sup>)；步數上限 10N</li>
+        <li>HSV → RGB：hue 來自第 5 步、S=1、V=正規化強度；原始強度作為 α</li>
+        <li>合併輸出單一 RGBA 檔</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2018-Wang-Kaleido · Fig. 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig1.jpg" style="width:720px" alt="演算法示意：兩神經元取樣點的平均配對距離、所有配對距離、隨機初始色相角、Monte Carlo 最佳化後的色相角">
+      <figcaption><b>看什麼</b>a 是距離怎麼算（每顆取點、兩組點間平均配對距離）；b 是第 1 顆對所有神經元的距離；c 是隨機初始色相角；之後是 Monte Carlo 把空間鄰居推到色相環對面的結果。第 09 步會看到這個過程在我們的資料上長什麼樣。</figcaption>
+    </figure>
+    <aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p><strong>把「配色」寫成一個能量函數，就可以用物理的方法最小化它。</strong></p>
+      <p>公式裡只有兩個量：空間距離 d 和色相差 Δ。它不問人眼怎麼看，只問數學上鄰居有沒有被推開——第 04 步會回來談這個選擇的代價。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head"><span class="step-num">04</span><h2>論文：顏色也可以是資料，以及侷限</h2></div>
+    <div class="prose">
+      <p>自動配色之外，Kaleido 留了「照檔案上色」模式：給一張表指定每顆神經元的顏色。論文把右嗅覺模組的神經元按<strong>出生日期</strong>和<strong>神經傳導物質</strong>上色再交叉組合，同一團影像立刻浮現不同的圖案。作者說這些只是「快速的印象」，嚴謹結論需要進一步研究——但探索工具該做的正是讓值得追的問題自己跳出來。</p>
+      <p>侷限在哪？天花板不在演算法，在<strong>光學</strong>：螢光影像解析度有限、光會散射，太多神經元擠在一起時訊號本身就糊了。另外，配色的「好」是用幾何距離加色相差定義的，<strong>不是用人眼的感知</strong>——色相環上距離相同的兩對顏色，人眼未必覺得一樣好分；色覺異常的使用者不在公式的考慮裡。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2018-Wang-Kaleido · Fig. 3</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig3.jpg" style="width:720px" alt="右嗅覺社群的神經元以自動配色、出生日期、神經傳導物質上色，以及早中晚期出生子集的交叉">
+      <figcaption><b>看什麼</b>同一團神經元三種上色：a 自動、b 出生日期、c 傳導物質；d–f 是出生早／中／晚的子集各自按傳導物質上色。<strong>顏色從「區分工具」變成「資料載體」</strong>。</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">條目裡記下的疑點（讀論文時要帶著）</span>
+      <ul>
+        <li>Methods 引用 Fig. 4a 講執行時間，但 Fig. 4a 是能量分布圖——應為 Supplement Fig. 1a</li>
+        <li>距離用每顆 100 個 voxel 抽樣近似；抽樣數對配色穩定性的影響未報告</li>
+        <li>Monte Carlo 無最佳性保證：N! 的排列空間用 10N 步啟發式搜尋，找到的是「夠好」不是「最佳」</li>
+        <li>定量驗證（Fig. 4）只用隨機 1,000 顆，不是展示用的 10,000 顆</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>這四條疑點在第二部分會變成<strong>復刻時的檢查點</strong>：抽樣數要不要試別的？10N 步真的夠嗎？第 09 步的實驗就是從「無最佳性保證」這一條長出來的。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head"><span class="step-num">05</span><h2>復刻：一句指令，先讀規格、先看資料</h2></div>
+    <div class="voice v-human">
+      <span class="voice-label">你的指令（全集唯一一句）</span>
+      <p class="cmd">接下來製作 EP05，內容是 Kaleido。這一集專注於介紹 Kaleido 這篇論文的內容，並且將程式復刻。這是 FlyCircuit 裡隨機選出的 100 顆 neuron 影像：（Google Drive 連結）<br><br>要求產出：跟 EP01~04 那樣的教材格式（記得要放圖！），注意裡面要放重組起來的影像的三視圖以及旋轉動畫。除此之外，復刻的程式放在 …\Tutorial\ep05\Kaleido_repo\ 裡，但還不要推上 GitHub<br><br>內容的部分，除了介紹 Kaleido 之外，這次會用到你的 Agentic Coding/Vibe Coding 能力，所以也要透過你這次的實作，講一下這部分的概念。<br><br>一樣一口氣做到成品。</p>
+    </div>
+    <p style="max-width:var(--col);color:var(--ink-soft);font-size:.95rem;">
+      資料在這裡，想跟著做的人可以下載：<a href="https://drive.google.com/file/d/1knn6GDFBLajofAqKYYFqdclGUa6vHewi/view?usp=sharing" target="_blank" rel="noopener">FlyCircuit 隨機 100 顆單神經元影像（Google Drive，64 MB zip）</a>——解壓後是 100 個 <code>*_warp_volume.am</code>。</p>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li><strong>先讀規格，不先寫碼。</strong>開知識庫裡的 Kaleido 條目，把〈方法〉的七步抄下來當規格（第 03 步那張清單）。論文本身沒有公開程式碼，能復刻的依據就是這七步加能量函數。</li>
+        <li><strong>下載資料、看檔頭。</strong>64 MB 的 zip，裡面 100 個 <code>*_warp_volume.am</code>。第一件事是打開一個檔案看前 1,500 bytes——AmiraMesh 二進位格式、ushort、HxZip（zlib）壓縮、lattice 542×269×252、BoundingBox 在標準腦的物理座標。</li>
+        <li>順手看了影片管線的 <code>assemble.py</code>，確認它一張投影片只撐一張圖——<strong>旋轉動畫要進影片，工具得先改</strong>（第 12 步）。</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 第一個檔案的檔頭</span>
+<pre class="code"><span class="c"># AmiraMesh BINARY-LITTLE-ENDIAN 2.1</span>
+define Lattice 542 269 252
+Parameters {
+    Content "542x269x252 ushort, uniform coordinates",
+    SaveInfo "AmiraMesh ZIP",
+    BoundingBox -267.604 273.396 -260.564 7.43608 -147.191 103.809,
+    CoordType "uniform",
+    Filename "/disk/sourceData/data2014_a11/5-HT1B-F-100000/5-HT1B-F-100000_seg001_clear.am"
+}
+Lattice { ushort Data } @1(HxZip,638779)
+<span class="c"># Data section follows</span></pre>
+      <figcaption><b>說明</b>四個關鍵字決定了讀檔器怎麼寫：<code>BINARY-LITTLE-ENDIAN</code>、<code>ushort</code>、<code>HxZip</code>（zlib 壓縮，後面的數字是壓縮後長度）、<code>BoundingBox</code>（這一顆在標準腦裡的位置——第 07 步才知道它有多重要）。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>Agentic coding 的第一步不是寫碼，是讀規格和看資料。</strong>規格在知識庫裡（EP01–04 建的），資料的格式打開檔頭就知道——這兩件事花了不到一分鐘，省掉的是後面猜格式猜錯的半小時。</p>
+      <p>你的指令只有一段話，但裡面有四個明確的交付物（教材、三視圖、旋轉動畫、程式庫）和一個明確的限制（不推 GitHub）。Agent 把它們列成清單才動手。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head"><span class="step-num">06</span><h2>復刻：讀檔器與稀疏化，小步驗證</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（沒有新指令）</span>
+      <ol>
+        <li>寫 <code>amira.py</code>：用正則從檔頭抓 lattice、dtype、壓縮方式、BoundingBox；找到 <code>@1</code> 那一行之後的位置，<code>zlib.decompress</code>，<code>np.frombuffer</code> 成 (z, y, x) 的陣列。</li>
+        <li>寫 <code>sparse.py</code>：73 MB 的 ushort 體積 × 100 顆不可能全留在記憶體，只留非零 voxel 的座標與強度。</li>
+        <li><strong>先只讀一個檔案測</strong>：0.08 秒、294,802 個非零 voxel、強度 0–255（ushort 裡裝的其實是 8-bit 值）。對了才往下。</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 讀檔器的核心與第一次測試</span>
+<pre class="code"><span class="k">def</span> read_amira(path):
+    raw = open(path, <span class="s">"rb"</span>).read()
+    head_end = raw.find(<span class="s">b"# Data section follows"</span>)
+    header = raw[:head_end].decode(<span class="s">"ascii"</span>, <span class="s">"replace"</span>)
+    nx, ny, nz = map(int, re.search(<span class="s">r"define Lattice (\d+) (\d+) (\d+)"</span>, header).groups())
+    comp = re.search(<span class="s">r"@1\((\w+),(\d+)\)"</span>, header)            <span class="c"># HxZip, 壓縮後長度</span>
+    data_start = raw.find(<span class="s">b"\n"</span>, raw.find(<span class="s">b"@1"</span>, head_end)) + 1
+    blob = zlib.decompress(raw[data_start:data_start + int(comp.group(2))])
+    vol = np.frombuffer(blob, dtype=np.uint16).reshape(nz, ny, nx)  <span class="c"># Amira：x 變動最快</span>
+    ...
+
+<span class="c">$ python -c "...read one file..."</span>
+(252, 269, 542) uint16  load 0.08s
+max 255  nonzero 294802</pre>
+      <figcaption><b>說明</b>最後兩行是第一次測試的輸出。形狀對、數值範圍合理（8-bit）、速度夠快——三件事一次確認。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>小步驗證。</strong>讀檔器寫完先讀一個檔、看三個數字，再寫下一段。Agent 寫碼很快，但「快」的代價是錯也快——每一段都留一個能看的輸出，錯就停在那一段，不會滾到後面變成找不到源頭的怪圖。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head"><span class="step-num">07</span><h2>復刻：撞牆——100 個檔案、100 種尺寸</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>把距離矩陣、能量函數、Monte Carlo、合併、三視圖、旋轉一口氣寫完，跑整條管線。讀檔、距離、MC 都過，到「合併成一張 RGB 體積」時——<code>IndexError: index 280 is out of bounds for axis 1 with size 269</code>。</li>
+        <li>有一顆神經元的座標超出第一顆的體積。查：<strong>100 個檔案有 100 種 lattice 尺寸、100 個 BoundingBox。</strong>每個 .am 是各自裁切的小體積，真正共同的是 BoundingBox 所在的標準腦物理座標（voxel 1 µm）。</li>
+        <li>回頭看論文的第 1 步「單神經元影像轉入標準腦」——在這批資料上它的意思就是：<strong>index → bbox_min + index × voxel_size</strong>，再全部對齊到同一個整數格點。加一個 <code>align()</code>，共同畫布 242×488×895。</li>
+        <li>重跑：100 顆、28,823,759 個非零 voxel，winner-take-all 後佔 15,684,811 個——有 45% 的 voxel 被更亮的鄰居蓋掉。這個數字一開始看起來太高，查了 voxel 大小（每軸 1.000 ± 0.000003 µm，沒有縮放誤差）才接受：視葉裡的神經元真的擠成那樣。</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 錯誤訊息與診斷</span>
+<pre class="code">File "kaleido/render.py", line 29, in composite
+    cur = inten[z, y, x]
+IndexError: index 280 is out of bounds for axis 1 with size 269
+
+<span class="c">$ 查 100 個檔頭的 lattice 與 BoundingBox</span>
+Counter({'542 269 252': 1, '487 369 189': 1, '128 168 77': 1, '560 297 201': 1, ... })
+100 distinct bounding boxes
+-267.604 273.396 -260.564 7.43608 -147.191 103.809
+-38.2405 447.76 -307.865 60.1345 -128.89 59.1098
+...
+<span class="c">$ 修正後</span>
+22:13:09   對齊到標準腦共同畫布 (242, 488, 895)（原點 [-140, -337, -450] µm）
+22:13:20   100 顆，總非零 voxel 28,823,759</pre>
+      <figcaption><b>說明</b>錯誤訊息說的是「第二軸（y）長度 269 卻有索引 280」——只要願意讀它，就知道問題出在第一顆的形狀被當成了全部的形狀。</figcaption>
+    </figure>
+    <aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p><strong>論文裡一句話的步驟，在真實資料上可能是整個問題。</strong></p>
+      <p>「轉入標準腦」在論文裡是第 1 步、一行字；在這批資料上，它是「100 個各自裁切的體積要靠 BoundingBox 放回同一個座標系」。Agent 第一版假設它們同尺寸——錯，但<strong>錯得很快、錯得有訊息</strong>，這是可以接受的錯。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="step" id="s08">
+    <div class="step-head"><span class="step-num">08</span><h2>復刻：第一張對的圖</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <p>對齊之後，三視圖跑出來了。正面圖（沿 z 投影）一看就是果蠅腦：兩側圓的是視葉、中間是中央腦、下方是食道下神經節。100 顆神經元裡有一批視葉的、有幾顆投射很遠的（上方那條淡綠色往背側延伸的是 Trh 神經元）。三視圖是論文沒有的輸出，是你指令裡要的。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">產出 · 三視圖（Kaleido 配色，100 顆）</span>
+      <img loading="lazy" decoding="async" src="assets/out/fig_three_views.jpg" style="width:820px" alt="100 顆神經元合併後的三視圖：正面 xy、俯視 xz、側視 yz，Kaleido 配色">
+      <figcaption><b>看什麼</b>左上正面（沿 z 投影）、左下俯視（沿 y）、右側視（沿 x）。三張都是「彩色最大強度投影」——每個像素取視線上最亮的 voxel 及它的顏色。<strong>腦的形狀對、左右對稱、視葉在兩側</strong>——這是人眼檢查，數字對不保證圖對。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>第一張對的圖是里程碑，而且「對不對」是人看的。</strong>Agent 可以檢查陣列形狀、數值範圍、執行時間，但「這像不像一顆果蠅腦」要靠知道果蠅腦長什麼樣的人——或者至少要把圖拿給這樣的人看。在這一集裡，Agent 自己看了（它讀過條目裡的腦圖），你是第二雙眼睛。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section class="step" id="s09">
+    <div class="step-head"><span class="step-num">09</span><h2>復刻：Monte Carlo 卡住了，做個實驗</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>照論文的移動方式實作：每步找目前能量最高的配對，挑其中一顆與隨機一顆互換色相角，Metropolis 接受。跑 20,000 步，能量從隨機的 1.50 降到 1.29——<strong>但曲線在 3,000 步左右就平了</strong>，之後 17,000 步一動不動。</li>
+        <li>懷疑：只從「最差配對」下手，會反覆在同幾顆之間打轉，卡在局部最小。第 04 步條目記的疑點「MC 無最佳性保證」正是這件事。</li>
+        <li><strong>做一個小實驗</strong>：混入比例 p 的「純隨機挑兩顆互換」，p = 0／0.5／1，各 1,000／5,000／20,000 步，每格三個種子。結果在下表。</li>
+        <li>決定：預設 p=0.5（能量更低、變異更小），但保留 <code>--p-random 0</code> 還原論文原版；發現寫進 docstring 和 README。</li>
+      </ol>
+    </div>
+    <div class="exp table-wrap">
+      <table>
+        <thead><tr><th>移動方式</th><th>1,000 步（論文的 10N）</th><th>5,000 步</th><th>20,000 步</th></tr></thead>
+        <tbody>
+          <tr><td>論文原版：只動最差配對（p=0）</td><td>1.3055 ± 0.0016</td><td>1.3011 ± 0.0021</td><td>1.2915 ± 0.0094</td></tr>
+          <tr><td>混合：一半隨機交換（p=0.5）</td><td>1.2923 ± 0.0061</td><td>1.2734 ± 0.0017</td><td><strong>1.2630 ± 0.0005</strong></td></tr>
+          <tr><td>全隨機交換（p=1）</td><td>1.2997 ± 0.0005</td><td>1.2735 ± 0.0011</td><td>1.2630 ± 0.0015</td></tr>
+          <tr><td colspan="4" style="color:var(--ink-soft)">隨機配色平均 E = 1.4892（20 個種子）。能量愈低愈好；± 為三個種子的標準差。100 顆、距離矩陣固定。</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">產出 · 能量曲線（對數橫軸）</span>
+      <img loading="lazy" decoding="async" src="assets/out/energy.jpg" style="width:640px" alt="Monte Carlo 能量曲線：論文原版移動在約三千步後停住，混合移動持續下降到更低">
+      <figcaption><b>看什麼</b>琥珀線是論文原版移動、藍綠線是混合移動、灰虛線是隨機配色。兩條線前一千步差不多，之後原版停住、混合繼續往下。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>復刻不是照抄。</strong>照論文寫出來、跑出來、看到曲線不對勁——這時候有三個選項：不管它（反正有降）、直接改掉（但就不是復刻了）、<strong>做實驗然後兩個都留</strong>。第三個選項多花三分鐘，換來的是一張表和一個開關：想要論文原版就 <code>--p-random 0</code>。</p>
+      <p>另一件事：能量只降 16%，不是因為演算法弱，是因為大多數配對離得很遠（d 大、能量小），總能量被少數近鄰配對主導。這種「數字看起來不驚人」的結果要看懂，不要急著調參數去衝。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="step" id="s10">
+    <div class="step-head"><span class="step-num">10</span><h2>復刻：Kaleido 配色 vs 隨機配色</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <p>照論文 Fig. 2 的做法做對照：同一批神經元、同一張正面圖，左邊 Kaleido 配色、右邊隨機配色，各裁中央腦一塊再放大一小塊。<strong>誠實地說，100 顆的差異沒有論文 10,000 顆那麼戲劇化</strong>——100 顆不夠擠。但放大處仍看得出：隨機配色裡那片紫藍色的大神經元和旁邊的藍色胞體撞在一起，Kaleido 把它們推成綠對洋紅。右邊的色相環圖把這件事畫得更直接：每顆神經元一個點、灰線連到它空間上最近的鄰居——Kaleido 那張的線明顯拉得更開。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">產出 · 同一區域，兩種配色</span>
+      <img loading="lazy" decoding="async" src="assets/out/fig_compare_random.jpg" style="width:720px" alt="中央腦局部：Kaleido 配色與隨機配色並排，下方各放大一小塊">
+      <figcaption><b>看什麼</b>上排是中央腦的一塊（白框是放大區），下排放大。比較胞體密集處相鄰兩顆的色相差。</figcaption>
+    </figure>
+    <figure class="shot">
+      <span class="shot-label">產出 · 色相環：每顆神經元的色相角，灰線連到空間最近鄰</span>
+      <img loading="lazy" decoding="async" src="assets/out/fig_hue_wheel.jpg" style="width:720px" alt="兩個色相環：隨機配色與 Kaleido 配色，每點一顆神經元，灰線連到空間最近的鄰居">
+      <figcaption><b>看什麼</b>左隨機、右 Kaleido。線愈長代表空間鄰居在色相環上離得愈遠——這就是能量函數在做的事。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>結果不如論文漂亮時，說出來，然後找一張能把效果「量」出來的圖。</strong>100 顆 vs 10,000 顆的差異是資料密度的差異，不是演算法的差異；色相環那張圖把演算法真正做到的事分離出來看。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section class="step" id="s11">
+    <div class="step-head"><span class="step-num">11</span><h2>復刻：旋轉動畫的兩個坑</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>旋轉動畫是論文沒有的輸出（它輸出 3D 檔給 Avizo 轉）。做法：把 100 顆的點雲繞垂直軸轉，每個角度做一次彩色最大強度投影，72 格。</li>
+        <li><strong>第一版：摩爾紋。</strong>體積 895 voxel 寬要塞進 1,100 像素，縮放不是整數倍，週期性地有些像素列分不到任何 voxel——畫面出現格子狀的條紋。這不是資料的問題，是取樣的問題。</li>
+        <li><strong>第二版：變暗。</strong>解法是先用兩倍解析度畫再縮回（抗鋸齒），摩爾紋消失了——但整張變暗，因為 voxel 之間的空像素被平均進去了。0° 和 180° 最暗（x 方向最稀）。</li>
+        <li><strong>第三版：固定 1 voxel = 2 像素、每個點畫成 2×2 的方塊、再 Lanczos 縮回。</strong>沒有縫、沒有摩爾紋、亮度正常。代價是 28.8M 個點 × 4 × 72 格，七分鐘。</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">產出 · 第三版的定格（0°／60°／120°／180°）</span>
+      <img loading="lazy" decoding="async" src="assets/out/fig_rotation_stills.jpg" style="width:760px" alt="旋轉動畫四個角度的定格：0、60、120、180 度">
+      <figcaption><b>看什麼</b>60° 和 120° 可以看到視葉的厚度和中央腦的前後層次——這是三視圖給不了的。完整的 72 格動畫在第 12 步。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>視覺輸出要用眼睛驗收，數值對不代表圖對。</strong>摩爾紋那一版所有陣列形狀、數值範圍都對，程式沒有任何錯誤訊息——只有看圖才知道不對。Agent 自己看了定格圖才發現，這是它流程裡「每一步產出可看的東西」的價值。</p>
+      <p>三版的演進也是 agentic coding 的典型節奏：做 → 看 → 說出哪裡不對 → 改 → 再看。每一版都留在程式的 docstring 裡，讀程式的人知道為什麼現在長這樣。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 12 ============ -->
+  <section class="step" id="s12">
+    <div class="step-head"><span class="step-num">12</span><h2>成品：三視圖、旋轉動畫、程式庫</h2></div>
+    <figure class="shot">
+      <span class="shot-label">產出 · 旋轉動畫（72 格，繞垂直軸一圈）</span>
+      <video autoplay loop muted playsinline poster="assets/out/rotate-poster.jpg" src="assets/out/rotate.mp4"></video>
+      <figcaption><b>看什麼</b>100 顆 FlyCircuit 神經元、Kaleido 配色、彩色最大強度投影。視葉是兩個厚殼，中央腦的神經元前後分層。這段動畫也進了教學影片——影片管線為此多了「動畫投影片」功能。</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">程式庫 Kaleido_repo/（未推上 GitHub）</span>
+<pre class="code">Kaleido_repo/
+├── README.md            演算法七步 ↔ 程式對照表、三個復刻發現、用法
+├── requirements.txt     numpy · pillow · matplotlib
+├── run.py               一條龍：讀檔 → 距離 → MC → 合併 → 三視圖 → 旋轉動畫
+├── make_figures.py      教材用的組合圖
+├── kaleido/
+│   ├── amira.py         AmiraMesh 讀檔器（BINARY-LE / ushort / HxZip）
+│   ├── sparse.py        稀疏化 ＋ 用 BoundingBox 對齊到標準腦（第 07 步的修正）
+│   ├── distance.py      每顆取 100 點、互算最短距離 → D
+│   ├── coloring.py      能量函數、Monte Carlo（含 p_random 開關）
+│   └── render.py        winner-take-all 合併、三視圖 MIP、旋轉投影（第 11 步的三版）
+└── outputs/             mip_*.png · energy.png · rotate.gif/mp4 · hues.json · owner_map.npy · fig_*.png</pre>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">跟論文對照：做了什麼、沒做什麼</span>
+      <ul>
+        <li>七步裡做了 1–6；第 7 步「輸出 AmiraMesh 給 Avizo」改成輸出 PNG／MP4 與 <code>owner_map.npy</code>（每個 voxel 屬於哪顆神經元——論文的反查通道，以陣列形式保留）</li>
+        <li>配色模式只做了自動與隨機；「照檔案上色」與灰階沒做</li>
+        <li>加了論文沒有的：三視圖、旋轉動畫、<code>p_random</code>、gamma 0.6（讓細纖維看得見）</li>
+        <li>跑 100 顆全程約 8 分鐘，其中旋轉動畫 7 分鐘；其餘（讀檔 20 秒、距離 1 秒、MC 1 秒、合併 7 秒）</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>成品要有「對照表」。</strong>復刻的程式跟論文哪裡一樣、哪裡不一樣、為什麼不一樣——這張表讓別人（和三個月後的你）知道這份程式能信到哪裡。它在 README 裡，不在對話紀錄裡。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 13 ============ -->
+  <section class="step" id="s13">
+    <div class="step-head"><span class="step-num">13</span><h2>Agentic coding 是怎麼一回事</h2></div>
+    <div class="prose">
+      <p>這一集的第二部分就是一次完整的 agentic coding。回頭看它的形狀，再講概念，比先講概念容易懂。</p>
+      <p><strong>兩個詞。</strong>「Vibe coding」是 Karpathy 2025 年初的說法：用自然語言描述你要什麼，讓 AI 生成程式碼，你看結果、不逐行看程式——跟著感覺走。「Agentic coding」更進一步：AI 不只生成，它<strong>自己規劃步驟、執行、看輸出、改、再執行</strong>，直到做完再回報；人給目標和邊界，中途不一定在場。這一集是後者：你給了一句指令，中間的十二步（讀規格、看資料、寫、撞牆、對齊、做實驗、改三版）都是 Agent 自己走的。</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>人做了什麼</th><th>Agent 做了什麼</th></tr></thead>
+        <tbody>
+          <tr><td>目標</td><td>一段話：復刻 Kaleido、三視圖、旋轉動畫、程式放哪、不推 GitHub、要講 agentic coding</td><td>拆成交付物清單與順序</td></tr>
+          <tr><td>規格</td><td>（EP01–04 建的知識庫裡已經有）</td><td>讀條目，抄七步與能量函數當規格</td></tr>
+          <tr><td>資料</td><td>給連結</td><td>下載、看檔頭、決定格式怎麼讀</td></tr>
+          <tr><td>實作</td><td>—</td><td>寫五個模組，每段先小測</td></tr>
+          <tr><td>撞牆</td><td>—</td><td>IndexError → 查 100 個檔頭 → 改用 BoundingBox 對齊</td></tr>
+          <tr><td>判斷</td><td>—（事後看圖）</td><td>MC 卡住→實驗→保留開關；摩爾紋→三版</td></tr>
+          <tr><td>驗收</td><td><strong>看成品：像不像、夠不夠</strong></td><td>自己先看圖，說出哪裡不如論文</td></tr>
+          <tr><td>紀錄</td><td>—</td><td>發現寫進 docstring 與 README；本頁</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p><strong>它跟「請 AI 寫一段程式」的差別在迴圈。</strong>不是「寫完交給你」，是「寫 → 跑 → 看 → 改」自己轉到轉不動為止。這一集裡這個迴圈至少轉了六次：讀檔器一次、對齊一次、MC 一次、旋轉三次。每一次的判斷依據都是<strong>自己跑出來的輸出</strong>——錯誤訊息、數字、圖。</p>
+      <p><strong>哪裡會出事。</strong>（1）<strong>看起來對、其實錯</strong>：摩爾紋那一版沒有任何錯誤訊息。Agent 能自己抓到，是因為它把圖渲染出來看了；如果流程裡沒有「產出可看的東西」這一步，它會帶著錯誤繼續往下。（2）<strong>自作主張改規格</strong>：MC 移動方式改掉的話就不是復刻了；所以改動要留開關、要寫下來。（3）<strong>過度保守</strong>：上一集 Agent 因版權註記一張圖都不放，被退回——邊界的判斷屬於人。（4）<strong>結果不如預期時的誠實</strong>：100 顆的配色對照沒有論文戲劇化，要說，不要找角度硬拗。</p>
+      <p><strong>給用這套方法的人的四條建議</strong>：一、指令裡把交付物講清楚（這一集的三視圖、旋轉動畫、程式位置、不推 GitHub 都是交付物）；二、讓它先做最小能驗證的版本，看了再放大；三、要它把撞牆和判斷寫進程式與 README，不要只留在對話；四、你負責看成品——像不像、夠不夠、該不該放圖——這些判斷目前還是人的。</p>
+    </div>
+    <aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p><strong>Agentic coding 的品質，取決於迴圈裡有沒有「可看的輸出」。</strong></p>
+      <p>每一步都產出一個能檢查的東西——一個數字、一張圖、一行錯誤訊息——Agent 就能自己修正；沒有的話，它只是寫得很快。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 收尾 ============ -->
+  <section class="closing">
+    <h2>這一集學到什麼</h2>
+    <div class="prose">
+      <p>論文講了兩招：壓平圖層讓記憶體與數量脫鉤、把配色寫成能量函數用 Monte Carlo 最小化。復刻走了七步，撞了兩次牆（資料尺寸、投影取樣），做了一個實驗（移動方式）。第三部分把這整段回頭看成一次 agentic coding。</p>
+    </div>
+    <h3>三個觀察</h3>
+    <ul class="obs">
+      <li><b>先讀規格、先看資料</b>七步清單來自知識庫條目，檔案格式來自檔頭——寫碼之前的兩分鐘，決定了後面沒有猜格式的半小時。</li>
+      <li><b>論文的一句話可能是真實資料上的整個問題</b>「轉入標準腦」= 100 個各自裁切的體積用 BoundingBox 對齊。錯得快、錯得有訊息的錯，是可以接受的錯。</li>
+      <li><b>迴圈裡要有可看的輸出</b>能量曲線讓人看見 MC 卡住；定格圖讓人看見摩爾紋。沒有這些，程式「沒有錯誤訊息」地錯下去。</li>
+    </ul>
+    <h3>關於你的角色</h3>
+    <div class="prose">
+      <p>這一集你做的事：<strong>一句指令</strong>（交付物與邊界都在裡面）、<strong>給資料</strong>、<strong>看成品</strong>。比前四集都少——但「要三視圖和旋轉動畫」「記得放圖」「不推 GitHub」這幾個決定，Agent 自己不會做。規格與邊界是人的，迴圈是它的。</p>
+    </div>
+    <h3>這一集的產出</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>項目</th><th>內容</th></tr></thead>
+        <tbody>
+          <tr><td>Kaleido_repo/</td><td>Python 復刻：5 個模組＋run.py＋make_figures.py＋README；未推 GitHub</td></tr>
+          <tr><td>outputs/</td><td>三視圖、隨機配色對照、能量曲線、色相環、旋轉動畫 72 格（GIF／MP4）、owner_map</td></tr>
+          <tr><td>Tutorial/tools/assemble.py</td><td>新增「動畫投影片」：<code>frames/anim/sNN/</code> 有連號 PNG 就輪播填滿旁白時長</td></tr>
+          <tr><td>教材</td><td>本頁、影片、十題測驗</td></tr>
+          <tr><td>知識庫</td><td>沒有改動（只讀 Kaleido 條目）</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>這一集寫的程式與裝的套件</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>程式／套件</th><th>位置</th><th>用途</th></tr></thead>
+        <tbody>
+          <tr><td><code>kaleido/</code> 五個模組、<code>run.py</code>、<code>make_figures.py</code></td><td>ep05/Kaleido_repo/</td><td>復刻本體與教材圖</td></tr>
+          <tr><td><code>assemble.py</code>（改）</td><td>Tutorial/tools/</td><td>動畫投影片支援</td></tr>
+          <tr><td>numpy · pillow · matplotlib · gdown</td><td>pip</td><td>數值、影像、繪圖、從 Google Drive 下載</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--ink-soft);font-size:.92rem;max-width:var(--col);">
+      <b>圖片來源</b>　第 01–04 步的五張圖取自知識庫條目所擷取的原論文圖（Wang et al. 2018, <em>Neuroinformatics</em>，Springer Nature），教學引用；其餘為本集程式的產出。資料為 FlyCircuit 隨機 100 顆單神經元影像。</p>
+    <h3>自己動手做</h3>
+    <div class="prose">
+      <p>材料都是公開的：<a href="https://drive.google.com/file/d/1knn6GDFBLajofAqKYYFqdclGUa6vHewi/view?usp=sharing" target="_blank" rel="noopener">下載 100 顆神經元影像（Google Drive，64 MB）</a>，
+      程式照第 12 步的結構自己寫——或者更符合這一集主題的做法：把第 03 步的七步清單和這一頁交給你的 Agent，
+      給它資料連結，看它會撞到哪些牆。跑起來只要 <code>pip install numpy pillow matplotlib</code>，100 顆全程約 8 分鐘。</p>
+    </div>
+
+    <div class="cta">
+      <div class="cta-text"><h3>檢驗一下</h3><p>十題單選：Kaleido 的兩招、能量函數在做什麼、復刻時撞的牆、agentic coding 的迴圈。答完每一題立刻告訴你對錯與理由。</p></div>
+      <a class="cta-btn" href="ep05-quiz.html" data-remote="EP05_QUIZ_ARTIFACT_URL">開始測驗 →</a>
+    </div>
+    <div class="next">
+      <b>下一集</b>　待定。Kaleido_repo 還沒推上 GitHub；知識庫裡還有別的工具論文（NeuroRetriever、LYNSU）可以用同樣的方式復刻。
+    </div>
+    <script>
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        a.href = a.getAttribute('data-remote'); a.target = '_blank'; a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

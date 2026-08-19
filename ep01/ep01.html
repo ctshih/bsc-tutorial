@@ -1,0 +1,1692 @@
+<meta charset="utf-8">
+<title>建置 LLM Wiki 的第一步</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+             system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- 開場 ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- 通用文字 ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* 原文轉述區塊 */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+  .digest .layer {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .45rem 1rem;
+    margin: 0 0 .9rem;
+    font-size: .95rem;
+  }
+  .digest .layer dt { font-weight: 600; white-space: nowrap; }
+  .digest .layer dd { margin: 0; color: var(--ink-soft); }
+
+  /* 可收合版本 */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- 影片 ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- 圖例 ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- 目錄 ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- 步驟 ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* 三種聲音 */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* 工具盒 */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+  }
+  .tag.install { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.wrote   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+
+  /* 截圖 */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  figure.shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* 教學重點 */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- 收尾 ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP01</div>
+    <h1>建置 LLM Wiki 的第一步</h1>
+    <p class="standfirst">
+      從一份 gist 到第一篇論文筆記。這裡完整記錄一次真實的工作階段——每一步的指令、
+      Agent 當下怎麼思考與操作、以及當時的畫面。
+    </p>
+    <div class="meta-row">
+      <span>12 個步驟</span>
+      <span>Claude Code · Opus 5</span>
+      <span>Windows 11</span>
+      <span>領域：神經科學 / connectome</span>
+    </div>
+  </header>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/IFVuw6xEMj8"
+       target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="影片開頭畫面：建置 LLM Wiki 的第一步">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">播放教學影片　·　8 分 57 秒　·　在 YouTube 開啟 ↗</span>
+    </a>
+    <figcaption>
+      <b>教學影片</b>
+      <span>先看影片建立整體概念，再往下讀十二個步驟的細節。</span>
+    </figcaption>
+  </figure>
+
+  <script>
+  // 影片播放：從網頁伺服器開啟時直接內嵌，否則開新分頁到 YouTube。
+  // YouTube 拒絕來自 file:// 的嵌入（錯誤 153），claude.ai 的 CSP 也會擋外部 iframe，
+  // 因此這兩種情況一律走連結。
+  (function () {
+    var ID = 'IFVuw6xEMj8';
+    var box = document.querySelector('a.video-frame');
+    if (!box) return;
+
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;   // 保持純連結行為
+
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = '建置 LLM Wiki 的第一步';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; ' +
+                'gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.allowFullscreen = true;
+
+      var ok = false;
+      f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f);
+      box.classList.add('playing');
+
+      // 保險：若嵌入被擋（未知的 CSP 環境），還原封面並提示改用連結
+      setTimeout(function () {
+        if (ok) return;
+        f.remove();
+        box.classList.remove('playing');
+        var note = document.createElement('p');
+        note.className = 'video-note';
+        note.textContent = '這個環境不允許內嵌播放，請點封面在 YouTube 觀看。';
+        box.parentNode.appendChild(note);
+      }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>怎麼讀這一頁</h2>
+    <div class="legend-item">
+      <span class="swatch h"></span>
+      <span><b>你的指令</b>完整照登，一字未改，包括打錯的字。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch a"></span>
+      <span><b>Agent 做了什麼</b>不只是回答內容，還包括它試了什麼、失敗了什麼、改用什麼方法。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>當時的畫面</b>實際截圖。畫面只截到一部分，完整經過寫在上方。</span>
+    </div>
+  </section>
+
+  <nav class="toc">
+    <h2>十二個步驟</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>開一個新的工作階段</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>把原文交給 Agent</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>補上作者背景</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>請它把原文變成教材</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>先問計畫，不要直接叫它做</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>把名詞問清楚</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>給領域與真實資料</span></a></li>
+      <li><a href="#s08"><span class="n">08</span><span>最該學的一步：推翻它</span></a></li>
+      <li><a href="#s09"><span class="n">09</span><span>Agent 自己解決工具問題</span></a></li>
+      <li><a href="#s10"><span class="n">10</span><span>在 Obsidian 檢視第一版</span></a></li>
+      <li><a href="#s11"><span class="n">11</span><span>下具體的修改指令</span></a></li>
+      <li><a href="#s12"><span class="n">12</span><span>第二版成果</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <h2>開一個新的工作階段</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的操作</span>
+      <p>在 Claude Code 按下 <code>New</code>，跳出資料夾選擇視窗，指定工作資料夾為
+      <code>EP01 什麼是 LLM-Wiki 知識庫</code>。</p>
+    </div>
+
+    <div class="prose">
+      <p>這一步沒有輸入任何指令，但它決定了後面的一切。</p>
+      <p><strong>這個資料夾就是 Agent 的活動範圍。</strong>它讀得到、寫得到的檔案都在這裡面。
+      選錯資料夾，後面所有的檔案都會產生在不對的地方。</p>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/01-new-session.png"
+           alt="Claude Code 開新工作階段，跳出資料夾選擇對話框，正在選定 EP01 資料夾">
+      <figcaption><b>說明</b>左側是專案分組，中央是資料夾選擇視窗。注意右下角顯示目前使用的模型是
+      Opus 5、思考強度 High；底部則標示了目前綁定的資料夾。</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head">
+      <span class="step-num">02</span>
+      <h2>把原文交給 Agent</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">看一下　https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>發現自己手上沒有網頁擷取工具的規格，先用 <code>ToolSearch</code> 把 <code>WebFetch</code> 載入。</li>
+        <li>用 <code>WebFetch</code> 抓取 gist 網址，拿到的是一份<strong>經過摘要</strong>的內容。</li>
+        <li>判斷摘要有失真風險，於是<strong>再抓一次</strong>——這次改用 <code>/raw</code> 結尾的網址，取得完整原文。</li>
+        <li>用中文重新組織成：核心主張、三層架構、三個操作、兩個特殊檔案、為什麼有效。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/02-karpathy-gist.png"
+           alt="Agent 抓取 Karpathy 的 gist 後，以中文摘要核心主張">
+      <figcaption><b>說明</b>上方那行 <code>Browsed the web, used a tool</code> 是可以展開的——
+      點開就能看到 Agent 實際抓了哪個網址、拿回什麼。</figcaption>
+    </figure>
+
+    <details class="digest">
+      <summary>Karpathy 這篇在講什麼<span class="hint">點此展開</span></summary>
+      <div class="digest-body">
+
+      <h3>核心想法</h3>
+      <p>多數人用 LLM 處理文件的方式是 RAG：上傳一堆檔案，LLM 在查詢時擷取相關片段來生成答案。
+      這能用，但 LLM 每次都在<strong>從零重新發現知識</strong>，沒有任何累積。問一個需要綜合五份文件的細微問題，
+      LLM 每次都得重新尋找與拼湊。NotebookLM、ChatGPT 上傳檔案，以及多數 RAG 系統都是這樣運作。</p>
+      <p>這篇提的想法不同：不只是在查詢時從原始文件擷取，而是讓 LLM <strong>逐步建立並維護一個持久的
+      wiki</strong>——一組結構化、互相連結的 markdown 檔案，夾在你和原始資料之間。新來源進來時，
+      LLM 不只是替它建索引以備日後擷取，而是讀完它、抽出關鍵資訊、整合進既有的 wiki：更新實體頁、
+      修訂主題摘要、標記新資料與舊主張矛盾之處、強化或挑戰逐漸成形的綜合觀點。知識<strong>編譯一次，
+      然後持續保持最新</strong>，不是每次查詢重新推導。</p>
+      <blockquote>關鍵差異在於：wiki 是一個持久、會複利累積的產物。交叉引用已經在那裡了，
+      矛盾已經被標記出來了，綜合觀點已經反映了你讀過的一切。每加一個來源、每問一個問題，wiki 就更豐富一些。</blockquote>
+
+      <h3>分工</h3>
+      <p>你幾乎（或完全）不自己寫 wiki——LLM 撰寫並維護其中的一切。你負責的是<strong>尋找來源、探索、
+      問對問題</strong>。LLM 做所有的苦工：摘要、交叉引用、歸檔，以及讓知識庫長期真正好用所需的記帳工作。</p>
+      <p>Karpathy 自己的做法是一邊開著 LLM agent、一邊開著 Obsidian。LLM 依據對話進行編輯，
+      他即時瀏覽結果——點連結、看關係圖、讀被更新的頁面。他的比喻是：<strong>Obsidian 是 IDE，
+      LLM 是工程師，wiki 是 codebase</strong>。</p>
+
+      <h3>適用的情境</h3>
+      <ul>
+        <li><strong>個人</strong>：追蹤自己的目標、健康、心理、自我改善——歸檔日記、文章、podcast 筆記，
+        逐步建立一幅關於自己的結構化圖像。</li>
+        <li><strong>研究</strong>：花數週或數月深入一個主題——讀論文、文章、報告，逐步建立一個完整的 wiki
+        與不斷演進的論點。</li>
+        <li><strong>讀一本書</strong>：邊讀邊歸檔每一章，建立人物、主題、情節線的頁面以及它們之間的連結。
+        讀完就有一個豐富的伴讀 wiki。可以類比 Tolkien Gateway 這類粉絲 wiki——數千個互相連結的頁面，
+        由志工社群花數年建立；你可以在讀書的同時個人建出這種東西，交叉引用與維護全部交給 LLM。</li>
+        <li><strong>企業／團隊</strong>：由 LLM 維護的內部 wiki，餵進 Slack 討論串、會議逐字稿、專案文件、
+        客戶通話，可能加上人類審核更新。wiki 能保持最新，是因為 LLM 承擔了團隊裡沒人想做的維護工作。</li>
+        <li><strong>其他</strong>：競品分析、盡職調查、旅行規劃、課程筆記、興趣深挖——任何你會長期累積知識、
+        且希望它被組織起來而非四散各處的場合。</li>
+      </ul>
+
+      <h3>三層架構</h3>
+      <dl class="layer">
+        <dt>Raw sources</dt>
+        <dd>你策展的原始文件收藏：文章、論文、圖片、資料檔。<strong>不可變</strong>——LLM 只從中讀取，
+        絕不修改。這是你的真相來源。</dd>
+        <dt>The wiki</dt>
+        <dd>一個裝滿 LLM 生成 markdown 的目錄：摘要、實體頁、概念頁、比較、總覽、綜合。
+        LLM <strong>完全擁有</strong>這一層：建立頁面、有新來源時更新、維護交叉引用、保持一致。你讀它，LLM 寫它。</dd>
+        <dt>The schema</dt>
+        <dd>一份文件（例如 Claude Code 的 <code>CLAUDE.md</code> 或 Codex 的 <code>AGENTS.md</code>），
+        告訴 LLM wiki 如何組織、慣例是什麼、在吸收來源／回答問題／維護 wiki 時該遵循什麼流程。
+        這是<strong>關鍵的設定檔</strong>——它讓 LLM 成為有紀律的 wiki 維護者，而不是通用聊天機器人。
+        你和 LLM 會隨著時間共同演化它。</dd>
+      </dl>
+
+      <h3>三個操作</h3>
+      <p><strong>Ingest（吸收）。</strong>你把新來源丟進原始收藏並告訴 LLM 處理。一個流程範例：LLM 讀取來源、
+      和你討論關鍵重點、在 wiki 寫一頁摘要、更新索引、更新 wiki 各處相關的實體與概念頁、在 log 追加一筆。
+      單一來源可能會觸及 10 到 15 個 wiki 頁面。Karpathy 個人偏好一次吸收一份並保持參與——他會讀摘要、
+      檢查更新、引導 LLM 該強調什麼；但你也可以一次批次吸收多份、少一點監督。發展出適合自己風格的流程，
+      並把它寫進 schema 供未來的工作階段使用。</p>
+      <p><strong>Query（查詢）。</strong>你對 wiki 提問。LLM 搜尋相關頁面、讀取它們、綜合出帶引用的答案。
+      答案可以有不同形式：一頁 markdown、一張比較表、一份簡報（Marp）、一張圖表（matplotlib）、一塊 canvas。
+      重要的洞察是：<strong>好的答案可以被歸檔回 wiki 成為新頁面</strong>。你要的比較、分析、發現的關聯，
+      都是有價值的，不該消失在對話紀錄裡。這樣一來，你的探索就會像吸收來源一樣在知識庫中複利累積。</p>
+      <p><strong>Lint（健檢）。</strong>定期請 LLM 對 wiki 做健康檢查，尋找：頁面之間的矛盾、
+      被新來源推翻的陳舊主張、沒有任何入站連結的孤兒頁、被提及卻缺少專屬頁面的重要概念、缺失的交叉引用、
+      可以用一次網路搜尋補上的資料缺口。LLM 擅長建議新的待調查問題與該尋找的新來源。這能讓 wiki 在成長過程中保持健康。</p>
+
+      <h3>索引與日誌</h3>
+      <p>兩個特殊檔案幫助 LLM（和你）在 wiki 變大時導航，它們的用途不同：</p>
+      <p><strong>index.md</strong> 是內容導向的。它是 wiki 中所有東西的目錄——每一頁附連結、一行摘要，
+      可選加上日期或來源數之類的中繼資料，按類別（實體、概念、來源等）組織。LLM 在每次 ingest 時更新它。
+      回答查詢時，LLM 先讀索引找出相關頁面，再鑽進去。這在中等規模（約 100 個來源、數百個頁面）下
+      運作得出乎意料地好，且免去了嵌入式 RAG 基礎設施的需求。</p>
+      <p><strong>log.md</strong> 是時序性的。它是一份只增不改的紀錄，記載什麼時候發生了什麼——
+      吸收、查詢、健檢。一個有用的訣竅：若每一筆都以一致的前綴開頭（例如
+      <code>## [2026-04-02] ingest | Article Title</code>），這份 log 就能用簡單的 unix 工具解析——
+      <code>grep "^## \[" log.md | tail -5</code> 會給出最近五筆。log 給你 wiki 演化的時間軸，
+      也幫助 LLM 理解最近做過什麼。</p>
+
+      <h3>選配：CLI 工具</h3>
+      <p>到某個階段，你可能會想建一些小工具，讓 LLM 更有效率地操作 wiki。最明顯的是一個 wiki 的搜尋引擎——
+      小規模時索引檔就夠用，但 wiki 長大後你會需要真正的搜尋。<strong>qmd</strong> 是個好選項：
+      它是一個本機的 markdown 檔案搜尋引擎，具備 BM25／向量混合搜尋與 LLM 重排序，全部在裝置上執行。
+      它同時有 CLI（LLM 可以直接呼叫）和 MCP server（LLM 可以當成原生工具使用）。你也可以自己做一個更簡單的——
+      需要的時候讓 LLM 幫你隨手寫一支陽春的搜尋腳本。</p>
+
+      <h3>訣竅與提示</h3>
+      <ul>
+        <li><strong>Obsidian Web Clipper</strong> 是一個瀏覽器擴充功能，把網頁文章轉成 markdown。
+        要快速把來源放進原始收藏時非常有用。</li>
+        <li><strong>把圖片下載到本機。</strong>在 Obsidian 設定 → 檔案與連結中，把「附件資料夾路徑」
+        設為一個固定目錄（例如 <code>raw/assets/</code>）。然後在設定 → 快速鍵中搜尋 “Download”，
+        找到「下載目前檔案的附件」並綁一個快速鍵（例如 Ctrl+Shift+D）。剪貼一篇文章後按下快速鍵，
+        所有圖片就會下載到本機磁碟。這是可選的，但很有用——它讓 LLM 能直接檢視與引用圖片，
+        而不必依賴可能失效的網址。注意 LLM 無法在一次讀取中原生地讀懂含內嵌圖片的 markdown——
+        變通做法是先讓 LLM 讀文字，再另外檢視部分或全部被引用的圖片以獲得額外脈絡。有點笨拙，但夠用。</li>
+        <li><strong>Obsidian 的 graph view</strong> 是看清 wiki 形狀的最佳方式——什麼連到什麼、
+        哪些頁面是樞紐、哪些是孤兒。</li>
+        <li><strong>Marp</strong> 是基於 markdown 的簡報格式，Obsidian 有對應外掛。可直接從 wiki 內容生成簡報。</li>
+        <li><strong>Dataview</strong> 是一個 Obsidian 外掛，能對頁面的 frontmatter 執行查詢。
+        如果你的 LLM 為 wiki 頁面加上 YAML frontmatter（標籤、日期、來源數），Dataview 就能生成動態表格與清單。</li>
+        <li>wiki 就是一個裝滿 markdown 檔案的 git repo。版本歷史、分支與協作都免費附送。</li>
+      </ul>
+
+      <h3>為什麼這樣有效</h3>
+      <p>維護知識庫最煩人的部分不是閱讀，也不是思考——是<strong>記帳</strong>。更新交叉引用、保持摘要最新、
+      註記新資料何時與舊主張矛盾、在數十個頁面之間維持一致性。人類之所以放棄 wiki，
+      是因為維護負擔的成長快過它帶來的價值。LLM 不會覺得無聊、不會忘記更新某個交叉引用、
+      可以在一輪之內處理 15 個檔案。wiki 之所以能維持下去，是因為維護的成本趨近於零。</p>
+      <p>人的工作是策展來源、指導分析、問好的問題、思考這一切意味著什麼。LLM 的工作是其他的一切。</p>
+      <p>這個想法在精神上與 Vannevar Bush 的 <strong>Memex</strong>（1945）相關——一個個人的、
+      經過策展的知識儲存，文件之間帶有聯想路徑。Bush 的願景比後來的網際網路更接近這件事：
+      私密、主動策展，而且文件之間的連結和文件本身一樣有價值。他無法解決的部分是<strong>由誰來維護</strong>，
+      而 LLM 處理了這件事。</p>
+
+      <h3>刻意保持抽象</h3>
+      <p>這份文件是刻意抽象的。它描述的是想法，不是特定的實作。確切的目錄結構、schema 慣例、頁面格式、
+      工具——全都取決於你的領域、你的偏好、你選用的 LLM。上面提到的一切都是可選且模組化的：
+      挑有用的，忽略沒用的。例如你的來源可能只有文字，那就完全不需要圖片處理；你的 wiki 可能小到只需要索引檔，
+      不必搜尋引擎；你可能不在乎簡報，只想要 markdown 頁面。正確的用法是把它分享給你的 LLM agent，
+      一起打造出符合你需求的版本。這份文件唯一的工作，就是傳達這個模式。</p>
+      </div>
+    </details>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>Agent 不是「查一次就回答」。它會判斷第一次拿到的資料夠不夠好，不夠就換個方式再抓一次。
+      這種自我修正你不用開口要求。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head">
+      <span class="step-num">03</span>
+      <h2>補上作者背景</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">誰是 Karparthy</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>順手訂正拼法（是 Karpathy，少一個 r），但沒有停下來糾結。</li>
+        <li>整理經歷：史丹佛博士、CS231n 課程、OpenAI 創始成員、Tesla AI 資深總監、創辦 Eureka Labs。</li>
+        <li>說明他的影響力來源——用可跑的最小程式碼講複雜的東西：micrograd、nanoGPT、llm.c。</li>
+        <li>列出他造的詞：Software 2.0、vibe coding、LLM OS。</li>
+        <li>最後把背景接回主題：LLM Wiki 這篇符合他一貫風格——不給實作、只給 pattern。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/03-who-is-karpathy.png"
+           alt="Agent 說明 Andrej Karpathy 的經歷與影響力">
+      <figcaption><b>說明</b>指令有錯字也沒關係。Agent 訂正之後就繼續回答，不會卡在那裡要你重打。</figcaption>
+    </figure>
+
+    <details class="digest">
+      <summary>Andrej Karpathy 是誰<span class="hint">點此展開</span></summary>
+      <div class="digest-body">
+
+      <p>AI 領域最具影響力的<strong>教育者兼工程師</strong>之一。他的特別之處不在於發明了某個模型架構，
+      而在於他讓數以萬計的人真正弄懂了深度學習是怎麼運作的。</p>
+
+      <h3>經歷</h3>
+      <ul>
+        <li>1986 年生於斯洛伐克布拉提斯拉瓦，少年時期移居加拿大。</li>
+        <li>多倫多大學（資訊科學＋物理）→ UBC 碩士 → <strong>史丹佛博士</strong>，
+        指導教授是 Fei-Fei Li，研究影像與語言的結合（用 CNN＋RNN 做圖片描述生成）。</li>
+        <li>在史丹佛開設 <strong>CS231n</strong>（卷積神經網路與視覺辨識），
+        是全世界第一批、也最經典的深度學習課程。這門課的講義至今仍被廣泛當作入門教材。</li>
+        <li><strong>OpenAI 創始成員</strong>（2015–2017）。</li>
+        <li><strong>Tesla AI 資深總監</strong>（2017–2022），主導 Autopilot 的視覺系統，
+        推動放棄光達、改採「純視覺」的技術路線。</li>
+        <li>2023 年短暫回鍋 OpenAI，2024 年 2 月離開。</li>
+        <li>2024 年 7 月創辦 <strong>Eureka Labs</strong>，做 AI 原生的教育產品。
+        LLM Wiki 這篇 gist（2026 年 4 月）就是這個時期寫的。</li>
+        <li><strong>2026 年 5 月 19 日加入 Anthropic</strong>，結束 Eureka Labs 二十二個月的階段，
+        帶領一個「用 Claude 加速預訓練研究」的團隊，向預訓練負責人 Nick Joseph 匯報。
+        他說接下來幾年在 LLM 前沿的工作會特別關鍵；同時表明並未放棄教育，未來會重拾。</li>
+      </ul>
+      <p style="font-size:.88rem;color:var(--ink-faint);margin-top:-.3rem;">
+        資料查證於 2026 年 8 月。人物動態會變，引用前請自行確認最新狀態——
+        <strong>這本身就是知識庫要解決的問題</strong>：寫下的事實會過期，
+        所以每一條主張都該標上來源與日期。
+      </p>
+
+      <h3>他的方法：用最小的可執行程式碼講清楚</h3>
+      <p>他的影響力主要來自一種特定的教學方式——不用投影片講原理，而是寫出一份小到能整份讀完、
+      但真的能跑的程式碼。</p>
+      <ul>
+        <li><strong>micrograd</strong>——用一百多行實作反向傳播。讀完就懂梯度是怎麼流的。</li>
+        <li><strong>nanoGPT / llm.c</strong>——極簡的 GPT 訓練程式碼，把 Transformer 訓練流程剝到只剩骨架。</li>
+        <li><strong>nanochat</strong>（2025）——用約 100 美元的成本，走完一套 ChatGPT 的完整訓練流程。</li>
+        <li><strong>Neural Networks: Zero to Hero</strong>——YouTube 系列課程，從零開始一路寫到 GPT。</li>
+      </ul>
+
+      <h3>他造的幾個詞</h3>
+      <ul>
+        <li><strong>Software 2.0</strong>（2017）——程式碼不再是人寫的邏輯，而是資料訓練出來的權重。</li>
+        <li><strong>vibe coding</strong>（2025）——完全順著感覺走、忘記程式碼存在的開發方式。這個詞現在滿天飛。</li>
+        <li><strong>LLM OS</strong>——把 LLM 當作新一代作業系統核心來想像的框架。</li>
+      </ul>
+
+      <h3>為什麼這對這門課重要</h3>
+      <p>知道作者是誰，會改變你怎麼讀他的文章。</p>
+      <p>Karpathy 的一貫風格是<strong>給你模式，不給你成品</strong>——他相信你自己動手把東西建出來的過程，
+      才是理解發生的地方。LLM Wiki 這篇完全符合這個風格：它刻意不提供可安裝的工具，
+      只描述一個模式，然後叫你貼給自己的 agent，跟它一起長出屬於你的版本。</p>
+      <p>所以讀這篇文章時，不要期待照著做就有結果。<strong>它的設計就是要你自己做決定。</strong></p>
+      </div>
+    </details>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>讀一份文件之前，先確認作者是誰、他的立場是什麼。這決定你要用多少信任度去讀，
+      也決定你該不該照單全收。</p>
+      <p><strong>但要注意截圖裡的答案已經過時了。</strong>當時 Agent 憑記憶回答，
+      而它的訓練資料停在 2026 年 5 月——正好錯過了 Karpathy 在 5 月 19 日加入 Anthropic 這件事。
+      上面展開的內容是後來重新查證過的版本。</p>
+      <p>這就是為什麼<strong>時效性問題一定要叫 Agent 去查，不要讓它憑記憶回答</strong>。
+      也是為什麼知識庫裡的每一條主張都該標上來源與日期。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head">
+      <span class="step-num">04</span>
+      <h2>請它把原文變成教材</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">教我如何建立這樣的知識庫。請先翻譯他寫的 LLM Wiki 這篇文章</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li><strong>拒絕了逐句翻譯這個做法</strong>，理由是整篇一對一翻譯等於把別人的作品重製一次。</li>
+        <li>但沒有停下來等指示——直接提出替代方案並執行：用自己的結構重寫，涵蓋原文所有概念。</li>
+        <li>寫出檔案 <code>01-核心觀念導讀.md</code>，共九節。</li>
+        <li>補上原文沒有、但教材需要的三塊：<strong>常見誤解</strong>、<strong>動手練習的檢核點</strong>、
+        <strong>RAG 與 LLM Wiki 的對照表</strong>。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/04-material-structure.png"
+           alt="Agent 產出的教材結構表，列出學習目標與九個章節">
+      <figcaption><b>說明</b>Agent 交出成品後主動說明結構，讓你能一眼判斷要不要調整，
+      不必先讀完整份檔案。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>Agent 會對指令提出異議，但<strong>不會因此停下來</strong>。它說明理由，然後交出它認為更好的東西。</p>
+      <p>你隨時可以否決它——下一步就會示範怎麼否決。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head">
+      <span class="step-num">05</span>
+      <h2>先問計畫，不要直接叫它做</h2>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（承接上一步）</span>
+      <p>交出導讀之後，Agent 主動提了下一步的建議：</p>
+      <blockquote style="margin:.6rem 0 0;padding:.1rem 0 .1rem 1rem;border-left:2px solid var(--agent-rule);color:var(--ink-soft);">
+        下一步的選項還是那幾個，我的建議是先做 <code>CLAUDE.md</code> 範本——學生讀完導讀最想要的就是
+        「那我現在該貼什麼給 AI」，沒有範本的話這一步會卡住很多人。
+      </blockquote>
+    </div>
+
+    <div class="prose">
+      <p>這句建議是下一個指令的由來。<strong>Agent 完成一件事之後會提出下一步</strong>，
+      你可以接受、可以否決、也可以先問清楚它到底打算做什麼——這一步選的是第三種。</p>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">你打算做什麼 CLAUDE.md 範本</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>先講核心判斷：<strong>短的才有用</strong>。新手最常見的失敗是寫成三百行的規格書，
+        結果學生讀不完所以不敢改，AI 讀了但重點被稀釋，反而更不聽話。</li>
+        <li>提出兩個版本：Minimal 約 40 行（貼上就能跑）、Full 約 150 行（每條規則附「為什麼」）。</li>
+        <li>說明三個刻意的設計：流程寫成 checklist 而非敘述、加一條「完成的定義」、訂矛盾標記規則。</li>
+        <li>最後反問一個<strong>會實質改變成品</strong>的問題：範本要領域中立，還是綁一個示範主題？</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/05-claudemd-plan.png"
+           alt="Agent 說明 CLAUDE.md 範本的設計思路，比較 Minimal 與 Full 兩個版本">
+      <figcaption><b>說明</b>Agent 沒有直接動手寫檔案，而是先把設計思路攤開讓你檢查。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>對於「會產生很多後續工作」的任務，先叫 Agent 講計畫。</p>
+      <p><strong>改計畫很便宜，改成品很貴。</strong></p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head">
+      <span class="step-num">06</span>
+      <h2>把名詞問清楚</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">解釋什麼是 CLAUDE.md</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ul>
+        <li>先講本質：一個放在專案裡的純文字 markdown 檔，<strong>Claude Code 每次啟動都會自動讀它</strong>，
+        把內容當成這個專案的常駐指令。特別的只有檔名。</li>
+        <li>給一個比喻：把 AI 想成每天上工都失憶的員工。沒有它，你每次開新對話都要重新交代一遍規矩；
+        有了它，規矩寫在牆上，員工一進門就看到。</li>
+        <li>列出三個放置位置：全域 <code>~/.claude/CLAUDE.md</code>、專案根目錄、子目錄。兩層會疊加，專案層優先。</li>
+        <li>補上換工具的對應檔名：Codex 用 <code>AGENTS.md</code>，Cursor 用 <code>.cursorrules</code>。</li>
+        <li>兩個提醒：別想一次寫完美、別寫太長。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/06-claudemd-explained.png"
+           alt="Agent 用「每天上工都失憶的員工」比喻解釋 CLAUDE.md 的作用">
+      <figcaption><b>說明</b>「它是專案的憲法，不是備忘錄」——這句話決定了 CLAUDE.md 該寫什麼、不該寫什麼。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>不懂就問。問一個名詞的成本，遠低於在錯誤的理解上做完一整套設計再打掉。</p>
+    </aside>
+
+    <div class="digest" style="margin-top:1.6rem;">
+      <span class="voice-label">CLAUDE.md 的設計原則</span>
+
+      <p>知道它是什麼之後，接下來的問題是<strong>怎麼寫才有效</strong>。以下六條是這門課會反覆用到的原則。</p>
+
+      <h3>一、短的才有用</h3>
+      <p>最常見的失敗是把它寫成三百行的規格書。結果是兩敗：你讀不完所以不敢改，
+      AI 讀了但重點被稀釋，反而更不聽話。<strong>寧可四十行、但條條都被執行。</strong></p>
+
+      <h3>二、流程寫成 checklist，不是敘述</h3>
+      <p>「處理新來源時請仔細閱讀並整合到既有頁面」——這種寫法 AI 會做一半。
+      改成編號步驟、每一步一個動詞、每一步可以被檢查，執行率差很多。</p>
+
+      <h3>三、明確寫下「完成的定義」</h3>
+      <p>一次 ingest 要滿足什麼條件才算做完？把它寫死：摘要頁存在、索引已更新、
+      至少建立兩個連結、log 追加一筆。沒有這一條，AI 幾乎一定會漏掉 log——
+      因為那是整個流程裡最不像「工作」的一步。</p>
+
+      <h3>四、只寫會重複發生的事</h3>
+      <p>schema 是給<strong>每一次</strong>工作階段看的。一次性的要求直接在對話裡講就好，
+      寫進 schema 只會佔用注意力。判斷標準很簡單：這件事下星期還會再發生嗎？</p>
+
+      <h3>五、「不要做什麼」和「要做什麼」一樣重要</h3>
+      <p>例如「原始資料夾唯讀，絕不修改」「不要幫我猜測沒有來源支持的內容，要標示為推測」。
+      禁止事項通常比正面指示更能防止災難，因為它們針對的是你事後才會發現的錯誤。</p>
+
+      <h3>六、規則從失敗長出來，不是預先設想</h3>
+      <p>這是最違反直覺、卻最重要的一條。你無法在還沒開始做之前，就知道哪些規則是必要的。
+      正確的順序是：先做、撞牆、把撞牆的經驗寫成規則。</p>
+      <p>接下來的第 07 和第 08 步，就是這條原則的完整示範——先看一次「預先立法」長什麼樣子，
+      再看它為什麼被推翻。</p>
+    </div>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head">
+      <span class="step-num">07</span>
+      <h2>給領域與真實資料</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">我的領域是神經科學，以「connectome」為核心，一開始先用我自己的幾篇論文來建，放在「C:\Users\USER\Work\BSC Tutorial\Papers」，你根據 Karpathy 的概念以及我的領域，先擬這個 seesion 的 CLAUDE.md 的概要</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li><strong>先跑指令看資料夾實際內容</strong>，不憑空設計——這是關鍵動作。</li>
+        <li>讀到六個 PDF 檔名，整理成「年份／論文／類型」的表格。</li>
+        <li>從檔名推斷出一條十三年的研究軌跡：2011 建資料集 → 2015 資訊流分析 → 2018 視覺化 →
+        2019 社群結構 → 2021 檢索 → 2024 自動分割。</li>
+        <li>判斷這批論文走的是光學顯微鏡路線，不是電子顯微鏡。</li>
+        <li>據此擬出九節的 CLAUDE.md 概要，其中包含四條「領域鐵則」，
+        並明白標示<strong>這些推論全部來自檔名，還沒讀過內文</strong>。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/07-papers-listed.png"
+           alt="Agent 先列出 Papers 資料夾，再把六篇論文整理成表格">
+      <figcaption><b>說明</b><code>Listed the Papers directory</code> 這一行是可展開的工具呼叫紀錄。
+      Agent 每一次動用工具都會留下這樣一行。</figcaption>
+    </figure>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 交出的計畫（下一步會被推翻）</span>
+      <p>接著它擬出一份九節的 <code>CLAUDE.md</code> 概要。<strong>先看清楚它寫了什麼，
+      下一步才知道被推翻的是什麼。</strong></p>
+      <ol>
+        <li><strong>角色與目標</strong>——定位成 connectome 知識庫維護者，領域限定為果蠅全腦連結體。</li>
+        <li><strong>目錄結構</strong>——依領域切出 <code>papers/</code>、<code>datasets/</code>、
+        <code>neuropils/</code>、<code>circuits/</code>、<code>methods/</code>、<code>tools/</code>、
+        <code>metrics/</code>、<code>concepts/</code> 八個子目錄。</li>
+        <li><strong>四條領域鐵則</strong>——這是它自認最有價值的一節：
+          <ul>
+            <li>資料來源類型必須標註（光學 vs 電顯 vs 中尺度），跨類型的數字禁止直接比較</li>
+            <li>腦區命名要標註體系，維護新舊命名對照</li>
+            <li>圖論指標必須連同計算參數一起記錄</li>
+            <li>資料集版本要標註</li>
+          </ul>
+        </li>
+        <li><strong>頁面格式</strong>——論文頁骨架、圖的三層記錄、表格轉 markdown、公式用 LaTeX。</li>
+        <li><strong>自己的論文的特殊處理</strong>——標記 <code>own_work</code>，允許記錄論文裡沒寫的東西。</li>
+        <li><strong>三個工作流程</strong>——Ingest／Query／Lint，各寫成編號 checklist。</li>
+        <li><strong>Lint 檢查項</strong>——通用四項加上領域四項。</li>
+        <li><strong>完成的定義</strong>——一次 ingest 要滿足的五個條件。</li>
+        <li><strong>log 格式</strong>——固定前綴，方便用指令搜尋。</li>
+      </ol>
+      <p>最後它還反問了三個問題：腦區命名以哪套為準、要不要現在就預留電顯資料集的位置、wiki 要放在哪。</p>
+    </div>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>Agent 會先看真實檔案再設計，這是好習慣。</p>
+      <p>但也要注意——它<strong>只看了六個檔名</strong>，就推導出八個子目錄、四條鐵則、九節規範，
+      而且鐵則全部綁死在「果蠅」「連結體」這個特定領域上。</p>
+      <p>這份計畫看起來很專業。下一步就是為了這件事。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="step" id="s08">
+    <div class="step-head">
+      <span class="step-num">08</span>
+      <h2>最該學的一步：推翻它</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">你寫得太死了，這個知識庫不限於這個領域，未來是我研究的參考文獻資料庫。前面這個計畫作廢，我們邊做邊修，先不寫 CLAUDE.md，做的過程中碰到適合的規則再來加進去</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>承認問題，用一句話講完：從六個檔名推導出一整套鐵則，是替一個還沒存在的知識庫立法。</li>
+        <li><strong>直接作廢，不辯解、不討價還價。</strong></li>
+        <li>改成最小結構：建一個 <code>Wiki/</code> 資料夾，先不分子目錄。</li>
+        <li>順手掃了旁邊的資料夾，發現還有一個 <code>Papers-2</code>——裡面是 FFN、LICONN、LSD、
+        Integrated Neurophotonics，涵蓋電顯分割、哺乳類光學連結體、神經光子學。</li>
+        <li>指出這反過來證實了使用者的糾正是對的：原本那套果蠅專用鐵則，一週內就會撞牆。</li>
+      </ol>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/08-plan-scrapped.png"
+           alt="使用者要求作廢原計畫，Agent 承認並改採最小結構">
+      <figcaption><b>說明</b><code>Ran 2 commands</code> 就是它去掃資料夾、發現 Papers-2 的那兩個指令。</figcaption>
+    </figure>
+
+    <aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p>這正是 Karpathy 說的「schema 要和 AI 共同演化」。</p>
+      <p><strong>規則應該從實作中的摩擦長出來，不是一開始就立法。</strong>
+      前面第 05、07 兩步看起來很有生產力——設計了兩個版本、擬了九節概要、訂了四條鐵則——
+      但那些全部建立在六個檔名的推測上。一句「作廢」省下的，是之後幾十頁筆記的返工。</p>
+      <p>否決 Agent 不是失敗，是這套方法的正常運作方式。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section class="step" id="s09">
+    <div class="step-head">
+      <span class="step-num">09</span>
+      <h2>Agent 自己解決工具問題</h2>
+    </div>
+
+    <div class="prose">
+      <p>這一步<strong>沒有新指令</strong>，是上一步的延續。但它是整份教材裡最值得細看的一段——
+      因為它完整展示了 Agent 遇到障礙時會做什麼。</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼（依序）</span>
+      <ol>
+        <li>嘗試用內建的 <code>Read</code> 工具讀 PDF。<strong>失敗</strong>——環境缺少 poppler 這個元件。</li>
+        <li>沒有回報「做不到」就結束，而是<strong>先檢查環境</strong>：查 Python 版本、列出已安裝的 PDF 套件。
+        結果是 Python 3.10 有，PDF 套件一個都沒有。</li>
+        <li>選定並安裝 <strong>PyMuPDF</strong>。選它的理由是：一個套件就能同時做文字抽取和圖片抽取，
+        後面抽圖說時也用得上。</li>
+        <li>試著直接印出 PDF 文字。<strong>又失敗</strong>——Windows 的 cp950 編碼無法輸出特殊字元。</li>
+        <li>改變策略：<strong>自己寫一支小程式</strong> <code>pdftxt.py</code>，把文字寫成 UTF-8 檔案再讀進來，
+        繞過終端機編碼的限制。</li>
+        <li>成功讀出 40 頁（本文 11 頁 + 補充材料）。</li>
+        <li>寫出第一頁 <code>2011-Chiang-FlyCircuit.md</code>，以及 <code>log.md</code>。</li>
+        <li>把過程中的三個摩擦點記進 log：Read 讀不了 PDF、cp950 編碼問題、
+        PDF 文字層會把 <code>±</code> 抽成 <code>6</code>、<code>µm</code> 抽成 <code>mm</code>。</li>
+      </ol>
+    </div>
+
+    <div class="tools">
+      <h3>這一步動用的軟體與程式</h3>
+      <dl>
+        <dt><span class="tag install">安裝</span>PyMuPDF</dt>
+        <dd>以 <code>pip install pymupdf</code> 安裝。用來抽取 PDF 的文字與內嵌圖片。</dd>
+        <dt><span class="tag wrote">自己寫</span>pdftxt.py</dt>
+        <dd>把 PDF 逐頁文字寫成 UTF-8 文字檔，並標上頁碼分隔線。用來繞過 Windows 終端機的編碼限制。</dd>
+      </dl>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/09-first-page.png"
+           alt="Agent 讀 PDF 失敗後安裝 PyMuPDF、處理編碼問題，最後寫出第一頁">
+      <figcaption><b>說明</b>紅色的 <code>Failed to read</code> 是第一次失敗。往下看，
+      <code>Created a file, ran a command, read a file</code> 後面的 <code>+9 -0</code>
+      表示新增了 9 行——那就是 <code>pdftxt.py</code>。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p>這就是 Agent 和一般聊天機器人的根本差別。它會試、會失敗、會查環境、會安裝東西、
+      會自己寫工具、會改策略。整個過程<strong>你一句話都沒說</strong>。</p>
+      <p>更重要的是最後一步：它把摩擦記進 <code>log.md</code>。這些摩擦後來就是規則的來源。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="step" id="s10">
+    <div class="step-head">
+      <span class="step-num">10</span>
+      <h2>在 Obsidian 檢視第一版</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的操作</span>
+      <p>打開 Obsidian，看 Agent 剛寫好的 <code>2011-Chiang-FlyCircuit.md</code>。</p>
+    </div>
+
+    <div class="prose">
+      <p>這是 Karpathy 那句比喻的實際樣子——<strong>Obsidian 是 IDE，LLM 是工程師，wiki 是 codebase</strong>。
+      左邊 Agent 寫，右邊你看。</p>
+      <p>畫面上有三件事值得注意：</p>
+      <ul>
+        <li>檔案最上方的 frontmatter 變成了「屬性」面板，<code>tags</code> 成為可以點擊的標籤。</li>
+        <li><code>[[2015-資訊流分析]]</code> 顯示為連結，即使那一頁還不存在——這是正常的，
+        它標記了「之後要寫」。</li>
+        <li>markdown 表格正常渲染成表格。</li>
+      </ul>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/10-obsidian-v1.png"
+           alt="Obsidian 中顯示的第一版筆記，含屬性面板、方法表格與對位精度表格">
+      <figcaption><b>說明</b>左側是屬性面板與開頭段落，右側是方法與對位精度的表格。
+      這時候還沒有圖、沒有摘要、沒有科普文。</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section class="step" id="s11">
+    <div class="step-head">
+      <span class="step-num">11</span>
+      <h2>下具體的修改指令</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的指令</span>
+      <p class="cmd">修改：
+
+1. 要有論文完整標題
+2. 「為什麼重要」之後，論文摘要全文＋中文翻譯
+3. 摘要之後，寫一篇約 2000 字的「科普文」，讀者定位是高中生程度。用語要簡潔自然，實質內容豐富，如非必要盡量少用形容詞、感嘆詞等修飾，但可以適當使用比喻以增進理解
+4. 「科普文」之後則是「專業文」（3000 字以上），讀者定位為該論文同領域之研究生程度。需依正式論文結構書寫，包含「概述（主要問題、重要性、發表時之領域現狀）」、「方法」、「結果」、「討論」、「問題與限制」、「未來」。
+5. 將論文原圖與表格（如果是流程圖這類圖表、你可以用 mermaid 或類似工具自行繪製）插入適當位置，必須包含圖說翻譯、與你的進一步解讀</p>
+    </div>
+
+    <div class="voice v-agent">
+      <span class="voice-label">Agent 做了什麼</span>
+      <ol>
+        <li>先把材料補齊——讀完 PDF 剩下的全文，不只前幾頁。</li>
+        <li><strong>再寫一支新程式</strong> <code>pdfimg.py</code>，用來抽出 PDF 的內嵌圖片。
+        程式裡加了「最小邊長」參數，把 logo、圖示這類小圖過濾掉。</li>
+        <li>抽出 8 張圖，位置剛好對應 Figure 1 到 Figure 8。</li>
+        <li>把檔名改成 <code>fig1</code> 到 <code>fig8</code>。</li>
+        <li><strong>實際打開圖片看內容</strong>確認對應正確，而不是只靠頁碼位置猜。</li>
+        <li>依五點要求重寫整頁，並在寫「問題與限制」時發現原文一處數字不一致，主動標記待查證。</li>
+      </ol>
+    </div>
+
+    <div class="tools">
+      <h3>這一步動用的程式</h3>
+      <dl>
+        <dt><span class="tag wrote">自己寫</span>pdfimg.py</dt>
+        <dd>掃描 PDF 各頁的內嵌圖片，依最小邊長過濾後匯出成獨立檔案，並列出每張圖的頁碼與尺寸。</dd>
+      </dl>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/11-revision-request.png"
+           alt="使用者下五點修改指令，Agent 讀完全文後撰寫 pdfimg.py 抽出圖檔">
+      <figcaption><b>說明</b><code>Created pdfimg.py, ran a command</code> 後面的
+      <code>+37 -0</code> 表示這支程式有 37 行。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">教學重點</span>
+      <p><strong>指令越具體，產出越可用。</strong></p>
+      <p>「寫好一點」沒有用。「科普文約 2000 字、讀者是高中生、少用形容詞、可以用比喻」有用——
+      因為每一個條件都可以被檢查。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 12 ============ -->
+  <section class="step" id="s12">
+    <div class="step-head">
+      <span class="step-num">12</span>
+      <h2>第二版成果</h2>
+    </div>
+
+    <div class="voice v-human">
+      <span class="voice-label">你的操作</span>
+      <p>回到 Obsidian 檢視改寫後的版本。</p>
+    </div>
+
+    <div class="prose">
+      <p>同一篇筆記，現在有了完整英文標題與中譯、摘要原文與翻譯、寫給高中生的科普文、
+      寫給研究生的專業文，以及八張論文原圖。</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>區塊</th><th>內容</th><th>規模</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>標題與摘要</td><td>英文原標題、中譯、摘要原文與翻譯</td><td>—</td></tr>
+          <tr><td>科普文</td><td>高中生程度，純文字敘述</td><td>2,516 字</td></tr>
+          <tr><td>專業文</td><td>研究生程度，六節正式結構</td><td>6,748 字</td></tr>
+          <tr><td>圖表</td><td>Figure 1–8，含圖說翻譯與進一步解讀</td><td>8 張</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure class="shot">
+      <span class="shot-label">當時的畫面 · 實際操作截圖</span>
+      <img loading="lazy" decoding="async" src="screenshots/12-obsidian-v2.png"
+           alt="第二版筆記：完整標題、摘要原文與中文翻譯、科普文、專業文">
+      <figcaption><b>說明</b>四個視窗分別是標題區、摘要的原文與翻譯、科普文開頭、專業文的「概述」一節。</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 收尾 ============ -->
+  <section class="closing">
+    <h2>這一集學到什麼</h2>
+
+    <div class="prose">
+      <p>把十二個步驟連起來看，會發現真正的內容不是「怎麼寫筆記」，而是<strong>怎麼跟一個會自己動手的
+      工具合作</strong>。</p>
+    </div>
+
+    <h3>關於 Agent 的三個觀察</h3>
+    <ul class="obs">
+      <li><b>它會自己找工具</b>讀不到 PDF 就查環境、裝套件；套件用起來卡住就自己寫程式。
+      這一集它裝了一個套件、寫了兩支程式，全部沒有人交代。</li>
+      <li><b>遇錯會改策略</b>失敗兩次都不是重複同一招。第一次換工具，第二次換做法——
+      改成寫檔案再讀，繞過編碼限制。</li>
+      <li><b>它把摩擦記下來</b>每個卡住的地方都寫進 <code>log.md</code>。
+      這些紀錄之後就是 <code>CLAUDE.md</code> 規則的來源。</li>
+    </ul>
+
+    <h3>關於你的角色</h3>
+    <div class="prose">
+      <p>整個過程你做的事只有四件：<strong>指定方向</strong>、<strong>提供真實資料</strong>、
+      <strong>把名詞問清楚</strong>、<strong>否決錯誤的設計</strong>。</p>
+      <p>你一個字都沒有寫進那份筆記。這就是 Karpathy 說的分工——你負責找來源、探索、問對問題，
+      AI 負責摘要、交叉引用、歸檔、記帳。</p>
+      <p>其中<strong>第 08 步的否決最關鍵</strong>。它看起來像是浪費了前面兩步的成果，
+      實際上省下的是之後幾十頁筆記的返工。</p>
+    </div>
+
+    <h3>這一集用到的工具總表</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>名稱</th><th>類型</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>PyMuPDF</td><td>安裝的套件</td><td>抽取 PDF 文字與內嵌圖片</td></tr>
+          <tr><td>pdftxt.py</td><td>Agent 自己寫的</td><td>PDF 全文轉 UTF-8 文字檔，繞過 Windows 編碼問題</td></tr>
+          <tr><td>pdfimg.py</td><td>Agent 自己寫的</td><td>抽出 PDF 內嵌圖片，依尺寸過濾雜圖</td></tr>
+          <tr><td>WebFetch</td><td>內建工具</td><td>抓取網頁內容</td></tr>
+          <tr><td>Read / Write / Edit</td><td>內建工具</td><td>讀寫檔案、檢視圖片</td></tr>
+          <tr><td>Bash / PowerShell</td><td>內建工具</td><td>執行系統指令、安裝套件</td></tr>
+          <tr><td>Obsidian</td><td>外部軟體</td><td>瀏覽與檢視 wiki</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h3>檢驗一下</h3>
+        <p>十題單選，答完每一題立刻告訴你對錯與理由。答錯不扣分，
+        重點是看懂為什麼。</p>
+      </div>
+      <a class="cta-btn" href="ep01-quiz.html"
+         data-remote="https://claude.ai/code/artifact/ee78e0d7-be77-42bf-a601-4e135366e611">
+        開始測驗 →
+      </a>
+    </div>
+
+    <div class="next">
+      <b>下一集</b>　這一集刻意沒有寫 <code>CLAUDE.md</code>。EP02 會把過程中累積下來的摩擦與規則，
+      整理成真正的 schema——那時候寫的每一條規則，都有一個具體的失敗經驗當理由。
+    </div>
+
+    <script>
+    // 發布在 claude.ai 時，同資料夾的相對連結不存在，改指向線上版本。
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        a.href = a.getAttribute('data-remote');
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

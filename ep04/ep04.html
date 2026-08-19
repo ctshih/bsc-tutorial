@@ -1,0 +1,1312 @@
+<meta charset="utf-8">
+<title>從知識庫內容建立新課程</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+             system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- 開場 ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- 通用文字 ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* 補充區塊 */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* 可收合版本 */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- 影片 ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- 圖例 ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- 目錄 ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- 步驟 ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* 三種聲音 */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* 工具盒 */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* 出處標籤 —— EP02 專用 */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* 截圖 */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* 截圖以統一比例縮放（同一解析度截的，字才會一樣大），不強制撐滿版面 */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* 教學重點 */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- 收尾 ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  .voice.full { border-left-style: dashed; }
+  .closing ol.think { max-width: var(--col); padding-left: 1.4rem; display:flex; flex-direction:column; gap:.7rem; }
+  .closing ol.think li { line-height:1.7; color: var(--ink); }
+  .closing ol.think li::marker { font-family: var(--mono); color: var(--ink-faint); }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP04</div>
+    <h1>從知識庫內容建立新課程</h1>
+    <p class="standfirst">
+      知識庫建好了，十一篇論文、九個主題。它不只是一座可以查的維基百科——
+      裡面整理過的「主題概念」就是現成的課綱。這一集拿第一個主題
+      <strong>FlyCircuit 資料庫</strong>示範：主題頁怎麼變成七堂課、條目怎麼變成講義、
+      哪些是 Agent 能生成的、哪些仍然要你決定。
+    </p>
+    <div class="meta-row">
+      <span>7 堂課</span>
+      <span>素材：Wiki/topics/flycircuit-database.md</span>
+      <span>Claude Code · Fable 5</span>
+      <span>承接 EP03</span>
+    </div>
+  </header>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/7Utb9u4qRms"
+       target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="影片開頭畫面：從知識庫內容建立新課程">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">播放教學影片　·　11 分 49 秒　·　在 YouTube 開啟 ↗</span>
+    </a>
+    <figcaption>
+      <b>教學影片</b>
+      <span>先看影片建立整體概念，再往下讀七堂課的細節。</span>
+    </figcaption>
+  </figure>
+
+  <script>
+  (function () {
+    var ID = '7Utb9u4qRms';
+    var box = document.querySelector('a.video-frame');
+    if (!box) return;
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = '從知識庫內容建立新課程';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin';
+      f.allowFullscreen = true;
+      var ok = false;
+      f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f);
+      box.classList.add('playing');
+      setTimeout(function () {
+        if (ok) return;
+        f.remove(); box.classList.remove('playing');
+        var note = document.createElement('p');
+        note.className = 'video-note';
+        note.textContent = '這個環境不允許內嵌播放，請點封面在 YouTube 觀看。';
+        box.parentNode.appendChild(note);
+      }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>怎麼讀這一頁</h2>
+    <div class="legend-item">
+      <span class="swatch h"></span>
+      <span><b>知識庫原文</b>從主題頁照登的段落，一字未改——這是課程的素材。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch a"></span>
+      <span><b>數字與出處</b>這一課用到的關鍵數字，以及它們來自哪一篇條目。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>讀到這裡要記住</b>這一課的教學重點——不是複述，是為什麼值得學。</span>
+    </div>
+    <div class="legend-item">
+      <span class="swatch s"></span>
+      <span><b>知識庫裡的圖</b>從條目挑出的原論文圖，標明條目與原圖編號；圖說只講「看什麼」，完整逐板翻譯在條目裡。</span>
+    </div>
+  </section>
+
+  <section class="step" id="s00" style="border-top:none;padding-top:0;">
+    <div class="step-head">
+      <span class="step-num">00</span>
+      <h2>為什麼從知識庫開課</h2>
+    </div>
+    <div class="prose">
+      <p>前三集把一批論文做成了 wiki：條目是證據、主題頁是骨幹、首頁是地圖。讀它的方式有兩種。
+      第一種是當維基百科用——想到什麼就查，從主題頁連到條目、從條目連回主題頁。
+      第二種是<strong>拿它來教自己</strong>：主題頁本來就是一篇「這個主題在做什麼」的科普文，
+      七節結構、數字全連回條目、末尾還列著「還沒解決的事」。這不就是一門課的課綱嗎？</p>
+      <p>這一集就做這件事。素材只有一頁——<code>Wiki/topics/flycircuit-database.md</code>——
+      它的七節變成七堂課；它引用的八篇條目變成講義裡的數字與出處；它的〈還沒解決的事〉變成課末的思考題；
+      它記下的「三處對不起來的數字」變成測驗題。<strong>Agent 負責把結構攤開、把數字連回來源、把文字改寫成講課的口吻；
+      課要教什麼、教到多深、哪一句才是重點——仍然是人決定的。</strong>頁尾有一張對照表，說明每一課從主題頁的哪一節來。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文 · 主題頁開頭</span>
+      <p>六篇論文共用的地基。這一頁講它是什麼、怎麼建起來的、每一版有多少東西、各篇論文各拿了哪一部分去用——以及三處跨論文對不起來的數字。</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>一座 wiki 的主題頁，跟一門課的差別只有「讀者的位置」——前者是給已經知道脈絡的自己查的，後者是帶一個不知道脈絡的人從頭走一遍。
+      內容一樣，順序和口吻不一樣。所以課綱不用重新發明，<strong>主題頁的七節就是七堂課</strong>。</p>
+    </aside>
+  </section>
+
+  <nav class="toc">
+    <h2>七堂課</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>它是什麼：一顆一顆拍下來的腦</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>怎麼建起來：三個技術，一個偏差</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>三個版本，資料怎麼長大</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>六篇論文各拿它做什麼</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>三處對不起來的數字</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>資料的邊界</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>兩條新路：EM 與膨脹顯微鏡</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head">
+      <span class="step-num">01</span>
+      <h2>它是什麼：一顆一顆拍下來的腦</h2>
+    </div>
+    <div class="prose">
+      <p>FlyCircuit 是一個公開的果蠅腦單神經元影像資料庫（網址 flycircuit.tw）。裡面每一筆資料，是<strong>一顆神經元的完整立體影像</strong>：
+      用遺傳技術讓一隻果蠅的腦裡只有一顆（或極少數）神經元發螢光，拍下它的三維形狀，再對位到一顆「標準腦」的座標系裡。
+      這個動作重複幾萬次，就得到幾萬顆神經元在同一座標系裡的影像庫。</p>
+      <p>為什麼值得一堂課？因為本知識庫「果蠅連結體」領域的前六篇論文，<strong>沒有一篇不依賴它</strong>。
+      2011 年那篇建了它，之後五篇不是拿它的資料做分析，就是替它做工具。要讀懂那六篇之間的關係，得先知道這個資料庫是什麼、每一版有多少資料、品質邊界在哪裡。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文</span>
+      <p>裡面每一筆資料是一顆神經元的完整立體影像：用遺傳技術讓一隻果蠅腦裡只有一顆（或極少數）神經元發螢光，拍下它的三維形狀，再對位到標準腦座標系。重複幾萬次，就得到幾萬顆神經元在同一個座標系裡的影像庫。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2011-Chiang-FlyCircuit · Figure 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig1.jpg" style="width:760px" alt="2011 年論文 Figure 1：一顆樣本腦裡三顆發光的神經元、分割結果、回置；右側七顆來自不同品系的神經元在標準腦中合併顯示">
+      <figcaption><b>看什麼</b>A 欄由上而下：一顆樣本腦裡有三顆發光的神經元 → 把它們一顆一顆切出來 → 切完放回原本的腦。C 是七顆來自不同品系、不同果蠅的神經元被放進同一顆標準腦——<strong>這就是資料庫要做到的事</strong>。B 是當時已收集的神經元數。</figcaption>
+    </figure>
+
+    <div class="voice v-agent">
+      <span class="voice-label">數字與出處</span>
+      <ul>
+        <li><strong>一筆資料 ＝ 一顆神經元的 3D 影像</strong>，不是一張照片 —— 條目 2011-Chiang-FlyCircuit</li>
+        <li>建立它的論文：Chiang et al., <em>Current Biology</em> 2011；標準腦切分出 <strong>58 個</strong>形態可區分的神經氈</li>
+        <li>依賴它的論文：2011、2015、2018、2019、2021、2024 —— 主題頁 <code>sources</code> 欄</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>「資料庫」三個字容易讓人以為是一張表。FlyCircuit 的單位是<strong>一顆神經元的立體影像</strong>——
+      後面所有的數字（一萬六千、兩萬八千）數的都是神經元，不是果蠅、不是照片。第 05 課會看到，連論文自己都曾把單位搞混。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head">
+      <span class="step-num">02</span>
+      <h2>怎麼建起來：三個技術，一個偏差</h2>
+    </div>
+    <div class="prose">
+      <p><strong>一次只點亮一顆。</strong>用 MARCM 遺傳技術，讓螢光蛋白只在極少數隨機的神經元裡表現。每隻果蠅腦裡只有一顆或幾顆亮的，其餘全暗，共軛焦顯微鏡拍下亮的那顆。
+      方法不難，難的是規模——要拍一萬六千顆，就要解剖、染色、拍攝數以千計的果蠅。</p>
+      <p><strong>標準腦。</strong>一萬六千顆神經元來自一萬六千隻果蠅，每隻腦的大小形狀都略有差異。要放進同一座標系，得先有一顆「標準腦」當底圖。
+      研究團隊<strong>沒有</strong>用「幾十顆腦平均起來」的方式——平均會讓影像模糊、邊界消失——而是從 34 個樣本算出平均外形之後，
+      從真實樣本裡挑出最接近平均值的那一顆當模型。代價是：標準腦終究是一個個體。</p>
+      <p><strong>影像對位。</strong>把每顆單神經元影像透過數學變換「貼」到標準腦上。這一步有誤差，而且論文量過：用每隻果蠅都有、投射路徑相當固定的 VAM 神經元檢驗，
+      只做全腦對位時末梢落點正確率 69%，針對局部再做一次精細對位可提升到 95%。<strong>這個數字是後面所有跨個體分析的精度上限。</strong></p>
+      <p><strong>一個常被忽略的偏差。</strong>神經元是用 Gal4 driver 標記的——哪些神經元進了資料庫，由所用的 driver 決定，不是全腦均勻抽樣。
+      2011 年論文自己算過：九條 driver 合計標記超過十五萬顆神經元，超出全腦估計總數五成，代表 driver 並未忠實反映內源表現。
+      這個偏差跟著資料一路傳到所有下游分析。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文</span>
+      <p>研究團隊沒有用「幾十顆腦平均起來」的方式（平均會讓影像模糊、邊界消失），而是從真實樣本裡挑出最接近平均值的那一顆當模型。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2011-Chiang-FlyCircuit · Figure 2</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig2.jpg" style="width:760px" alt="標準腦製作流程九步：取像、帶號距離圖求平均內外表面、選出最吻合的代表腦、切分神經氈、定座標系">
+      <figcaption><b>看什麼</b>B–F 用 34 個樣本算出平均的內、外腦表面；<strong>G 是關鍵的一步</strong>——拿平均去挑一顆最接近的真實腦，不是拿平均當腦；H 再把它切成 58 個神經氈，I 定座標原點在橢球體中心。</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2011-Chiang-FlyCircuit · Figure 4</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig4.jpg" style="width:760px" alt="對位精度檢驗：十隻果蠅的 VAM 神經元、全域與局部對位的比較、柱狀圖 Global 約 69%、Local 約 95%">
+      <figcaption><b>看什麼</b>B 是十隻不同果蠅的同一種神經元（VAM）；C 左邊全腦對位、右邊局部對位，纖維明顯收得更攏；<strong>D 的兩根柱子就是 69% 與 95% 的出處</strong>（mean ± SEM，n=10）。F 是十顆樣本的地標中心點散在標準腦對應點周圍——那團散布就是誤差本身。</figcaption>
+    </figure>
+
+    <div class="voice v-agent">
+      <span class="voice-label">數字與出處</span>
+      <ul>
+        <li>標準腦：<strong>34 個樣本</strong>算平均表面，再選一顆真實腦；雌雄各一、六日齡 —— 2011 條目〈方法〉</li>
+        <li>對位誤差：全腦 <strong>69%</strong>（±10%，n=10）→ 局部 <strong>95%</strong>（±3%）；蘑菇體地標誤差 <strong>3.9 → 1.1 µm</strong> —— 2011 條目</li>
+        <li>對位方法：全域 affine，<strong>12 自由度</strong>；局部二階段對位是選項，全庫一律先做全域 —— 2011 條目〈方法〉</li>
+        <li>driver 偏差：九條 driver 合計 <strong>&gt;150,000 顆</strong>，超出全腦估計 50% —— 2011 條目；2015 條目列了十三種 driver</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>三個技術裡，<strong>對位誤差是最該記的數字</strong>：69% 與 95% 不是這篇論文的成績，是這整批資料的精度天花板——
+      腦區級的分析經得起它，任何依賴亞神經氈層級空間精度的推論都超出保證範圍。而「標準腦是一個個體」和「driver 決定誰進資料庫」這兩件事，
+      論文講得很老實，但讀後面的論文時很容易忘記它們還在。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head">
+      <span class="step-num">03</span>
+      <h2>三個版本，資料怎麼長大</h2>
+    </div>
+    <div class="prose">
+      <p>FlyCircuit 不是一次建好就不動的。六篇論文用的是三個不同版本，版本之間差的不只是數量。</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>版本</th><th>年份</th><th>單神經元影像數</th><th>新增了什麼</th><th>出處</th></tr></thead>
+        <tbody>
+          <tr><td>1.0</td><td>2011</td><td>約 16,000</td><td>資料庫本身、標準腦、58 個神經氈</td><td>2011-Chiang-FlyCircuit</td></tr>
+          <tr><td>1.1</td><td>2015</td><td>23,579（雌 18,179 ＋ 雄 5,400）</td><td><strong>每顆神經元的軸突／樹突極性標註</strong>（SPIN 方法）、全部影像的標準腦座標</td><td>2015-Shih-InfoFlow</td></tr>
+          <tr><td>1.2</td><td>2019</td><td>28,573（雌 22,834）</td><td>數量</td><td>2019-Shih-CommunityStructure</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>1.1 版新增的極性標註是關鍵：有了「哪邊是輸入、哪邊是輸出」，才能建<strong>有向</strong>網路——這是 2015 年論文能做資訊流分析的前提。</p>
+      <p>那麼，兩萬八千顆夠不夠？果蠅全腦約十到十三萬顆神經元（各論文的估計不同），1.2 版約占五分之一。2011 年論文用「有限尺度分析」回答過：
+      從資料集裡隨機抽一成的子集，就能重現全集 0.97 以上的跨區連結模式。也就是說，以中尺度的腦區連結來說，這批資料的內部冗餘度夠高。
+      <strong>但要注意這個論證證明的是什麼</strong>：它比較的是自己的子集與自己的全集，證明的是資料集內部一致，不是對未取樣那五分之四的代表性。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2011-Chiang-FlyCircuit · Figure 6</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig6.jpg" style="width:760px" alt="全腦跨區連結：連結矩陣、分群、58 個神經氈的連線圖、有限尺度分析 C(n) 曲線、連結數的冪次律分布">
+      <figcaption><b>看什麼</b>整張是 2011 年的中尺度連結圖，這一課看 <strong>F 板</strong>：實心圓是真實資料，樣本量到一成左右相關係數就貼近 1；空心圓是隨機網路，要到 95% 才跟上。G 板解釋了為什麼——連結數是冪次律分布，少數節點承擔大量連結，所以稀疏取樣就抓得到骨架。</figcaption>
+    </figure>
+
+    <div class="voice v-agent">
+      <span class="voice-label">數字與出處</span>
+      <ul>
+        <li>1.0 → 1.1 → 1.2：<strong>16,000 → 23,579 → 28,573</strong>；雌性 18,179（3,355 LN ＋ 14,824 PN）→ 22,834 —— 2015、2019 條目</li>
+        <li>有限尺度分析：子集超過總量 <strong>10%</strong> 時相關係數 <strong>&gt; 0.97</strong>；隨機網路要到 95% 才達標 —— 2011 條目 Fig 6F 解讀</li>
+        <li>全腦神經元數：2011 論文寫「十萬」、主題頁寫「約 135,000」—— <strong>兩個口徑都在知識庫裡，引用時要標明</strong></li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>引用 FlyCircuit 的任何計數，<strong>要標版本</strong>。「FlyCircuit 有兩萬多顆」在 2015 年是對的、在 2019 年是少算了。
+      另一個更細的觀念：「抽一成就能重現 97%」聽起來像「資料夠了」，其實說的是「資料內部很一致」——兩件事不一樣，後者不保證前者。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head">
+      <span class="step-num">04</span>
+      <h2>六篇論文各拿它做什麼</h2>
+    </div>
+    <div class="prose">
+      <p>六篇論文對 FlyCircuit 的關係分三種：</p>
+      <p><strong>建立它</strong>——2011 年那篇。產出 1.0 版，並在這批資料上做第一輪分析：41 個 LPU、6 個 hub、58 條神經束的中尺度連結圖。</p>
+      <p><strong>用它做分析</strong>——兩篇。2015 年用 1.1 版雌腦的 12,995 顆投射神經元建有向加權網路，49 個節點（LPU 級）；
+      2019 年用 1.2 版雌腦 22,834 顆建神經元級網路，剔除非強連通節點後 19,902 個節點。兩篇是同一套圖論工具在兩個尺度上跑一遍。</p>
+      <p><strong>替它做工具</strong>——三篇。2018 年 Kaleido 解決「一萬顆神經元怎麼一起看」；2021 年 NeuroRetriever 把人工分割自動化，對全部 22,037 張原始腦影像跑一遍、取回 28,125 顆；
+      2024 年 LYNSU 分割的不是神經元而是神經氈，用影像的另一個通道，對 22,835 顆雌腦全跑。三篇工具論文的共同點是：<strong>驗證規模都是全庫</strong>，不是挑好看的案例。</p>
+      <p>這裡藏著一個容易混淆的地方：「原始腦影像」和「單神經元影像」是兩個數字。一張原始腦影像裡可能有不只一顆神經元——
+      2021 年從 22,037 張原始影像取回 28,125 顆，比例約 1.28。所以講 FlyCircuit「有幾筆資料」時要說清楚是算腦還是算神經元。</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>關係</th><th>論文</th><th>用的版本／規模</th><th>做了什麼</th></tr></thead>
+        <tbody>
+          <tr><td>建立</td><td>2011 Chiang</td><td>1.0，約 16,000</td><td>標準腦、41 LPU、58 神經束的連結圖</td></tr>
+          <tr><td rowspan="2">分析</td><td>2015 Shih</td><td>1.1，12,995 顆投射神經元</td><td>49 節點有向加權網路、五模組、rich club</td></tr>
+          <tr><td>2019 Shih</td><td>1.2，22,834 → 19,902 節點</td><td>神經元級網路、八社群、非小世界</td></tr>
+          <tr><td rowspan="3">工具</td><td>2018 Wang（Kaleido）</td><td>隨機 10,000 顆</td><td>壓平圖層＋Monte Carlo 配色</td></tr>
+          <tr><td>2021 Shih（NeuroRetriever）</td><td>22,037 張原始影像 → 28,125 顆</td><td>自動分割，65.8% 可直接入庫</td></tr>
+          <tr><td>2024 Hsu（LYNSU）</td><td>22,835 顆雌腦</td><td>神經氈自動分割，IoU 0.833</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 建：條目 2011-Chiang-FlyCircuit · Figure 5</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig5.jpg" style="width:640px" alt="LPU 與 hub 的全腦地圖：各神經氈是否有自己的 LN 族群、推定 LPU 的空間分布、缺乏 LN 的樞紐、兩者整合後填滿大部分腦區">
+      <figcaption><b>看什麼</b>「建立它」那一篇的產物：B 是 41 個推定 LPU（有自己在地迴路的腦區），C 是缺 LN 的 hub，D 兩者合起來填滿大部分腦區。第 05 課「41 還是 43」的 41 就是從這張圖來的。</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 用：條目 2019-Shih-CommunityStructure · Fig. 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/shih2019-fig1.jpg" style="width:560px" alt="神經元級網路：每個點一顆神經元，分成八個社群；下方熱圖顯示各社群的樹突與軸突支配哪些 LPU">
+      <figcaption><b>看什麼</b>「用它做分析」的一篇：a 是 19,902 個節點的網路，用模組度最大化分成八個社群；b 看各社群的樹突（上）與軸突（下）落在 49 個 LPU 的哪些——社群跟功能模組的對應就從這裡讀出來。</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 工具：條目 2018-Wang-Kaleido · Fig. 2</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig2.jpg" style="width:600px" alt="Kaleido：一萬顆單神經元影像合成的連結體，能量最佳化配色 vs 隨機配色的 calyx 放大比較">
+      <figcaption><b>看什麼</b>「替它做工具」的一篇：a 是 FlyCircuit 一萬顆神經元同時顯示；b、c 放大 Kenyon 細胞的 calyx，左邊是 Kaleido 的配色、右邊是隨機配色——箭頭處相鄰的胞體在隨機配色下分不開。</figcaption>
+    </figure>
+
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>同一個資料庫，三種用法。對讀者最有用的是把這張表記在腦裡：看到任何一篇引用 FlyCircuit 的數字，先問它是在<strong>建</strong>、在<strong>用</strong>、還是在<strong>做工具</strong>——
+      這決定了那個數字是資料庫的屬性、分析的輸入、還是工具的輸出。28,125 是 NeuroRetriever 的輸出，不是資料庫的大小。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head">
+      <span class="step-num">05</span>
+      <h2>三處對不起來的數字</h2>
+    </div>
+    <div class="prose">
+      <p>這一課是閱讀訓練。三個問題單看任何一篇論文都不會發現，六篇排在一起才看得到——這正是主題頁存在的理由。</p>
+      <p><strong>一、LPU 有 41 個還是 43 個？</strong> 2011 年原文寫「41 個 LPU、6 個 hub」；2015 年引用它時寫「43 個 LPU 加 6 個 interconnecting unit」，合計 49 個節點。
+      41 加上 2011 年正文列出的四對缺 LN 神經氈（八個）也是 49。總數吻合、分類法不同——疑似部分單元的歸屬在兩篇之間被重新劃分過，但具體哪兩個換了類別，兩篇正文都沒交代。
+      而 2011 年論文自己也有一處不一致：摘要說 6 hubs，正文列的是四對（八個）。</p>
+      <p><strong>二、28,573 是腦還是神經元？</strong> 2019 年說 v1.2「hosts 28,573 images of single neurons」，2021 年說 v1.2 是「22,037 張原始腦影像、28,573 張單神經元影像」——兩篇一致，28,573 是神經元。
+      但 2024 年寫「hosts images from 28,573 Drosophila brains」，單位變成了腦。從 2021 年的資料看，腦影像應是 22,037 張，2024 年這句大概是筆誤。
+      同一篇 2024 論文的「22,835 顆雌腦」跟 2019 年的「22,834 顆雌性神經元」差一，且單位不同；合理推測是同一批資料、一篇算腦一篇算神經元、其中一篇多算或少算了一筆——但這是推測。</p>
+      <p><strong>三、28,125 對 28,573。</strong> 2021 年的自動分割取回 28,125 顆，比人工分割庫的 28,573 少 448 顆，文中沒有交代這 448 顆的下落。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文</span>
+      <p>這三個問題我在各篇論文頁的〈疑點與待追〉都記了，集中在這裡是因為它們本質上是同一件事：同一個資料庫，在不同年份、不同論文裡被用不同的口徑描述。以後引用 FlyCircuit 的任何計數，要標明版本和單位。</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">數字與出處</span>
+      <ul>
+        <li>41 vs 43：41＋8＝49＝43＋6 —— 2011、2015 條目的〈疑點與待追〉都記了，互相指向</li>
+        <li>28,573 的單位：2019「single neurons」、2021「單神經元影像」、2024「brains」—— 2024 條目標了 ⚠️「本知識庫第三次撞到跨論文計數問題」</li>
+        <li>448 顆：28,573 − 28,125 —— 2021 條目〈疑點〉，狀態：待查</li>
+      </ul>
+    </div>
+    <aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p><strong>引用任何計數，要標版本和單位。</strong></p>
+      <p>這三處沒有一處是「誰算錯了」，全部是<strong>口徑不同</strong>——分類法、單位、取樣時間。這種事在已發表的文獻裡很常見，
+      知識庫的價值就是把它們排在一起讓你看見。讀任何領域的論文都用得上這個反射。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head">
+      <span class="step-num">06</span>
+      <h2>資料的邊界</h2>
+    </div>
+    <div class="prose">
+      <p>FlyCircuit 資料有三個天生限制。它們不是任何一篇論文的缺陷，是光學單神經元成像這條路線的性質——讀這六篇之前，先記住。</p>
+      <p><strong>看不到突觸。</strong>光學顯微鏡的解析度不夠。所以所有「連結」都是空間共域的推論——兩顆神經元的纖維進到同一個區域，就推定有接觸的機會；
+      實際突觸的有無、方向、數量都不知道。2019 年論文用「距離小於一微米」當連結判準，拿一批被詳細解剖過的神經元對照，<strong>真連結只抓到四成</strong>（誤報率百分之二）。
+      這是那篇所有網路結論的前提。</p>
+      <p><strong>方向是預測的。</strong>1.1 版之後的極性標註來自 SPIN，一種依形態判斷樹突和軸突的方法。準確率沒有在這六篇裡被量化。</p>
+      <p><strong>取樣有偏。</strong>第 02 課講過的 driver 問題。</p>
+      <p>三點合起來的意思是：FlyCircuit 給的是<strong>中尺度的、有向但方向為推測的、取樣有偏的</strong>連結圖。在這個定位上它做得很好，超出這個定位的推論都要小心。</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">數字與出處</span>
+      <ul>
+        <li>連結判準：軸突－樹突棘段距離 <strong>&lt; 1 µm</strong>；驗證集 442 顆 PB 相關神經元；<strong>TPR 0.40、FPR 0.02</strong> —— 2019 條目</li>
+        <li>TPR 0.40 的含意：漏了六成真連結的<strong>部分圖</strong>，不是塞滿假連結的錯圖——負向陳述（「A 與 B 無連結」）的證據力遠弱於正向 —— 2019 條目〈問題與限制〉</li>
+        <li>SPIN 準確率：六篇皆未量化 —— 主題頁〈資料的邊界〉；網路分析主題頁列為「還沒解決的事」第一條</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>三個限制的順序不是隨便排的：<strong>看不到突觸</strong>決定了「連結」這個詞的意思，<strong>方向是預測</strong>決定了「有向」的可信度，<strong>取樣有偏</strong>決定了「全腦」的代表性。
+      把這三句話放在手邊，再去讀 2015、2019 的網路結論，每個結論前面都會自動長出一個「在這個前提下」。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head">
+      <span class="step-num">07</span>
+      <h2>兩條新路：EM 與膨脹顯微鏡</h2>
+    </div>
+    <div class="prose">
+      <p>FlyCircuit 看不到突觸，那什麼看得到？電子顯微鏡（EM）連結體——hemibrain、FlyWire——在 2020 年前後補上了突觸級的解析度和方向性。
+      兩者的關係是互補：光學給全腦骨架和遺傳操作的接口，EM 給局部的精確連線。本知識庫已有一篇用 hemibrain 的分析（2025 Cheng，蕈狀體的 PN→KC 連結）——
+      同一個實驗室、資料換成 EM、問題下探到單一腦區的突觸級。</p>
+      <p>還有第三條路：2025 年的 LICONN 用膨脹顯微鏡讓光學做到 EM 級的密集重建，還多了分子讀出。它跟 FlyCircuit 同是光學，但策略相反——
+      FlyCircuit 用<strong>稀疏標記</strong>繞過解析度問題，LICONN 用<strong>膨脹</strong>正面解決它。稀疏給全腦骨架、密集給局部突觸。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2025-Tavakoli-LICONN · Fig. 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/tavakoli2025-fig1.jpg" style="width:520px" alt="LICONN：小鼠體感覺皮質約一百萬立方微米的密集重建，79 個範例細胞，附突觸分子標記；放大可見胞內結構與纖毛">
+      <figcaption><b>看什麼</b>膨脹光學那條路：小鼠皮質一小塊組織（原生尺度約 396×109×22 µm³），膨脹約 16 倍後用光學顯微鏡做到密集重建，a 右側連突觸前後的分子都標得出來。<strong>看得到 FlyCircuit 看不到的東西</strong>——代價是只看一小塊。</figcaption>
+    </figure>
+
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2025-Cheng-MBHybridNetwork · Fig. 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/cheng2025-fig1.jpg" style="width:600px" alt="hemibrain 資料導出的 PN 到 KC 突觸連結矩陣呈 L 形；連結偏好 G 分數；各類 KC 接收的 PN 數分布">
+      <figcaption><b>看什麼</b>EM 那條路：同一個實驗室、資料換成 hemibrain。A 是 PN→KC 的<strong>突觸級</strong>連結矩陣，那個 L 形就是整篇的發現——這在 FlyCircuit 的共域推論裡是看不到的。</figcaption>
+    </figure>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>FlyCircuit（稀疏光學）</th><th>hemibrain / FlyWire（EM）</th><th>LICONN（膨脹光學）</th></tr></thead>
+        <tbody>
+          <tr><td>一次看</td><td>一顆神經元，全腦</td><td>所有神經元，局部體積</td><td>所有神經元，局部體積</td></tr>
+          <tr><td>「連結」是</td><td>空間共域的推論</td><td>看得到的突觸</td><td>看得到的突觸＋分子標記</td></tr>
+          <tr><td>方向</td><td>形態預測（SPIN）</td><td>突觸極性直接觀察</td><td>直接觀察</td></tr>
+          <tr><td>知識庫裡的入口</td><td>本主題</td><td>蕈狀體嗅覺迴路連結 · EM 神經元自動分割</td><td>膨脹顯微鏡連結體</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>這一課在主題頁裡只有兩段，但它是整門課的出口：FlyCircuit 不是被取代，是被<strong>定位</strong>。知道它在地圖上的位置，
+      才知道什麼問題該來這裡找答案、什麼問題該去別的主題頁。這也是為什麼主題頁末尾要有〈相關主題〉——課上到這裡，下一門課已經排好了。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 收尾 ============ -->
+  <section class="closing">
+    <h2>這一門課學到什麼</h2>
+
+    <div class="prose">
+      <p>七堂課講完一個資料庫。不是講它多厲害，是講<strong>它是什麼、每一版有多少、誰拿它做什麼、哪些數字對不起來、它保證不到哪裡</strong>。
+      這五件事，任何一個你要長期依賴的資料庫都該問一遍。</p>
+    </div>
+
+    <h3>讀 FlyCircuit 相關論文的三個反射</h3>
+    <ul class="obs">
+      <li><b>標版本、標單位</b>16,000／23,579／28,573 是三個版本；28,573 是神經元不是腦；22,037 是原始影像。看到數字先問這兩件事。</li>
+      <li><b>「連結」前面有一個隱形的「推定」</b>共域不是突觸，TPR 0.40 是部分圖。正向陳述可信，負向陳述要打折。</li>
+      <li><b>三個前提一路跟到底</b>對位誤差 69→95%、標準腦是一個個體、driver 決定誰進資料庫——它們不會因為下游論文沒再提就消失。</li>
+    </ul>
+
+    <h3>思考題（來自主題頁的〈還沒解決的事〉）</h3>
+    <ol class="think">
+      <li>448 顆（28,573 − 28,125）的下落，文中未交代。若你是 2021 年論文的審稿人，你會要求作者補哪一張表？</li>
+      <li>「抽一成子集重現 0.97」證明的是內部一致，不是代表性。設計一個能檢驗「對未取樣神經元的代表性」的實驗——需要什麼外部資料？</li>
+      <li>EM 連結體（FlyWire）已公開。拿它來驗證 SPIN 極性預測，第一步要對齊什麼？</li>
+    </ol>
+
+    <h3>這門課是怎麼從知識庫生出來的</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>課</th><th>來自主題頁的哪一節</th><th>Agent 做了什麼</th><th>人決定了什麼</th></tr></thead>
+        <tbody>
+          <tr><td>00</td><td>開頭引言</td><td>改寫成「為什麼開課」</td><td>這一集要教「主題頁＝課綱」這個概念</td></tr>
+          <tr><td>01</td><td>它是什麼</td><td>加一段「為什麼值得一堂課」</td><td>—</td></tr>
+          <tr><td>02</td><td>怎麼建起來的</td><td>三個技術＋driver 偏差各一段；數字回條目核對</td><td>對位誤差是這一課最該記的數字</td></tr>
+          <tr><td>03</td><td>三個版本</td><td>表格＋「夠不夠」的論證與它的邊界</td><td>「內部一致≠代表性」要單獨講</td></tr>
+          <tr><td>04</td><td>各篇論文拿它做什麼</td><td>建／用／工具三分＋一張對照表</td><td>—</td></tr>
+          <tr><td>05</td><td>三處對不起來的數字</td><td>原文幾乎照登，加「如果只記一件事」</td><td>這是整門課的重點——閱讀訓練</td></tr>
+          <tr><td>06</td><td>資料的邊界</td><td>三個限制＋定位句；TPR 0.40 的含意回 2019 條目補</td><td>三個限制的順序有邏輯，要講出來</td></tr>
+          <tr><td>07</td><td>最後兩段（EM、LICONN）</td><td>擴成一張三路線對照表</td><td>課要有出口，指向其他主題</td></tr>
+          <tr><td>思考題</td><td>其他主題頁的〈還沒解決的事〉＋條目〈疑點〉</td><td>挑三條改寫成問題</td><td>—</td></tr>
+          <tr><td>測驗</td><td>三處對不起來的數字、資料邊界、版本</td><td>出十題</td><td>考判斷不考背誦；正解位置與長度打散</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>一句話總結分工：<strong>Agent 攤開結構、連回出處、改寫口吻；人決定教什麼、多深、哪句是重點。</strong>
+      知識庫裡還有八個主題頁，同一套做法可以再跑八次。</p>
+    </div>
+
+    <h3>這一集的產出</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>項目</th><th>內容</th></tr></thead>
+        <tbody>
+          <tr><td>教材網頁</td><td>本頁：七堂課＋思考題＋對照表</td></tr>
+          <tr><td>教學影片</td><td>自製投影片 ＋ 九張取自知識庫條目的論文圖，每張標來源；旁白 TTS</td></tr>
+          <tr><td>隨堂測驗</td><td>十題，考 FlyCircuit 的內容判斷</td></tr>
+          <tr><td>知識庫</td><td><strong>沒有改動</strong>——這一集只讀不寫；發現的一處新口徑（全腦神經元數 10 萬 vs 13.5 萬）記在本頁第 03 課</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="color:var(--ink-soft);font-size:.92rem;max-width:var(--col);">
+      <b>圖片來源</b>　本頁九張圖取自知識庫條目所擷取的原論文圖，各圖標註條目與原圖編號；版權屬原出版社與作者（Current Biology／Elsevier、Neuroinformatics／Springer Nature、Nature、Science Advances），此處為教學引用。</p>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h3>檢驗一下</h3>
+        <p>十題單選，考的是 FlyCircuit 的內容——數字的口徑、資料的邊界、論文怎麼用它。答完每一題立刻告訴你對錯與理由。</p>
+      </div>
+      <a class="cta-btn" href="ep04-quiz.html"
+         data-remote="EP04_QUIZ_ARTIFACT_URL">
+        開始測驗 →
+      </a>
+    </div>
+
+    <div class="next">
+      <b>下一集</b>　待定。知識庫裡還有八個主題頁——腦區劃分、影像處理管線、網路分析、視覺化與檢索、蕈狀體嗅覺迴路連結、EM 神經元自動分割、膨脹顯微鏡連結體、植入式神經光子探針——
+      每一頁都能用這一集的做法變成一門課。
+    </div>
+
+    <script>
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        a.href = a.getAttribute('data-remote');
+        a.target = '_blank';
+        a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

@@ -1,0 +1,1542 @@
+<meta charset="utf-8">
+<title>Reproducing Kaleido</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial,
+           "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- General text ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* Supplementary blocks */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* Collapsible variant */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- Video ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- Legend ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- Table of contents ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- Steps ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* The three voices */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* Tools box */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* Origin tags */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* Screenshots */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* Screenshots scale uniformly (captured at one resolution, so text is the same size) */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* Takeaways */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- Closing ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  .voice.full { border-left-style: dashed; }
+  .closing ol.think { max-width: var(--col); padding-left: 1.4rem; display:flex; flex-direction:column; gap:.7rem; }
+  .closing ol.think li { line-height:1.7; color: var(--ink); }
+  .closing ol.think li::marker { font-family: var(--mono); color: var(--ink-faint); }
+  pre.code { background:#141A1C; color:#DCE6E4; border-radius:6px; padding:1rem 1.2rem; font-family:var(--mono); font-size:.82rem; line-height:1.55; overflow-x:auto; max-width:52rem; margin:1rem 0 1.4rem; }
+  pre.code .c { color:#7E948F; } pre.code .k { color:#8FD3CC; } pre.code .s { color:#E0B98A; } pre.code .n { color:#C9B6FF; }
+  figure.shot video { display:block; width:100%; max-width:100%; height:auto; border:1px solid var(--rule); border-radius:4px; background:#000; }
+  .exp { max-width:52rem; }
+  .exp table { font-size:.9rem; }
+
+  /* ===== English-edition additions (tools/english-edition.css) ===== */
+
+/* English-edition styles for a tutorial page (extracted from ep01_eng, shared by every epNN_eng)
+
+   Append the whole file to the end of that episode's Chinese <style> block, and change two things:
+     --sans / --serif  put the Latin faces first
+     body line-height  1.78 -> 1.68 (English does not need the looser leading)
+
+   .edition          the "About this edition" note in the header
+   .v-human .orig    the prompt's original wording, under its English translation
+   details.transcript / .tr-*   the English transcript panel under a screenshot
+   .table-note       the small note under a table */
+
+/* ---------- Edition note ---------- */
+
+  .edition {
+    margin: 2.2rem 0 0;
+    padding: 1.1rem 1.4rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .93rem;
+    line-height: 1.6;
+  }
+  .edition b { color: var(--ink); }
+  .edition p { margin: 0 0 .5rem; }
+  .edition p:last-child { margin-bottom: 0; }
+
+/* the original wording, verbatim */
+  .v-human .orig {
+    margin: .8rem 0 0;
+    padding-top: .65rem;
+    border-top: 1px dashed var(--human-rule);
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    white-space: pre-wrap;
+  }
+  .v-human .orig .orig-label {
+    display: block;
+    font-size: .62rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--human);
+    opacity: .85;
+    margin-bottom: .2rem;
+    font-weight: 600;
+  }
+
+/* English transcript of a screenshot */
+
+  details.transcript {
+    max-width: 52rem;
+    margin: .9rem 0 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    font-size: .9rem;
+    line-height: 1.55;
+  }
+  details.transcript > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: .7rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  details.transcript > summary::-webkit-details-marker { display: none; }
+  details.transcript > summary::marker { content: ""; }
+  details.transcript > summary::before {
+    content: "\2212";
+    font-family: var(--mono);
+    font-size: .95rem;
+    line-height: 1;
+    width: 1.2rem; height: 1.2rem;
+    flex: none;
+    display: grid; place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.transcript:not([open]) > summary::before { content: "+"; }
+  details.transcript > summary .hint {
+    margin-left: auto;
+    font-size: .64rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+    text-transform: none;
+  }
+  details.transcript[open] > summary { border-bottom: 1px solid var(--rule-soft); }
+  .tr-body { padding: 1rem 1.2rem 1.1rem; }
+  .tr-body > :last-child { margin-bottom: 0; }
+  .tr-body p { margin: 0 0 .55rem; }
+  .tr-body .tr-user {
+    /* the user's prompt: a bubble on the right, sized to its text, like the real UI */
+    display: block;
+    width: fit-content;
+    max-width: 78%;
+    margin: 0 0 .9rem auto;
+    background: var(--surface-2);
+    border-radius: 10px;
+    padding: .55rem .9rem;
+    white-space: pre-wrap;
+    color: var(--ink);
+  }
+  .tr-tool {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    margin: .3rem 0 .6rem;
+  }
+  .tr-tool.fail { color: #B3341F; }
+  .tr-tool .diff-add { color: #2E7D32; }
+  .tr-tool .diff-del { color: #B3341F; }
+  .tr-h { font-weight: 600; margin: .85rem 0 .3rem; }
+  .tr-quote {
+    margin: .3rem 0 .7rem;
+    padding: .1rem 0 .1rem .9rem;
+    border-left: 2px solid var(--rule);
+    color: var(--ink-soft);
+  }
+  .tr-pane { border-top: 1px dashed var(--rule); padding-top: .8rem; margin-top: 1rem; }
+  .tr-pane:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+  .tr-pane-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--agent);
+    font-weight: 600;
+    margin-bottom: .45rem;
+  }
+  .tr-note { color: var(--ink-faint); font-size: .82rem; }
+  .tr-cut { color: var(--ink-faint); }
+  .tr-body table { min-width: 0; font-size: .85rem; margin: .3rem 0 .8rem; }
+  .tr-body th, .tr-body td { padding: .38rem .6rem; }
+  .tr-body td:first-child { font-family: var(--sans); font-size: .85rem; white-space: normal; }
+  .tr-body dl.kv {
+    margin: 0 0 .8rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .2rem .9rem;
+    font-size: .85rem;
+  }
+  .tr-body dl.kv dt { font-family: var(--mono); color: var(--ink-faint); font-size: .8rem; }
+  .tr-body dl.kv dd { margin: 0; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .tr-tool.fail, :root:not([data-theme="light"]) .tr-tool .diff-del { color: #F0907A; }
+    :root:not([data-theme="light"]) .tr-tool .diff-add { color: #7BC47F; }
+  }
+  :root[data-theme="dark"] .tr-tool.fail, :root[data-theme="dark"] .tr-tool .diff-del { color: #F0907A; }
+  :root[data-theme="dark"] .tr-tool .diff-add { color: #7BC47F; }
+
+  .table-note {
+    font-size: .82rem;
+    color: var(--ink-faint);
+    margin: .5rem 0 0;
+  }
+
+</style>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP05 · English edition</div>
+    <h1>Reproducing Kaleido</h1>
+    <p class="standfirst">
+      One paper, a hundred neuron images, one prompt. This episode does two things: it explains the
+      Kaleido paper — how you look at tens of thousands of neurons at once, and how you make neighbors
+      wear different colors; then it has the Agent write the code from scratch and produce the three views
+      and the rotating animation. Every wall it hit along the way is left in, because there is a third
+      thing this episode is about: <strong>what agentic coding actually is</strong>.
+    </p>
+    <div class="meta-row">
+      <span>3 parts · 13 steps</span>
+      <span>Data: 100 random FlyCircuit neurons</span>
+      <span>Claude Code · Fable 5</span>
+      <span>Follows on from EP04</span>
+    </div>
+  </header>
+
+  <aside class="edition">
+    <p><b>About this edition.</b> This is the English version of EP05. The session it records was
+    conducted in Traditional Chinese, so each prompt is given in English with the original wording
+    underneath. There are no chat screenshots in this episode: the figures are the paper's own figures,
+    which were already in English, plus figures produced by the reproduction code — and
+    <b>those generated figures were regenerated with English labels</b>. The code itself sits in
+    <code>Kaleido_repo/</code>, with its comments and README translated. The knowledge-base entry used
+    as the specification is available in English as
+    <code>Wiki_Eng/entries/2018-Wang-Kaleido.md</code>.</p>
+  </aside>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/Aq6cJ5bDl7o" data-remote="https://youtu.be/Aq6cJ5bDl7o"
+       target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="Opening frame of the video: Reproducing Kaleido">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">Play the tutorial video　·　14 min 20 s　·　watch on YouTube ↗</span>
+    </a>
+    <figcaption><b>Tutorial video</b><span>Watch the video first for the big picture, then read the thirteen steps below for the details and the code.</span></figcaption>
+  </figure>
+
+  <script>
+  // Video playback: embed inline when served from a web server, otherwise open in a new tab.
+  // YouTube refuses embeds from file:// (error 153) and claude.ai's CSP blocks external
+  // iframes, so both of those cases fall back to a plain link.
+  // The YouTube ID is filled in after upload; until then the card links to the local mp4.
+  (function () {
+    var ID = 'Aq6cJ5bDl7o';
+    var box = document.querySelector('a.video-frame');
+    if (!box || !ID) return;
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = 'Reproducing Kaleido';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin'; f.allowFullscreen = true;
+      var ok = false; f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f); box.classList.add('playing');
+      setTimeout(function () { if (ok) return; f.remove(); box.classList.remove('playing');
+        var note = document.createElement('p'); note.className = 'video-note';
+        note.textContent = 'Inline playback is not allowed here — click the poster to watch on YouTube.'; box.parentNode.appendChild(note); }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>How to read this page</h2>
+    <div class="legend-item"><span class="swatch h"></span><span><b>Your prompt / the paper's own words</b>Reproduced verbatim, not a word changed. Part two contains a single prompt; the Agent walked every other step by itself.</span></div>
+    <div class="legend-item"><span class="swatch a"></span><span><b>What the Agent did</b>What it read, what it wrote, what it hit, how it fixed it. Code included.</span></div>
+    <div class="legend-item"><span class="swatch s"></span><span><b>What the screen showed</b>This episode has no chat screenshots — the screens are the figures and terminal output the Agent actually produced at each step.</span></div>
+  </section>
+
+  <nav class="toc">
+    <h2>Three parts, thirteen steps</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>The Paper: Looking at a Hundred Thousand Neurons Together</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>The Paper: Trick One, Flatten the Layers</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>The Paper: Trick Two, Make the Neighbors Wear Different Colors</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>The Paper: Color Can Be Data Too, and Where the Limits Are</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>Reproduction: One Prompt, Read the Spec First, Look at the Data First</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>Reproduction: The Reader and Sparsification, Verified in Small Steps</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>Reproduction: Hitting the Wall — 100 Files, 100 Sizes</span></a></li>
+      <li><a href="#s08"><span class="n">08</span><span>Reproduction: The First Correct Figure</span></a></li>
+      <li><a href="#s09"><span class="n">09</span><span>Reproduction: Monte Carlo Stalled, So Run an Experiment</span></a></li>
+      <li><a href="#s10"><span class="n">10</span><span>Reproduction: Kaleido Colors vs Random Colors</span></a></li>
+      <li><a href="#s11"><span class="n">11</span><span>Reproduction: Two Pitfalls in the Rotating Animation</span></a></li>
+      <li><a href="#s12"><span class="n">12</span><span>The Deliverables: Three Views, Rotating Animation, Code Repository</span></a></li>
+      <li><a href="#s13"><span class="n">13</span><span>What Agentic Coding Actually Is</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head"><span class="step-num">01</span><h2>The Paper: Looking at a Hundred Thousand Neurons Together</h2></div>
+    <div class="prose">
+      <p>Kaleido (Wang, Chen, He, Wang, Shih, Chiang, <em>Neuroinformatics</em> 2018) is the first <strong>tool paper</strong> of the FlyCircuit research line. The papers before it had accumulated single-neuron images on the order of a hundred thousand, but “seeing tens of thousands of neurons at the same time” was itself technically stuck: each neuron's image file is about a hundred MB, so loading all 130,000 of a whole brain needs memory on the order of 10 TB — and even if you could load them, commercial 3D software has a ceiling on how many objects it can render at once.</p>
+      <p>The paper's solution has two parts, each aimed at one bottleneck: <strong>memory</strong> and <strong>color</strong>.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">From the paper's abstract (excerpt)</span>
+      <p>A formidable challenge is to simultaneously visualize a large number of distinguishable single-neuron images, with reasonable processing time and memory for file management and 3D rendering. […] Kaleido maximizes color contrast between neighboring neurons so that individual neurons can be easily distinguished.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2018-Wang-Kaleido · Fig. 2</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig2.jpg" style="width:640px" alt="Kaleido: the connectome assembled from ten thousand single-neuron images, with the calyx magnified — energy-optimized coloring vs random coloring">
+      <figcaption><b>What to look at</b>a is FlyCircuit's ten thousand neurons all shown in one image; b and c magnify the calyx of the Kenyon cells — Kaleido coloring on the left, random coloring on the right, and at the arrows neighboring somas collide in color under random coloring. This one figure is both of the problems the paper sets out to solve: <strong>you can load it, and you can tell them apart</strong>.</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>A tool paper is worth reading for what it unstuck. Kaleido turns “visualizing tens of thousands of neurons” from a hardware problem into an algorithmic one — those are the two tricks of steps 02 and 03.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head"><span class="step-num">02</span><h2>The Paper: Trick One, Flatten the Layers</h2></div>
+    <div class="prose">
+      <p>The way to deal with “can't load it” is to <strong>give up on “one object per neuron.”</strong> Kaleido draws all the selected neurons into one and the same 3D image — like flattening ten thousand Photoshop layers into a single picture. Once flattened, the file size depends only on the resolution of that picture (the standard-brain space) and hardly at all on how many neurons were drawn into it: ten thousand and one thousand take up about the same memory.</p>
+      <p>The price is just as clear: after flattening, individual neurons can no longer be handled separately. The paper's remedy is to leave a lookup channel open — when several neurons occupy the same voxel, only the one with the highest intensity is recorded (winner-take-all), so every lit pixel corresponds to exactly one neuron and clicking it reports the NeuronID.</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">Numbers and sources</span>
+      <ul>
+        <li>A single image is about <strong>10² MB</strong>; a whole brain is about 130,000 neurons → naive loading needs on the order of <strong>10 TB</strong> — entry, <em>Overview</em></li>
+        <li>Memory is dominated by the standard-brain space; the O(N²) distance and energy matrices are a secondary term; measured up to <strong>10⁴</strong> neurons — entry, <em>Methods</em></li>
+        <li>Output resolution is adjustable, recommended <strong>2048×1024×128</strong>; outputs AmiraMesh / OME-TIFF to feed back into general-purpose software</li>
+      </ul>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2018-Wang-Kaleido · Fig. 5</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig5.jpg" style="width:640px" alt="Kaleido's user interface: the job submission page and the results page, with slice viewer and neuron identifier">
+      <figcaption><b>What to look at</b>The results page in b has the slice viewer and the “neuron identifier” — that is the lookup channel. See the panorama first to find your target, then pull out the single neuron for a closer look.</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>What “flattening” buys is <strong>memory decoupled from neuron count</strong>; what it costs is <strong>the ability to manipulate a single neuron</strong>. Tool papers almost always make a trade like this; when you read one, keep both halves in view — what was bought and what was paid.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head"><span class="step-num">03</span><h2>The Paper: Trick Two, Make the Neighbors Wear Different Colors</h2></div>
+    <div class="prose">
+      <p>For ten thousand neurons to be individually recognizable, they have to be given different colors. The trouble with random coloring is that two neurons wound tightly around each other may perfectly well draw almost identical colors. This is essentially a relative of the map-coloring problem — adjacent countries must not share a color — the difference being that “adjacent” here is a matter of degree, and the colors are a continuous hue ring.</p>
+      <p>Kaleido turns it into a physics problem. Between every pair of neurons there is a “discomfort”: <strong>the closer they are and the more alike their colors, the more uncomfortable it is</strong>. Sum over all pairs to get a total energy, then use Monte Carlo to swap colors over and over — accept when the energy drops, occasionally tolerate a temporary worsening — until spatial neighbors sit far apart on the hue ring.</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">The paper's seven steps (the reproduction follows these)</span>
+      <ol>
+        <li>Transfer the single-neuron images into the standard brain; at any one voxel record only the strongest neuron</li>
+        <li>Draw 100 voxels at random from each neuron; for every point of the first neuron find the nearest point of the second, average over both directions → distance matrix D</li>
+        <li>Choose a coloring mode: automatic (by distance) / by file / random / grayscale</li>
+        <li>The hue angles of N neurons are uniformly distributed, θ(i)=360°·i/N; energy <strong>E = Σ<sub>i&lt;j</sub> 1 / ( d<sub>ij</sub> · min(Δ<sub>ij</sub>, 360°−Δ<sub>ij</sub>) )</strong></li>
+        <li>Monte Carlo: random start; at each step take one of the currently highest-energy pair and swap its hue angle with another randomly chosen neuron; acceptance probability min(1, e<sup>−βΔE</sup>); step limit 10N</li>
+        <li>HSV → RGB: hue from step 5, S=1, V = normalized intensity; the original intensity serves as α</li>
+        <li>Merge and output a single RGBA file</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2018-Wang-Kaleido · Fig. 1</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig1.jpg" style="width:720px" alt="The algorithm, schematically: average pairwise distance between the sampled points of two neurons, all pairwise distances, random initial hue angles, and hue angles after Monte Carlo optimization">
+      <figcaption><b>What to look at</b>a is how the distance is computed (sample points in each neuron, average pairwise distance between the two sets); b is the distance from neuron 1 to all the others; c is the random initial hue angles; then comes the result of Monte Carlo pushing spatial neighbors to opposite sides of the hue ring. Step 09 shows what this process looks like on our data.</figcaption>
+    </figure>
+    <aside class="point hero">
+      <span class="voice-label">If you remember one thing, remember this</span>
+      <p><strong>Write “color assignment” as an energy function and you can minimize it with the methods of physics.</strong></p>
+      <p>The formula contains only two quantities: spatial distance d and hue difference Δ. It does not ask how the eye sees; it asks only whether, mathematically, neighbors have been pushed apart — step 04 comes back to what that choice costs.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head"><span class="step-num">04</span><h2>The Paper: Color Can Be Data Too, and Where the Limits Are</h2></div>
+    <div class="prose">
+      <p>Besides the automatic assignment, Kaleido keeps a “color by file” mode: you supply a table specifying the color of each neuron. The paper colors the neurons of the right olfactory module by <strong>birthdate</strong> and by <strong>neurotransmitter</strong>, then crosses the two, and different patterns immediately surface in the same mass of images. The authors say these are only “quick impressions” and that rigorous conclusions need further research — but letting the questions worth chasing jump out by themselves is exactly what an exploratory tool should do.</p>
+      <p>Where are the limits? The ceiling is not in the algorithm but in <strong>optics</strong>: fluorescence images have limited resolution and light scatters, so when too many neurons are packed into the same space the signal itself is blurred. Beyond that, “good” color assignment here is defined by geometric distance plus hue difference, <strong>not by human perception</strong> — two color pairs the same distance apart on the hue ring are not necessarily equally easy for the eye to separate, and users with color vision deficiency are not considered by the formula at all.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">A figure from the knowledge base · entry 2018-Wang-Kaleido · Fig. 3</span>
+      <img loading="lazy" decoding="async" src="assets/fig/wang2018-fig3.jpg" style="width:720px" alt="Neurons of the right olfactory community colored automatically, by birthdate and by neurotransmitter, plus the cross with the early-, middle- and late-born subsets">
+      <figcaption><b>What to look at</b>The same set of neurons under three coloring rules: a automatic, b birthdate, c neurotransmitter; d–f are the early-, middle- and late-born subsets, each colored by neurotransmitter. <strong>Color goes from a tool for telling things apart to a carrier of data.</strong></figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">Open questions recorded in the entry (carry these while you read)</span>
+      <ul>
+        <li>Methods cites Fig. 4a when discussing execution time, but Fig. 4a is the energy distribution — it should be Supplement Fig. 1a</li>
+        <li>Distance is approximated by sampling 100 voxels per neuron; the effect of the sample size on the stability of the color assignment is not reported</li>
+        <li>Monte Carlo carries no optimality guarantee: a heuristic search of 10N steps in a permutation space of size N! finds something “good enough”, not “optimal”</li>
+        <li>The quantitative validation (Fig. 4) uses only a random 1,000 neurons, not the 10,000 used for the demonstration</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to remember here</span>
+      <p>These four points become <strong>checkpoints for the reproduction</strong> in part two: should another sample size be tried? Are 10N steps really enough? The experiment in step 09 grew straight out of “no optimality guarantee”.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head"><span class="step-num">05</span><h2>Reproduction: One Prompt, Read the Spec First, Look at the Data First</h2></div>
+    <div class="voice v-human">
+      <span class="voice-label">Your prompt (the only one in the episode)</span>
+      <p class="cmd">Next up is EP05, on Kaleido. This episode concentrates on explaining the content of the Kaleido paper, and on reproducing the program. Here are 100 neuron images picked at random from FlyCircuit: (Google Drive link)<br><br>Required output: the same tutorial format as EP01~04 (remember to put figures in!), and note that it has to include the three views of the reassembled image plus a rotating animation. Besides that, put the reproduced program in …\Tutorial\ep05\Kaleido_repo\, but don't push it to GitHub yet<br><br>As for the content, besides introducing Kaleido, this time it will use your Agentic Coding/Vibe Coding ability, so use this implementation of yours to explain that concept as well.<br><br>Same as before, go all the way to the finished product in one run.</p>
+      <p class="orig" lang="zh-Hant"><span class="orig-label">Original (zh-TW)</span>接下來製作 EP05，內容是 Kaleido。這一集專注於介紹 Kaleido 這篇論文的內容，並且將程式復刻。這是 FlyCircuit 裡隨機選出的 100 顆 neuron 影像：（Google Drive 連結）<br><br>要求產出：跟 EP01~04 那樣的教材格式（記得要放圖！），注意裡面要放重組起來的影像的三視圖以及旋轉動畫。除此之外，復刻的程式放在 …\Tutorial\ep05\Kaleido_repo\ 裡，但還不要推上 GitHub<br><br>內容的部分，除了介紹 Kaleido 之外，這次會用到你的 Agentic Coding/Vibe Coding 能力，所以也要透過你這次的實作，講一下這部分的概念。<br><br>一樣一口氣做到成品。</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li><strong>Read the spec first, don't write code first.</strong> It opened the Kaleido entry in the knowledge base and copied out the seven steps of <em>Methods</em> as the specification (the list in step 03). The paper itself publishes no code, so those seven steps plus the energy function are all there is to reproduce from.</li>
+        <li><strong>Download the data, look at the header.</strong> A 64 MB zip holding 100 <code>*_warp_volume.am</code> files (<a href="https://drive.google.com/file/d/1knn6GDFBLajofAqKYYFqdclGUa6vHewi/view?usp=sharing" target="_blank" rel="noopener">neurons100.zip ↗</a>). The first thing it did was open one file and read the first 1,500 bytes — AmiraMesh binary format, ushort, HxZip (zlib) compression, lattice 542×269×252, BoundingBox in the physical coordinates of the standard brain.</li>
+        <li>It also glanced at <code>assemble.py</code> in the video pipeline and confirmed that a slide there can carry only one image — <strong>if the rotating animation is going into the video, the tool has to change first</strong> (step 12).</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · the header of the first file</span>
+<pre class="code"><span class="c"># AmiraMesh BINARY-LITTLE-ENDIAN 2.1</span>
+define Lattice 542 269 252
+Parameters {
+    Content "542x269x252 ushort, uniform coordinates",
+    SaveInfo "AmiraMesh ZIP",
+    BoundingBox -267.604 273.396 -260.564 7.43608 -147.191 103.809,
+    CoordType "uniform",
+    Filename "/disk/sourceData/data2014_a11/5-HT1B-F-100000/5-HT1B-F-100000_seg001_clear.am"
+}
+Lattice { ushort Data } @1(HxZip,638779)
+<span class="c"># Data section follows</span></pre>
+      <figcaption><b>Note</b>Four keywords decide how the reader has to be written: <code>BINARY-LITTLE-ENDIAN</code>, <code>ushort</code>, <code>HxZip</code> (zlib compression; the number after it is the compressed length) and <code>BoundingBox</code> (where this neuron sits inside the standard brain — how much that matters only becomes clear in step 07).</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>The first move in agentic coding is not writing code, it is reading the spec and looking at the data.</strong> The spec was in the knowledge base (built in EP01–04), and the data format is right there in the file header — those two things took under a minute, and saved half an hour of guessing the format wrong later.</p>
+      <p>Your prompt is a single paragraph, but it contains four explicit deliverables (the tutorial page, the three views, the rotating animation, the code repository) and one explicit constraint (don't push to GitHub). The Agent listed them out before it started.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head"><span class="step-num">06</span><h2>Reproduction: The Reader and Sparsification, Verified in Small Steps</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did (no new prompt)</span>
+      <ol>
+        <li>Wrote <code>amira.py</code>: regexes pull the lattice, dtype, compression method and BoundingBox out of the header; find the position after the <code>@1</code> line, <code>zlib.decompress</code>, then <code>np.frombuffer</code> into a (z, y, x) array.</li>
+        <li>Wrote <code>sparse.py</code>: a 73 MB ushort volume × 100 neurons cannot all stay in memory, so only the coordinates and intensities of non-zero voxels are kept.</li>
+        <li><strong>Test on one file first</strong>: 0.08 seconds, 294,802 non-zero voxels, intensities 0–255 (the ushort in fact holds 8-bit values). Only once that was right did it move on.</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · the core of the reader and the first test</span>
+<pre class="code"><span class="k">def</span> read_amira(path):
+    raw = open(path, <span class="s">"rb"</span>).read()
+    head_end = raw.find(<span class="s">b"# Data section follows"</span>)
+    header = raw[:head_end].decode(<span class="s">"ascii"</span>, <span class="s">"replace"</span>)
+    nx, ny, nz = map(int, re.search(<span class="s">r"define Lattice (\d+) (\d+) (\d+)"</span>, header).groups())
+    comp = re.search(<span class="s">r"@1\((\w+),(\d+)\)"</span>, header)            <span class="c"># HxZip, compressed length</span>
+    data_start = raw.find(<span class="s">b"\n"</span>, raw.find(<span class="s">b"@1"</span>, head_end)) + 1
+    blob = zlib.decompress(raw[data_start:data_start + int(comp.group(2))])
+    vol = np.frombuffer(blob, dtype=np.uint16).reshape(nz, ny, nx)  <span class="c"># Amira: x varies fastest</span>
+    ...
+
+<span class="c">$ python -c "...read one file..."</span>
+(252, 269, 542) uint16  load 0.08s
+max 255  nonzero 294802</pre>
+      <figcaption><b>Note</b>The last two lines are the output of the first test. Shape right, value range sensible (8-bit), speed good enough — three things confirmed at once.</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>Verify in small steps.</strong> With the reader written, read one file and look at three numbers before writing the next piece. The Agent writes code fast, but the price of fast is that it is wrong fast too — leave a visible output at the end of every piece and a mistake stops there, instead of rolling on into a strange picture whose source you can no longer find.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head"><span class="step-num">07</span><h2>Reproduction: Hitting the Wall — 100 Files, 100 Sizes</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>It wrote the distance matrix, the energy function, Monte Carlo, the merge, the three views and the rotation in one go and ran the whole pipeline. Reading, distances and MC all passed; at “merge into one RGB volume” — <code>IndexError: index 280 is out of bounds for axis 1 with size 269</code>.</li>
+        <li>One neuron's coordinates ran past the volume of the first one. Checked: <strong>100 files have 100 different lattice sizes and 100 different BoundingBoxes.</strong> Each .am is its own separately cropped sub-volume; what they really share is the standard-brain physical coordinates the BoundingBox lives in (voxels of 1 µm).</li>
+        <li>Back to step 1 of the paper, “transfer the single-neuron images into the standard brain” — on this data it means exactly this: <strong>index → bbox_min + index × voxel_size</strong>, then align everything onto the same integer grid. Add an <code>align()</code>; common canvas 242×488×895.</li>
+        <li>Rerun: 100 neurons, 28,823,759 non-zero voxels, of which 15,684,811 survive winner-take-all — 45% of the voxels are covered over by a brighter neighbor. That number looked too high at first, and was only accepted after checking the voxel size (1.000 ± 0.000003 µm per axis, no scaling error): neurons in the optic lobes really are packed that tightly.</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">What the screen showed · the error message and the diagnosis</span>
+<pre class="code">File "kaleido/render.py", line 29, in composite
+    cur = inten[z, y, x]
+IndexError: index 280 is out of bounds for axis 1 with size 269
+
+<span class="c">$ check the lattice and BoundingBox of all 100 headers</span>
+Counter({'542 269 252': 1, '487 369 189': 1, '128 168 77': 1, '560 297 201': 1, ... })
+100 distinct bounding boxes
+-267.604 273.396 -260.564 7.43608 -147.191 103.809
+-38.2405 447.76 -307.865 60.1345 -128.89 59.1098
+...
+<span class="c">$ after the fix</span>
+22:13:09   aligned onto the common standard-brain canvas (242, 488, 895) (origin [-140, -337, -450] µm)
+22:13:20   100 neurons, 28,823,759 non-zero voxels in total</pre>
+      <figcaption><b>Note</b>The error message says “axis 1 (y) has length 269 but there is an index 280” — read it and you know the problem is that the shape of the first neuron was taken as the shape of all of them.</figcaption>
+    </figure>
+    <aside class="point hero">
+      <span class="voice-label">If you remember one thing, remember this</span>
+      <p><strong>A step that is one sentence in the paper can be the whole problem on real data.</strong></p>
+      <p>“Transfer into the standard brain” is step 1 in the paper and one line of text; on this data it is “100 separately cropped volumes have to be put back into the same coordinate system via their BoundingBoxes”. The Agent's first version assumed they were all the same size — wrong, but <strong>wrong fast and wrong informatively</strong>, which is an acceptable kind of wrong.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 08 ============ -->
+  <section class="step" id="s08">
+    <div class="step-head"><span class="step-num">08</span><h2>Reproduction: The First Correct Figure</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <p>Once aligned, the three views came out. The front view (projected along z) is unmistakably a fly brain: the round things on either side are the optic lobes, the middle is the central brain, below is the subesophageal ganglion. Among the 100 neurons there is a batch in the optic lobes and a few that project a long way (the pale green one running dorsally at the top is a Trh neuron). The three views are an output the paper does not have; they are what your prompt asked for.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">Output · the three views (Kaleido coloring, 100 neurons)</span>
+      <img loading="lazy" decoding="async" src="assets/out/fig_three_views.jpg" style="width:820px" alt="The three views of 100 merged neurons: front xy, top xz, side yz, in Kaleido coloring">
+      <figcaption><b>What to look at</b>Top left the front view (projected along z), bottom left the top view (along y), right the side view (along x). All three are “color maximum intensity projections” — each pixel takes the brightest voxel along the line of sight, and its color. <strong>The brain shape is right, it is left-right symmetric, the optic lobes are on the sides</strong> — this is a check by eye; correct numbers do not guarantee a correct picture.</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>The first correct figure is a milestone, and “correct” is judged by a human.</strong> The Agent can check array shapes, value ranges and run times, but “does this look like a fly brain” needs someone who knows what a fly brain looks like — or at least the figure has to be shown to such a person. In this episode the Agent looked at it itself (it had read the brain figures in the entry), and you were the second pair of eyes.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 09 ============ -->
+  <section class="step" id="s09">
+    <div class="step-head"><span class="step-num">09</span><h2>Reproduction: Monte Carlo Stalled, So Run an Experiment</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>Implemented the paper's move as written: at each step find the currently highest-energy pair, take one of the two and swap its hue angle with a random neuron, Metropolis acceptance. Ran 20,000 steps; the energy fell from 1.50 for random coloring to 1.29 — <strong>but the curve flattened out at around 3,000 steps</strong> and did not move for the remaining 17,000.</li>
+        <li>Suspicion: attacking only the “worst pair” keeps circling among the same few neurons and gets stuck in a local minimum. The open question recorded in the entry at step 04, “MC carries no optimality guarantee”, is exactly this.</li>
+        <li><strong>Run a small experiment</strong>: mix in a fraction p of “pick two neurons purely at random and swap”, p = 0 / 0.5 / 1, at 1,000 / 5,000 / 20,000 steps, three seeds per cell. The results are in the table below.</li>
+        <li>Decision: default p=0.5 (lower energy, smaller variance), but keep <code>--p-random 0</code> to restore the paper's original; the finding went into the docstring and the README.</li>
+      </ol>
+    </div>
+    <div class="exp table-wrap">
+      <table>
+        <thead><tr><th>Move</th><th>1,000 steps (the paper's 10N)</th><th>5,000 steps</th><th>20,000 steps</th></tr></thead>
+        <tbody>
+          <tr><td>The paper's original: only move the worst pair (p=0)</td><td>1.3055 ± 0.0016</td><td>1.3011 ± 0.0021</td><td>1.2915 ± 0.0094</td></tr>
+          <tr><td>Mixed: half random swaps (p=0.5)</td><td>1.2923 ± 0.0061</td><td>1.2734 ± 0.0017</td><td><strong>1.2630 ± 0.0005</strong></td></tr>
+          <tr><td>All random swaps (p=1)</td><td>1.2997 ± 0.0005</td><td>1.2735 ± 0.0011</td><td>1.2630 ± 0.0015</td></tr>
+          <tr><td colspan="4" style="color:var(--ink-soft)">Random coloring averages E = 1.4892 (20 seeds). Lower energy is better; ± is the standard deviation over three seeds. 100 neurons, distance matrix held fixed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">Output · the energy curves (logarithmic x axis)</span>
+      <img loading="lazy" decoding="async" src="assets/out/energy.jpg" style="width:640px" alt="Monte Carlo energy curves: the paper's original move stalls after about three thousand steps, while the mixed move keeps falling to a lower value">
+      <figcaption><b>What to look at</b>The amber line is the paper's original move, the teal line the mixed move, the gray dashed line random coloring. The two lines are much the same for the first thousand steps; after that the original stalls and the mixed one keeps going down.</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>Reproducing is not copying.</strong> Write it as the paper says, run it, see the curve go wrong — at that moment there are three options: ignore it (it did go down, after all), change it outright (but then it is not a reproduction), or <strong>run an experiment and keep both</strong>. The third costs three extra minutes and buys a table and a switch: for the paper's original, use <code>--p-random 0</code>.</p>
+      <p>One more thing: the energy only falls by 16%, not because the algorithm is weak but because most pairs are far apart (large d, small energy), so the total is dominated by the few near-neighbor pairs. A result like this — a number that does not look impressive — is there to be understood, not to be attacked by tuning parameters.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 10 ============ -->
+  <section class="step" id="s10">
+    <div class="step-head"><span class="step-num">10</span><h2>Reproduction: Kaleido Colors vs Random Colors</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <p>It set up the comparison the way Fig. 2 of the paper does: the same neurons, the same front view, Kaleido coloring on the left and random coloring on the right, each cropped to a piece of the central brain with a smaller piece magnified. <strong>Honestly, the difference at 100 neurons is not as dramatic as the paper's 10,000</strong> — 100 is not crowded enough. But the magnification still shows it: in the random coloring, that large purple-blue neuron collides with the blue soma beside it, and Kaleido pushes the two apart into green against magenta. The hue-ring figure on the right makes the point more directly: one dot per neuron, a gray line to its nearest spatial neighbor — the lines in the Kaleido panel are visibly longer.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">Output · the same region, two colorings</span>
+      <img loading="lazy" decoding="async" src="assets/out/fig_compare_random.jpg" style="width:720px" alt="A part of the central brain: Kaleido coloring and random coloring side by side, with a magnified crop under each">
+      <figcaption><b>What to look at</b>The top row is a piece of the central brain (the white box marks the magnified area), the bottom row the magnification. Compare the hue difference between neighboring pairs where the somas are dense.</figcaption>
+    </figure>
+    <figure class="shot">
+      <span class="shot-label">Output · hue ring: each neuron's hue angle, with a gray line to its nearest spatial neighbor</span>
+      <img loading="lazy" decoding="async" src="assets/out/fig_hue_wheel.jpg" style="width:720px" alt="Two hue rings, random coloring and Kaleido coloring; one dot per neuron, a gray line to the nearest neighbor in space">
+      <figcaption><b>What to look at</b>Random on the left, Kaleido on the right. The longer the line, the further a spatial neighbor sits on the hue ring — which is exactly what the energy function is doing.</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>When the result is less pretty than the paper's, say so — then find a figure that measures the effect.</strong> The difference between 100 and 10,000 neurons is a difference in data density, not in the algorithm; the hue-ring figure isolates what the algorithm actually achieved.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 11 ============ -->
+  <section class="step" id="s11">
+    <div class="step-head"><span class="step-num">11</span><h2>Reproduction: Two Pitfalls in the Rotating Animation</h2></div>
+    <div class="voice v-agent">
+      <span class="voice-label">What the Agent did</span>
+      <ol>
+        <li>The rotating animation is an output the paper does not have (it exports a 3D file for Avizo to turn). The method: rotate the point cloud of 100 neurons about the vertical axis and make one color maximum-intensity projection per angle, 72 frames.</li>
+        <li><strong>Version one: moiré.</strong> A volume 895 voxels wide has to fit into 1,100 pixels; the scale factor is not an integer, so periodically some pixel columns get no voxel at all — grid-like banding appears. That is not a problem with the data, it is a problem with the sampling.</li>
+        <li><strong>Version two: too dark.</strong> The fix was to draw at double resolution and scale back down (anti-aliasing); the moiré went away — but the whole image got darker, because the empty pixels between voxels were averaged in. 0° and 180° are darkest (x is the sparsest direction).</li>
+        <li><strong>Version three: fix 1 voxel = 2 pixels, draw every point as a 2×2 block, then scale back with Lanczos.</strong> No seams, no moiré, normal brightness. The price is 28.8M points × 4 × 72 frames, seven minutes.</li>
+      </ol>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">Output · stills from version three (0° / 60° / 120° / 180°)</span>
+      <img loading="lazy" decoding="async" src="assets/out/fig_rotation_stills.jpg" style="width:760px" alt="Four stills from the rotating animation at 0, 60, 120 and 180 degrees">
+      <figcaption><b>What to look at</b>At 60° and 120° you can see the thickness of the optic lobes and the front-to-back layering of the central brain — something the three views cannot give you. The full 72-frame animation is in step 12.</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>Visual output has to be signed off by eye; correct numbers do not mean a correct picture.</strong> In the moiré version every array shape and value range was right and the program raised no error at all — only looking at the picture showed it was wrong. The Agent found it by looking at the stills itself, which is the value of “produce something visible at every step” in its workflow.</p>
+      <p>The progression through three versions is also the typical rhythm of agentic coding: make → look → say what is wrong → fix → look again. Every version stayed in the code's docstring, so whoever reads the code knows why it looks the way it does now.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 12 ============ -->
+  <section class="step" id="s12">
+    <div class="step-head"><span class="step-num">12</span><h2>The Deliverables: Three Views, Rotating Animation, Code Repository</h2></div>
+    <figure class="shot">
+      <span class="shot-label">Output · the rotating animation (72 frames, one turn about the vertical axis)</span>
+      <video autoplay loop muted playsinline poster="assets/out/rotate-poster.jpg" src="assets/out/rotate.mp4"></video>
+      <figcaption><b>What to look at</b>100 FlyCircuit neurons, Kaleido coloring, color maximum-intensity projection. The optic lobes are two thick shells, and the neurons of the central brain are layered front to back. This animation also went into the tutorial video — for which the video pipeline gained an “animated slide” feature.</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">The code repository Kaleido_repo/ (not pushed to GitHub)</span>
+<pre class="code">Kaleido_repo/
+├── README.md            the seven algorithm steps ↔ code table, three reproduction findings, usage
+├── requirements.txt     numpy · pillow · matplotlib
+├── run.py               end to end: read → distances → MC → merge → three views → rotating animation
+├── make_figures.py      the composite figures for the tutorial
+├── kaleido/
+│   ├── amira.py         AmiraMesh reader (BINARY-LE / ushort / HxZip)
+│   ├── sparse.py        sparsify + align to the standard brain via BoundingBox (the step 07 fix)
+│   ├── distance.py      100 points per neuron, shortest distances both ways → D
+│   ├── coloring.py      energy function, Monte Carlo (with the p_random switch)
+│   └── render.py        winner-take-all merge, three-view MIP, rotation projection (the three versions of step 11)
+└── outputs/             mip_*.png · energy.png · rotate.gif/mp4 · hues.json · owner_map.npy · fig_*.png</pre>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">Against the paper: what was done, what was not</span>
+      <ul>
+        <li>Steps 1–6 of the seven were done; step 7, “output AmiraMesh for Avizo”, became PNG / MP4 output plus <code>owner_map.npy</code> (which neuron each voxel belongs to — the paper's lookup channel, kept in array form)</li>
+        <li>Only the automatic and random coloring modes were implemented; “color by file” and grayscale were not</li>
+        <li>Things the paper does not have were added: the three views, the rotating animation, <code>p_random</code>, gamma 0.6 (so the fine fibers stay visible)</li>
+        <li>A full run over 100 neurons takes about 8 minutes, 7 of them the rotating animation; the rest is reading 20 s, distances 1 s, MC 1 s, merge 7 s</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">Takeaway</span>
+      <p><strong>A deliverable needs a mapping table.</strong> Where the reproduced code matches the paper, where it does not, and why — that table is what tells other people (and you in three months) how far this code can be trusted. It lives in the README, not in the chat log.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 13 ============ -->
+  <section class="step" id="s13">
+    <div class="step-head"><span class="step-num">13</span><h2>What Agentic Coding Actually Is</h2></div>
+    <div class="prose">
+      <p>Part two of this episode is one complete piece of agentic coding. Looking back at its shape and then explaining the concept is easier to follow than explaining the concept first.</p>
+      <p><strong>Two terms.</strong> “Vibe coding” is Karpathy's phrase from early 2025: describe what you want in natural language, let the AI generate the code, look at the result rather than reading the code line by line — go with the feel of it. “Agentic coding” goes a step further: the AI does not just generate, it <strong>plans the steps itself, executes, looks at the output, fixes, executes again</strong>, and reports back only when it is done; the human gives the goal and the boundaries and is not necessarily present in between. This episode is the second kind: you gave one prompt, and the twelve steps in between (read the spec, look at the data, write, hit the wall, align, run an experiment, three versions) were all walked by the Agent.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th></th><th>What the human did</th><th>What the Agent did</th></tr></thead>
+        <tbody>
+          <tr><td>Goal</td><td>One paragraph: reproduce Kaleido, three views, rotating animation, where the code goes, don't push to GitHub, explain agentic coding</td><td>Broke it into a list of deliverables and an order</td></tr>
+          <tr><td>Spec</td><td>(already in the knowledge base built in EP01–04)</td><td>Read the entry, copied the seven steps and the energy function out as the spec</td></tr>
+          <tr><td>Data</td><td>Gave a link</td><td>Downloaded it, read the header, decided how to read the format</td></tr>
+          <tr><td>Implementation</td><td>—</td><td>Wrote five modules, each tested small first</td></tr>
+          <tr><td>Hitting the wall</td><td>—</td><td>IndexError → checked 100 headers → switched to BoundingBox alignment</td></tr>
+          <tr><td>Judgement</td><td>— (looked at the figures afterwards)</td><td>MC stalled → experiment → kept a switch; moiré → three versions</td></tr>
+          <tr><td>Sign-off</td><td><strong>Look at the deliverable: does it look right, is it enough</strong></td><td>Looked at the figures itself first, said where it falls short of the paper</td></tr>
+          <tr><td>Record</td><td>—</td><td>Findings written into the docstrings and the README; this page</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p><strong>What separates it from “ask an AI to write me some code” is the loop.</strong> Not “write it and hand it over” but “write → run → look → fix”, turning by itself until it stops turning. In this episode that loop turned at least six times: once for the reader, once for the alignment, once for MC, three times for the rotation. The basis for every judgement was <strong>output it had produced itself</strong> — error messages, numbers, figures.</p>
+      <p><strong>Where it goes wrong.</strong> (1) <strong>Looks right, is actually wrong</strong>: the moiré version raised no error at all. The Agent caught it itself because it rendered the figure and looked at it; without a “produce something visible” step in the workflow, it would have carried the error onward. (2) <strong>Changing the spec on its own initiative</strong>: change the MC move and it is no longer a reproduction, so a change has to leave a switch and has to be written down. (3) <strong>Being too cautious</strong>: last episode the Agent put in no figures at all because of a copyright note, and was overruled — judging the boundary belongs to the human. (4) <strong>Honesty when the result falls short</strong>: the coloring comparison at 100 neurons is not as dramatic as the paper's, and that has to be said, not argued around.</p>
+      <p><strong>Four pieces of advice for anyone using this approach</strong>: one, spell the deliverables out in the prompt (in this episode the three views, the rotating animation, where the code goes and not pushing to GitHub are all deliverables); two, have it build the smallest verifiable version first, look at it, then scale up; three, make it write the walls it hit and the judgements it made into the code and the README, not just into the conversation; four, you sign off on the deliverable — does it look right, is it enough, should a figure go in — those judgements are still the human's for now.</p>
+    </div>
+    <aside class="point hero">
+      <span class="voice-label">If you remember one thing, remember this</span>
+      <p><strong>The quality of agentic coding depends on whether the loop contains something you can look at.</strong></p>
+      <p>Produce something checkable at every step — a number, a figure, a line of error message — and the Agent can correct itself; without that, it is only writing fast.</p>
+    </aside>
+  </section>
+
+  <!-- ============ closing ============ -->
+  <section class="closing">
+    <h2>What this episode teaches</h2>
+    <div class="prose">
+      <p>The paper offers two tricks: flatten the layers so that memory is decoupled from neuron count, and write the color assignment as an energy function and minimize it with Monte Carlo. The reproduction walked seven steps, hit the wall twice (data sizes, projection sampling) and ran one experiment (the move). Part three looks back at the whole stretch as one piece of agentic coding.</p>
+    </div>
+    <h3>Three observations</h3>
+    <ul class="obs">
+      <li><b>Read the spec first, look at the data first</b>The list of seven steps came from the knowledge-base entry and the file format came from the header — the two minutes before any code was written are what saved the half hour of guessing formats afterwards.</li>
+      <li><b>A sentence in the paper can be the whole problem on real data</b>“Transfer into the standard brain” = 100 separately cropped volumes aligned by their BoundingBoxes. Wrong fast and wrong informatively is an acceptable kind of wrong.</li>
+      <li><b>The loop needs something you can look at</b>The energy curve is what let you see MC stalling; the stills are what let you see the moiré. Without them the program goes on being wrong with no error message at all.</li>
+    </ul>
+    <h3>About your role</h3>
+    <div class="prose">
+      <p>What you did in this episode: <strong>one prompt</strong> (deliverables and boundaries both inside it), <strong>supplied the data</strong>, <strong>looked at the deliverable</strong>. Less than in any of the previous four episodes — but “I want three views and a rotating animation”, “remember to put figures in” and “don't push to GitHub” are decisions the Agent does not make for itself. The spec and the boundaries are yours; the loop is its.</p>
+    </div>
+    <h3>What this episode produced</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Item</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td>Kaleido_repo/</td><td>Python reproduction: 5 modules + run.py + make_figures.py + README; not pushed to GitHub</td></tr>
+          <tr><td>outputs/</td><td>The three views, the random-coloring comparison, the energy curve, the hue ring, the 72-frame rotating animation (GIF / MP4), owner_map</td></tr>
+          <tr><td>Tutorial/tools/assemble.py</td><td>Gained “animated slides”: if <code>frames/anim/sNN/</code> holds numbered PNGs, they are cycled to fill the narration's duration</td></tr>
+          <tr><td>Tutorial materials</td><td>This page, the video, a ten-question quiz</td></tr>
+          <tr><td>Knowledge base</td><td>Unchanged (the Kaleido entry was only read)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Programs written and packages installed in this episode</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Program / package</th><th>Location</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>kaleido/</code> five modules, <code>run.py</code>, <code>make_figures.py</code></td><td>ep05_eng/Kaleido_repo/</td><td>The reproduction itself and the tutorial figures</td></tr>
+          <tr><td><code>assemble.py</code> (modified)</td><td>Tutorial/tools/</td><td>Animated-slide support</td></tr>
+          <tr><td>numpy · pillow · matplotlib · gdown</td><td>pip</td><td>Numerics, images, plotting, downloading from Google Drive</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="color:var(--ink-soft);font-size:.92rem;max-width:var(--col);">
+      <b>Figure sources</b>　The five figures in steps 01–04 come from the original paper's figures as extracted into the knowledge-base entry (Wang et al. 2018, <em>Neuroinformatics</em>, Springer Nature), quoted here for teaching; the rest are outputs of this episode's code. The data is 100 randomly chosen FlyCircuit single-neuron images.</p>
+    <h3>Try it yourself</h3>
+    <div class="prose">
+      <p><strong>The data.</strong> The 100 single-neuron images this episode works on are a random
+      sample from FlyCircuit, in AmiraMesh format:
+      <a href="https://drive.google.com/file/d/1knn6GDFBLajofAqKYYFqdclGUa6vHewi/view?usp=sharing"
+         target="_blank" rel="noopener">neurons100.zip ↗</a> — 64 MB, 100 <code>*_warp_volume.am</code>
+      files. Unzip it anywhere; the folder path is the only argument the pipeline needs.</p>
+      <p><strong>The code.</strong> <code>Kaleido_repo/</code> in this folder is the reproduction, with
+      its comments and README in English. It needs <code>numpy</code>, <code>pillow</code> and
+      <code>matplotlib</code>.</p>
+    </div>
+<pre class="code">pip install -r Kaleido_repo/requirements.txt
+python Kaleido_repo/run.py &lt;folder with the *_warp_volume.am files&gt; --out outputs
+python Kaleido_repo/make_figures.py --out outputs</pre>
+    <div class="prose">
+      <p>The run is deterministic at the default seed, so you should land on the same numbers this
+      page reports: energy 1.5003 for random coloring and 1.2624 after twenty thousand Monte Carlo
+      steps. Reading it is one thing; watching the energy fall is another.</p>
+    </div>
+
+    <div class="cta">
+      <div class="cta-text"><h3>Check yourself</h3><p>Ten multiple-choice questions: Kaleido's two tricks, what the energy function does, the walls hit during the reproduction, the loop of agentic coding. After each answer you immediately see whether you were right, and why.</p></div>
+      <a class="cta-btn" href="ep05-quiz.html" data-remote="EP05_ENG_QUIZ_ARTIFACT_URL">Start the quiz →</a>
+    </div>
+    <div class="next">
+      <b>Next episode</b>　To be decided. Kaleido_repo has not been pushed to GitHub yet, and the knowledge base holds other tool papers (NeuroRetriever, LYNSU) that could be reproduced the same way.
+    </div>
+    <script>
+    // When published on claude.ai, same-folder relative links don't exist; point them at the online versions.
+    // Placeholders of the form EP05_ENG_… mean "not published yet" and are left alone.
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        var r = a.getAttribute('data-remote');
+        if (!r || /^EP\d\d_/.test(r)) return;
+        a.href = r; a.target = '_blank'; a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>
