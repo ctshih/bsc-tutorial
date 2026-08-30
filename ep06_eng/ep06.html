@@ -1,0 +1,1221 @@
+<meta charset="utf-8">
+<title>What Is an LPU</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+             system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- Masthead ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- Body text ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* Aside */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* Collapsible variant */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- Video ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- Legend ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- Table of contents ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- Lessons ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* The three voices */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* Toolbox */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* Source label -- EP02 only */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* Figures */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* Figures scale by a single ratio so type stays the same size; they are not forced to fill the column */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* Takeaway */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- Closing ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  .voice.full { border-left-style: dashed; }
+  .closing ol.think { max-width: var(--col); padding-left: 1.4rem; display:flex; flex-direction:column; gap:.7rem; }
+  .closing ol.think li { line-height:1.7; color: var(--ink); }
+  .closing ol.think li::marker { font-family: var(--mono); color: var(--ink-faint); }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP06</div>
+    <h1>What Is an LPU</h1>
+    <p class="standfirst">
+      To analyze a brain, you first have to decide what a "brain region" is. This episode <strong>reads exactly one paper</strong>:
+      the 2011 FlyCircuit paper, and the thing it proposed — the <strong>LPU (local processing unit)</strong>.
+      How it turned "brain region" from an anatomical noun into a definition that can be run automatically and can be overturned;
+      where the number 41 comes from; and where the paper itself says the definition is loose.
+    </p>
+    <div class="meta-row">
+      <span>7 lessons</span>
+      <span>Only source: Chiang et al. 2011</span>
+      <span>Claude Code · Opus 5</span>
+      <span>Same method as EP04</span>
+    </div>
+  </header>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/2V32CYQFHlI" target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="Opening frame of the video: What Is an LPU">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">Watch the lesson　·　13 min 28 s　·　open on YouTube ↗</span>
+    </a>
+    <figcaption><b>Video lesson</b><span>Watch it first for the shape of the argument, then read the seven lessons below for the detail.</span></figcaption>
+  </figure>
+
+  <script>
+  (function () {
+    var ID = '2V32CYQFHlI';
+    var box = document.querySelector('a.video-frame');
+    if (!box) return;
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = 'What Is an LPU';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin'; f.allowFullscreen = true;
+      var ok = false; f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f); box.classList.add('playing');
+      setTimeout(function () { if (ok) return; f.remove(); box.classList.remove('playing');
+        var note = document.createElement('p'); note.className = 'video-note';
+        note.textContent = 'This environment blocks embedded playback — click the poster to watch on YouTube.'; box.parentNode.appendChild(note); }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>How to read this page</h2>
+    <div class="legend-item"><span class="swatch h"></span><span><b>Straight from the knowledge base</b>Passages copied verbatim from a topic page or an entry, not a word changed — this is the raw material of the course.</span></div>
+    <div class="legend-item"><span class="swatch a"></span><span><b>Numbers and where they come from</b>The key numbers this lesson uses, and which section of which entry each one is from.</span></div>
+    <div class="legend-item"><span class="swatch s"></span><span><b>What to take away</b>The teaching point of the lesson; <b>figures from the knowledge base</b> are the paper's own figures, each labeled with its entry and original figure number.</span></div>
+  </section>
+
+  <section class="step" id="s00" style="border-top:none;padding-top:0;">
+    <div class="step-head"><span class="step-num">00</span><h2>Why ask "what is an LPU"</h2></div>
+    <div class="prose">
+      <p>EP04 used the "FlyCircuit database" page to show how a topic page becomes a course. This episode uses the same method
+      on a narrower, harder subject: the central concept of the knowledge base's brain-region-parcellation topic page — the <strong>LPU</strong>.</p>
+      <p>Why does it deserve a whole episode? Because it is the thing most easily waved through as background in this line of research.
+      Later papers open with "49 nodes" and "LPU-level modules," but few readers go back and ask:
+      <strong>how were those 41 units arrived at, and would a different criterion change them?</strong>
+      That is exactly what you should check first in any paper that uses "brain region" as its unit —
+      because <strong>how you parcellate determines what structure you can see</strong>.</p>
+      <p>This episode <strong>reads exactly one paper</strong>: Chiang et al., <em>Current Biology</em> 2011.
+      The material is the matching knowledge-base entry <code>2011-Chiang-FlyCircuit</code>, plus the passages in the topic page
+      <code>brain-region-parcellation</code> that come from this paper.
+      How later papers cited and revised the LPU is left for another episode — what this one does is <strong>read one concept in one paper all the way down</strong>.
+      There is a table at the foot of the page showing where each lesson came from.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">Straight from the knowledge base · opening of the topic page</span>
+      <p>To analyze a brain, you first have to decide what a "brain region" is. This page covers how this line of research defines brain regions, why it does not simply carry over the anatomical parcellation, and how that definition was later tested against its own data.</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to take away</span>
+      <p>"Brain region" sounds like something that objectively exists. It is in fact a <strong>choice</strong>.
+      This whole episode is about how that choice was made and what it costs.</p>
+    </aside>
+  </section>
+
+  <nav class="toc">
+    <h2>Seven lessons</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>The problem: who decides where a brain region ends</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>Two kinds of neuron: LN and PN</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>The definition: does it have a local circuit of its own</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>How it was actually run: seven steps</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>41 LPUs and four pairs of hubs</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>Once you have units: the connectivity matrix and four modules</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>Where this definition is loose</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head"><span class="step-num">01</span><h2>The problem: who decides where a brain region ends</h2></div>
+    <div class="prose">
+      <p>Traditionally, brain regions are parcellated by <strong>morphological boundaries visible in staining</strong>. The fly brain has some fifty-odd neuropils — each a block of dense fibers whose boundary can be recognized from shape alone, with a naming scheme that has been in use for many years. The standard brain in the 2011 paper resolves <strong>58</strong> morphologically distinguishable neuropils.</p>
+      <p>The trouble is that <strong>morphological boundaries do not necessarily correspond to functional units.</strong> Two adjacent neuropils may be two halves of one processing circuit; one large neuropil may conceal several small units operating independently.</p>
+      <p>If the point of the analysis is to understand <em>how signals flow through the brain</em>, using morphology as the parcellation criterion amounts to <strong>cutting the brain up by a criterion unrelated to the question, before the question has even been asked</strong>. Every network analysis that follows is built on that cut — the nodes are it, the connectivity matrix is it, the modules are it. Cut it wrong and everything downstream is wrong in a way you cannot see.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">Straight from the knowledge base · topic page</span>
+      <p>If the point of the analysis is to understand <em>how signals flow through the brain</em>, then using morphology as the parcellation criterion amounts to cutting the brain up by a criterion unrelated to the question before the question has even been asked. What this line of research does instead is switch to a criterion that can be automated and verified.</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to take away</span>
+      <p>The point of this lesson is not that morphological parcellation is wrong — anatomically it is entirely correct.
+      The point is that <strong>"correct" depends on what you are asking</strong>.
+      Morphological parcellation answers "what does it look like"; functional analysis asks "how does it work."
+      Using the answer to the first as the answer to the second is the mismatch this whole episode is about.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head"><span class="step-num">02</span><h2>Two kinds of neuron: LN and PN</h2></div>
+    <div class="prose">
+      <p>Before you can switch criteria, you need something to use as a criterion. The 2011 paper uses a very simple classification:</p>
+      <ul>
+        <li><strong>LN (local neuron)</strong> — the entire neuron stays inside one brain region, like a city street</li>
+        <li><strong>PN (projection neuron)</strong> — connects two or more brain regions, like an interstate highway</li>
+      </ul>
+      <p>Why is this classification even possible? Because the earlier work had already turned every neuron into <strong>something you can compute with</strong>:
+      once a neuron is registered into the standard brain, how many voxels its fibers occupy in each of the 58 neuropils is recorded and compressed into a 58-dimensional vector.
+      Whether a neuron is an LN or a PN is just the shape of that vector — concentrated in one bin, or spread across several.</p>
+      <p>From here on, "brain region" becomes a question you can run on data, instead of one that needs somebody looking at sections and deciding.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">Figure from the knowledge base · entry 2011-Chiang-FlyCircuit · Figure 3</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig3.jpg" style="width:800px"
+           alt="2011 paper Figure 3: a sample brain and the neuron segmented from it, registration into the standard brain, skeleton tracing, and a bar chart of that neuron's voxel distribution across 29 paired neuropils">
+      <figcaption><b>What to look at</b>A through C follow one neuron as it is segmented out of a sample brain, registered into the standard brain, and traced into a skeleton.
+      <strong>D is the one that matters</strong>: how many voxels this neuron occupies in each of the 29 paired neuropils on both sides — one neuron compressed into a 58-dimensional vector.
+      The LN/PN split, the LPU criterion that follows, and the connectivity matrix all happen inside that vector space. Nothing goes back to the original images.</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">Numbers and where they come from</span>
+      <ul>
+        <li>The standard brain resolves <strong>58</strong> morphologically distinguishable neuropils — 2011 entry, Methods · standard brain generation</li>
+        <li>Spatial distribution encoded as an n-dimensional statistical distribution (n = number of neuropils), which is <strong>the base data structure for every later clustering and connectivity statistic</strong> — 2011 entry, Methods · morphological quantification</li>
+        <li>Of all registered single neurons, about <strong>26%</strong> are LPU-LNs — 2011 entry, Results · LPUs and hubs</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to take away</span>
+      <p>The entry's Interpretation note under this figure has one line worth copying out: <strong>any information lost at this step cannot be recovered by later analysis</strong> —
+      how a fiber runs inside a neuropil, its branching topology, how its caliber changes, are all discarded when it is compressed into a vector.
+      That is what buys the efficiency, and the cost follows all the way to the final conclusions.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head"><span class="step-num">03</span><h2>The definition: does it have a local circuit of its own</h2></div>
+    <div class="prose">
+      <p>With LNs and PNs in hand the criterion follows: <strong>if a brain region contains a group of LNs of its own interweaving inside it, that region has "local" information processing, and is therefore an independent processing unit</strong> — an LPU.</p>
+      <p>The intuition: a place with only highways running through it and no city streets is a transfer station, not a city.
+      Having a street network of its own means what arrives gets <em>worked on</em> rather than passed straight through.</p>
+      <p>The full definition the paper writes down has three conditions:</p>
+      <ol>
+        <li>It possesses <strong>an LN population of its own</strong></li>
+        <li>Those fibers are <strong>completely restricted to that region</strong></li>
+        <li>It is contacted by <strong>at least one neural tract</strong> (so it has a definite line to the outside — it is not an island)</li>
+      </ol>
+      <p>Conversely, a few brain regions have no LN population of their own — only large numbers of PN terminals passing through, with no local processing. The paper calls these <strong>hubs</strong>.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">Straight from the knowledge base · topic page</span>
+      <p>The significance of this criterion is that it turns "brain region" from an anatomical noun into an operational definition — give me a batch of registered neurons, run the criterion, and the blocks come out by themselves. And it is falsifiable: if a different dataset or a different threshold yields a different number of LPUs, then that number is "the result of an operation at the current resolution," not a converged ground truth.</p>
+    </div>
+    <aside class="point hero">
+      <span class="voice-label">If you remember one thing, remember this</span>
+      <p><strong>The LPU is not a discovery. It is a definition — and one that can be overturned by its own data.</strong></p>
+      <p>Its value is not in how accurate the number 41 is. It is in turning "what is a brain region" from a question that needs an expert's judgment
+      into a question with <strong>steps you can write down, a result you can compute, and a different answer when the data change</strong>.
+      Lesson 07 will show that "gives a different answer" is not a flaw — it is precisely what qualifies it as a scientific definition.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head"><span class="step-num">04</span><h2>How it was actually run: seven steps</h2></div>
+    <div class="prose">
+      <p>That is the definition. How do you actually find LPUs among sixteen thousand neurons? The paper's Methods section writes it as seven steps:</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">The seven steps of LPU detection · 2011 entry, Methods</span>
+      <ol>
+        <li>Count the number of times LN populations pass through each voxel</li>
+        <li>Identify hot spots using <strong>the upper quartile of a five-number summary</strong></li>
+        <li>Determine subdivisions by cluster analysis</li>
+        <li>Recruit LNs into each subdivision</li>
+        <li>Define the boundary of each candidate LPU from the LN clusters</li>
+        <li>Compute the <strong>c value</strong> describing the spatial distribution of LN fibers within the LPU</li>
+        <li>Verify whether the region has its own long-range neural tracts</li>
+      </ol>
+    </div>
+    <div class="prose">
+      <p>Two places in those seven steps are worth stopping at.</p>
+      <p><strong>The "upper quartile" in step 2 is a threshold.</strong> Change that number and the extent of the hot spots changes, and the boundaries of the candidate LPUs change with it.
+      The paper reports no sensitivity analysis for this threshold — lesson 07 comes back to that.</p>
+      <p><strong>Step 7 is external validation.</strong> The first six steps all move around inside the LN distribution; step 7 steps outside it and demands that the region have long-range tracts of its own —
+      using an independent source of evidence (which way the tracts run) to confirm that what the first six steps found is not a statistical artifact. This is what keeps the whole criterion from being merely the output of a clustering algorithm.</p>
+      <p>One by-product deserves its own paragraph: <strong>the VLP was split into a dorsal and a ventral LPU</strong>, the only case of two LPUs inside a single neuropil.
+      The split rests on three things: the cell bodies of the two LN groups are in separate locations, their fiber projections are segregated from each other, and each has characteristic long-range tracts communicating with different partners.</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">Straight from the knowledge base · 2011 entry, Discussion</span>
+      <p>The splitting of the VLP into dorsal and ventral LPUs shows that this criterion can indeed discover substructures missed by traditional anatomical partitioning. Conversely, hubs lacking LNs are no longer treated as units homogeneous with other brain regions but are recognized as transfer nodes of a different nature.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">Figure from the knowledge base · entry 2011-Chiang-FlyCircuit · Figure 7</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig7.jpg" style="width:720px"
+           alt="2011 paper Figure 7: the brain-wide tract atlas, 58 cross-regional fiber tracts running along fixed paths">
+      <figcaption><b>What to look at</b>This is the evidence step 7 uses: <strong>58</strong> cross-regional fiber tracts running along fixed paths (14 commissures, 10 paired chiasms, 12 paired connectives).
+      For a candidate LPU to stand, at least one such tract must contact it — <strong>a local circuit is not enough; it also has to talk to the outside</strong>.</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">What to take away</span>
+      <p>The VLP case is the strongest defense of the whole criterion: <strong>it found something the eye cannot separate</strong>.
+      If the LPU were merely a rearrangement of the 58 neuropils, it would add no information.
+      Instead it cut two functional units out of a neuropil that "looks like one block," with three independent lines of evidence — that is the payoff for changing criteria.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head"><span class="step-num">05</span><h2>41 LPUs and four pairs of hubs</h2></div>
+    <div class="prose">
+      <p>Run the criterion across the brain and you get <strong>41 LPUs</strong>: 19 paired neuropils, plus 3 unpaired ones on the midline (PCB, FB, EB).
+      Those three midline units are a special case — most of their LNs send bilateral fibers, so although they are structurally unpaired they still function as one unit.</p>
+      <p>Four further pairs of neuropils lack a segregated LN population and are classed as hubs:</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Hub</th><th>Presumed role</th></tr></thead>
+        <tbody>
+          <tr><td>OPTU (optic tubercle)</td><td>The main hub for interhemispheric communication; contains many commissural fibers</td></tr>
+          <tr><td>Nod (noduli)</td><td>Information-association hub, holding large numbers of ipsilateral PN terminals</td></tr>
+          <tr><td>OG (optic glomerulus)</td><td>As above</td></tr>
+          <tr><td>IDLP</td><td>Irregular in shape; no single neuron innervates more than 30% of it — possibly a cross-regional pathway</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>For two of these hubs the paper offers a very honest possibility: <strong>OG and Nod may simply be too small in volume to accommodate extra LNs</strong>.
+      If that is so, then "no local processing" is not a property of these two regions but a consequence of their size.
+      The observation comes attached to an unanswered question: <strong>what is the minimum number of LNs needed to form a necessary network motif?</strong></p>
+      <p>Overlay the LPUs and the hubs and they nearly fill the entire brain — which is also indirect evidence that the sampling left no large blank areas (consistent with the 93.03% voxel coverage reported in the main text).</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">Figure from the knowledge base · entry 2011-Chiang-FlyCircuit · Figure 5 (the core figure of this episode)</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig5.jpg" style="width:680px"
+           alt="2011 paper Figure 5: whether each neuropil has a segregated LN population (a plus/minus table), the spatial distribution of the putative LPUs, the hubs lacking LNs, and the two combined filling most of the brain">
+      <figcaption><b>What to look at</b><strong>The plus-and-minus table in column A is the most concentrated result in the whole paper</strong> — it switches the criterion for classifying a brain region from "what does it look like" to "does it have LNs of its own."
+      B is the spatial distribution of the 41 LPUs (colors assigned at random to individual neurons), C is the four pairs of hubs, D is the two overlaid, nearly filling the brain.
+      The entry records a warning under this figure: <strong>the "6 hubs" of the abstract and the "four pairs" of the main text have to be checked against this figure item by item</strong> — lesson 07 comes back to it.</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">Numbers and where they come from</span>
+      <ul>
+        <li><strong>41 LPUs</strong> = 19 paired neuropils + 3 unpaired midline ones (PCB, FB, EB) — 2011 entry, Results</li>
+        <li><strong>Four pairs of hubs</strong>: OPTU, Nod, OG, IDLP — same section; but the abstract says "6 hubs," an internal inconsistency</li>
+        <li>LPU-LNs are <strong>26%</strong> of all registered neurons — in other words <strong>nearly three quarters of neurons are cross-regional PNs</strong>; the LPU is defined out of that 26%</li>
+        <li>Spatial coverage: <strong>93.03%</strong> of voxels are occupied by at least three registered neurons; <strong>0.79%</strong> are not covered at all</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to take away</span>
+      <p>The hubs are more interesting than the LPUs. The criterion was designed only to find "which regions are processing units,"
+      but along the way it exposed a batch of <strong>regions of a different nature</strong> — not smaller LPUs, but places that do no local processing at all.
+      A good criterion gives you the thing you asked for and also tells you what does not belong in the category.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head"><span class="step-num">06</span><h2>Once you have units: the connectivity matrix and four modules</h2></div>
+    <div class="prose">
+      <p>With the LPUs defined, network analysis has its nodes. How is a connection counted? Directly: <strong>if the fibers of one PN enter both region A and region B, that counts as a connection between A and B</strong>.
+      Tally every neuron and you get a matrix of who connects to whom and how densely. (Note that all LPU-LNs are excluded — by definition they do not cross regions.)</p>
+      <p>Hierarchical clustering of that matrix brings out <strong>four densely interconnected families of LPUs</strong>, and they line up with known function: <strong>auditory, visual, locomotor, olfactory</strong>.</p>
+      <p>That result is itself a form of validation: the team <strong>did not tell the algorithm in advance which regions have to do with hearing</strong>.
+      Those clusters grew out of the connection numbers by themselves, yet they agree with decades of accumulated functional anatomy.
+      The criterion is new and the answer matches old knowledge — which is the kind of evidence a new method needs most.</p>
+      <p>The matrix says two more things: connection density within a hemisphere is markedly higher than across the midline (brains prefer to process locally);
+      and on the paths from the sensory modules to the locomotor module, <strong>the olfactory module has more direct connections than the auditory or visual ones</strong>.</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">Figure from the knowledge base · entry 2011-Chiang-FlyCircuit · Figure 6</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig6.jpg" style="width:760px"
+           alt="2011 paper Figure 6: the brain-wide cross-regional connectivity matrix, the clustering result, four functional modules, the wiring diagram of the 58 neuropils, finite-size analysis curves and the power-law distribution of connection degree">
+      <figcaption><b>What to look at</b>A is the connectivity matrix (the ipsilateral RR/LL quadrants are visibly denser than the contralateral LR/RL ones); C and D are the clustering result —
+      <strong>the four colors are auditory, visual, locomotor and olfactory, and the algorithm did not know those labels beforehand</strong>.
+      The three white / yellow / gray boxes in D are an often-overlooked detail: they mark the relay nodes on the paths from the sensory modules to the locomotor module,
+      and are the data source for the "olfactory has more direct links" conclusion.</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">One immediately usable application · 2011 entry, Results</span>
+      <p>A search in FlyCircuit returns about <strong>400</strong> neurons connecting AMMC (the auditory region) with some 28 brain regions.
+      Setting aside the dense connection between the left and right AMMC, about <strong>20%</strong> of AMMC projection neurons connect bilaterally to a region called <strong>CVLP</strong>.
+      That yields a hypothesis you can take into the lab: <strong>CVLP may be the next station for processing AMMC information</strong>.</p>
+      <p style="margin-top:.6rem;color:var(--ink-soft);">This is the capability the LPU adds: a connectivity map does not hand you the answer, but it turns "a needle in a haystack" into "these few needles are worth testing first."</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to take away</span>
+      <p>Lesson 06 demonstrates how the value of a definition gets proved: <strong>not by arguing that it is reasonable, but by whether what it produces lines up with independent knowledge</strong>.
+      Four modules matching four known functions is the first report card the LPU criterion earned.</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head"><span class="step-num">07</span><h2>Where this definition is loose</h2></div>
+    <div class="prose">
+      <p>The last lesson goes back to the sentence from lesson 03: the LPU is a definition that <strong>can be overturned by its own data</strong>.
+      This is not an outsider's criticism — every line below is written in the paper's own Discussion and limitations, and the knowledge-base entry records them one by one.</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Where it is loose</th><th>What is going on</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>The threshold in the criterion</strong></td><td>The "upper quartile" of step 2 and the c value of step 6 set the boundaries. <strong>How sensitive the number 41 is to that threshold is not quantified</strong>; the authors concede some LPUs may still be subdivided further — the VLP is the precedent</td><td>No sensitivity analysis reported</td></tr>
+          <tr><td><strong>How many hubs there are</strong></td><td>The abstract states "six hubs"; the main text lists <strong>four pairs</strong> (OPTU, Nod, OG, IDLP). Four pairs would be eight, which does not match the six</td><td>⚠️ Internal inconsistency in one paper; needs checking against Figure 5C and the supplementary data</td></tr>
+          <tr><td><strong>Mapping onto the 58 neuropils</strong></td><td>The full correspondence between the 41 LPUs and the 58 anatomical neuropils is not tabulated. In the plus/minus table of Figure 5A, some items (Cal, MB, Lat Tri) are counted as LPUs in merged form</td><td>Needs item-by-item checking</td></tr>
+          <tr><td><strong>Information lost in skeletonization</strong></td><td>Once a neuron is compressed into a 58-dimensional vector, branching topology, fiber direction and terminal density inside a neuropil are <strong>all lost, irreversibly</strong>. LPU boundaries are drawn in a space that has already lost that information</td><td>Intrinsic cost of the method</td></tr>
+          <tr><td><strong>"Connection" is inferred, not observed</strong></td><td>The connectivity matrix of lesson 06 rests on spatial co-occupancy: two neurons' fibers enter the same neuropil, so contact is presumed possible. <strong>Whether a synapse exists, its direction and its number are all unknown</strong>; the result is an undirected graph</td><td>Ceiling of optical resolution</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">Straight from the knowledge base · 2011 entry, Problems and limitations</span>
+      <p>Fuzzy boundary of the LPU criterion. The criterion relies on a mathematical definition of "LN fibers entangling with each other" and the c value, but the authors themselves concede that some LPUs may still be subdivided further (as with the precedent of the VLP). Hence the number 41 should be regarded as an operational result at the current resolution, not a converged true value.</p>
+    </div>
+    <div class="prose">
+      <p>There is one more loose point specific to the hubs, mentioned back in lesson 05: the paper itself says <strong>OG and Nod may simply be too small in volume to hold extra LNs</strong>.
+      If that is right, the category "hub" contains two different things — genuine transfer stations that do no local processing, and small regions that <strong>would but cannot fit it in</strong>.
+      The criterion cannot separate them, because it only asks "are there LNs of its own," never "why not."</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">What to take away</span>
+      <p>This table is not saying the LPU is untrustworthy. <strong>It is saying the LPU is an operational definition, and an operational definition should come with its operating conditions.</strong>
+      "41" is not the ground truth of the fly brain; it is "the result of running this criterion, at this threshold, on this dataset."
+      Carry that sentence along when you cite it and everything downstream becomes more honest.</p>
+      <p>The other thing worth learning is where these limitations come from: <strong>the authors wrote most of them themselves</strong>. A paper willing to put
+      "I did not test how sensitive this number is to the threshold" and "my abstract does not match my main text" into the text is a paper a reader can use correctly.</p>
+    </aside>
+  </section>
+
+  <!-- ============ Closing ============ -->
+  <section class="closing">
+    <h2>What this course taught</h2>
+
+    <div class="prose">
+      <p>Seven lessons on one noun. Not on how important it is, but on <strong>how it was defined, from what data, by what criterion, producing what numbers, tested how, and where it is currently loose</strong>.
+      Those six things are worth asking of any concept you intend to use as a unit of analysis.</p>
+    </div>
+
+    <h3>Three reflexes about the LPU</h3>
+    <ul class="obs">
+      <li><b>It is a definition, not a discovery</b>"41 LPUs" is the output of one criterion on one dataset. Change the threshold or the data and the number changes — that is a property of an operational definition, not a defect.</li>
+      <li><b>Know what it measures</b>The LPU measures "where is there local processing," defined by the distribution of LNs. It does not measure which neurons belong to the same group, and it does not measure synapses. Before using it to answer a different question, go back and look at the criterion.</li>
+      <li><b>Nearly three quarters of neurons are not in it</b>LPU-LNs are only 26%. The LPU is a boundary drawn out of that 26%, while most neurons in the brain are cross-regional PNs — they pass through those boundaries and are not defined by them.</li>
+    </ul>
+
+    <h3>Questions to think about</h3>
+    <ol class="think">
+      <li>If the threshold in step 2 of lesson 04 (the upper quartile) were changed to the median or the ninetieth percentile, which way would the number 41 move? What analysis would you have to design to answer "how sensitive is the LPU count to the threshold"?</li>
+      <li>The paper suggests OG and Nod "may simply be too small to accommodate extra LNs." If that is true, the category "hub" contains two different things. How would you separate them?</li>
+      <li>The LPU is defined out of the 26% that are LNs, while nearly three quarters of neurons are cross-regional PNs. If you parcellated the brain using PN connection patterns instead, would you expect the same 41 units? What question is each parcellation answering?</li>
+    </ol>
+
+    <h3>How this course came out of the knowledge base</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Lesson</th><th>Source material</th><th>What the agent did</th></tr></thead>
+        <tbody>
+          <tr><td>00</td><td>Topic-page introduction</td><td>Rewrote it into "why devote an episode to one noun"</td></tr>
+          <tr><td>01</td><td>Topic page, "The problem: who decides where the boundary lies"</td><td>Added the inference that a wrong cut propagates invisibly</td></tr>
+          <tr><td>02</td><td>2011 entry, general-audience article "From neurons to blocks" + Methods · morphological quantification</td><td>Connected LN/PN to the 58-dimensional data structure; added the entry's Interpretation warning</td></tr>
+          <tr><td>03</td><td>Topic page, "LPU: parcellating by whether it has a local circuit" + entry, Methods · operational definition</td><td>Listed the three conditions; added the city-street analogy</td></tr>
+          <tr><td>04</td><td>Entry, Methods (seven steps) + Discussion (the VLP case)</td><td>Flagged step 2 as a threshold and step 7 as external validation; pulled the VLP out for its own treatment</td></tr>
+          <tr><td>05</td><td>Entry, Results · LPUs and hubs</td><td>Built the hub table; left the 26% as a thread for lesson 07</td></tr>
+          <tr><td>06</td><td>Entry, Results · brain-wide wiring diagram + the AMMC application</td><td>Emphasized the validation logic that the algorithm did not know the labels beforehand</td></tr>
+          <tr><td>07</td><td>Entry, Problems and limitations + Open questions</td><td>Organized them into a table; all of it from the authors' own admissions</td></tr>
+          <tr><td>Questions</td><td>Entry, Open questions</td><td>Picked three and rewrote them as questions</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>The same division of labor as EP04: <strong>the agent lays out the structure, links back to sources, and rewrites the register; the human decides what to teach, how deep to go, and which sentence is the point.</strong>
+      In this episode the human decided three things: narrow the subject to a single concept, <strong>read only the 2011 paper</strong>, and make "operational definition" the spine of the whole thing.</p>
+    </div>
+
+    <p style="color:var(--ink-soft);font-size:.92rem;max-width:var(--col);">
+      <b>Figure credits</b>　All four figures on this page are from Chiang et al. 2011 (extracted for the knowledge-base entry <code>2011-Chiang-FlyCircuit</code>), each labeled with its original figure number;
+      copyright remains with the publisher and authors (<em>Current Biology</em> / Elsevier). Reproduced here for teaching.</p>
+
+    <div class="cta">
+      <div class="cta-text"><h3>Check yourself</h3><p>Ten multiple-choice questions on the LPU as a definition — what the criterion is, where the numbers come from, how it was validated, and where its edges are. Each answer is marked immediately, with the reasoning.</p></div>
+      <a class="cta-btn" href="ep06-quiz.html" data-remote="EP06_ENG_QUIZ_ARTIFACT_URL">Start the quiz →</a>
+    </div>
+
+    <script>
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        a.href = a.getAttribute('data-remote'); a.target = '_blank'; a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>

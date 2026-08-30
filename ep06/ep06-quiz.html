@@ -1,0 +1,513 @@
+<meta charset="utf-8">
+<title>EP06 隨堂測驗</title>
+<style>
+  :root {
+    --paper:#F7F8F7; --surface:#FFFFFF; --surface-2:#EFF2F1;
+    --ink:#16171A; --ink-soft:#576063; --ink-faint:#8A9496;
+    --rule:#DCE1DF; --rule-soft:#E9EDEB;
+    --human:#9A5B08; --human-bg:#FDF6EC;
+    --agent:#0C625F; --agent-bg:#EDF5F4; --agent-rule:#7FBAB6;
+    --wrong:#A8331E; --wrong-bg:#FCF1EE; --wrong-rule:#E0A797;
+    --shadow:0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif TC","Songti TC",serif;
+    --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+    --mono:"SF Mono","Cascadia Mono","JetBrains Mono",Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+      --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+      --rule:#2A3336; --rule-soft:#222A2D;
+      --human:#E4A75C; --human-bg:#241C11;
+      --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+      --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#101416; --surface:#171D1F; --surface-2:#1E2528;
+    --ink:#E6EBEA; --ink-soft:#9DA9A9; --ink-faint:#788485;
+    --rule:#2A3336; --rule-soft:#222A2D;
+    --human:#E4A75C; --human-bg:#241C11;
+    --agent:#57C6BE; --agent-bg:#102422; --agent-rule:#2C5D5A;
+    --wrong:#F0907A; --wrong-bg:#2A1512; --wrong-rule:#6A342A;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--sans); font-size:17px; line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:46rem; margin:0 auto; padding:0 1.5rem 5rem;}
+
+  header.top{
+    padding:3.5rem 0 1.6rem; display:flex; flex-direction:column; gap:.7rem;
+  }
+  .eyebrow{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.16em;
+    text-transform:uppercase; color:var(--ink-faint);
+  }
+  h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(1.9rem,5vw,2.7rem);
+    line-height:1.12; margin:0; letter-spacing:-.015em;
+  }
+  .sub{margin:0; color:var(--ink-soft); font-size:1rem;}
+
+  /* 進度 */
+  .bar{
+    display:flex; gap:.3rem; margin:1.8rem 0 2.2rem;
+  }
+  .bar i{
+    flex:1; height:5px; border-radius:3px; background:var(--rule);
+    transition:background .3s ease;
+  }
+  .bar i.done{background:var(--agent);}
+  .bar i.miss{background:var(--wrong);}
+  .bar i.now{background:var(--ink-faint);}
+
+  .meta{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:var(--mono); font-size:.78rem; color:var(--ink-faint);
+    margin-bottom:1rem;
+  }
+
+  /* 題目 */
+  .q{
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; padding:1.8rem 1.9rem; box-shadow:var(--shadow);
+  }
+  .q h2{
+    font-family:var(--serif); font-size:1.35rem; line-height:1.45;
+    margin:0 0 1.5rem; font-weight:600; text-wrap:balance;
+  }
+  .opts{display:flex; flex-direction:column; gap:.6rem;}
+  .opt{
+    display:flex; gap:.9rem; align-items:flex-start; width:100%;
+    text-align:left; font:inherit; color:inherit;
+    background:var(--paper); border:1px solid var(--rule);
+    border-radius:5px; padding:.85rem 1rem; cursor:pointer;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .opt:hover:not(:disabled){border-color:var(--agent-rule); background:var(--surface-2);}
+  .opt:active:not(:disabled){transform:translateY(1px);}
+  .opt:disabled{cursor:default;}
+  .opt:focus-visible{outline:2px solid var(--agent); outline-offset:2px;}
+  .opt .key{
+    font-family:var(--mono); font-size:.78rem; font-weight:600;
+    color:var(--ink-faint); flex:none; padding-top:.22em;
+    min-width:1.1rem;
+  }
+  .opt.pick-right{background:var(--agent-bg); border-color:var(--agent);}
+  .opt.pick-right .key{color:var(--agent);}
+  .opt.pick-wrong{background:var(--wrong-bg); border-color:var(--wrong);}
+  .opt.pick-wrong .key{color:var(--wrong);}
+  .opt.reveal{border-color:var(--agent); border-style:dashed;}
+  .opt.dim{opacity:.45;}
+
+  /* 解說 */
+  .fb{
+    margin-top:1.4rem; padding:1.1rem 1.2rem; border-radius:5px;
+    border-left:3px solid var(--agent); background:var(--agent-bg);
+  }
+  .fb.no{border-left-color:var(--wrong); background:var(--wrong-bg);}
+  .fb .verdict{
+    font-family:var(--mono); font-size:.7rem; letter-spacing:.14em;
+    text-transform:uppercase; font-weight:700; color:var(--agent);
+    display:block; margin-bottom:.55rem;
+  }
+  .fb.no .verdict{color:var(--wrong);}
+  .fb p{margin:0; font-size:.97rem; line-height:1.7;}
+
+  /* 按鈕 */
+  .actions{margin-top:1.6rem; display:flex; gap:.8rem; align-items:center; flex-wrap:wrap;}
+  button.go{
+    font:inherit; font-weight:600; font-size:.97rem;
+    background:var(--ink); color:var(--paper); border:0;
+    padding:.7rem 1.5rem; border-radius:5px; cursor:pointer;
+    transition:opacity .15s ease;
+  }
+  button.go:hover{opacity:.86;}
+  button.go:focus-visible{outline:2px solid var(--agent); outline-offset:3px;}
+  button.ghost{
+    background:transparent; color:var(--ink-soft);
+    border:1px solid var(--rule);
+  }
+  .hint{font-family:var(--mono); font-size:.72rem; color:var(--ink-faint);}
+
+  /* 結果 */
+  .score{
+    text-align:center; padding:2.5rem 1.5rem 2rem;
+    background:var(--surface); border:1px solid var(--rule);
+    border-radius:6px; box-shadow:var(--shadow);
+  }
+  .score .n{
+    font-family:var(--serif); font-size:4.2rem; line-height:1;
+    font-weight:600; letter-spacing:-.03em;
+  }
+  .score .n b{color:var(--agent);}
+  .score .of{color:var(--ink-faint); font-size:1.6rem;}
+  .score .verdict{
+    margin:1rem 0 0; font-size:1.1rem; color:var(--ink-soft); text-wrap:balance;
+  }
+  .review{margin-top:2.2rem;}
+  .review h3{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.15em;
+    text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+    margin:0 0 1rem;
+  }
+  .miss-item{
+    border:1px solid var(--rule); border-left:3px solid var(--wrong);
+    border-radius:5px; padding:1rem 1.2rem; margin-bottom:.8rem;
+    background:var(--surface);
+  }
+  .miss-item .qq{font-weight:600; margin:0 0 .5rem; line-height:1.5;}
+  .miss-item .ans{margin:0; font-size:.93rem; color:var(--ink-soft); line-height:1.65;}
+  .miss-item .ans b{color:var(--agent); font-weight:600;}
+  .allgood{
+    padding:1.2rem; border:1px dashed var(--agent-rule); border-radius:5px;
+    color:var(--agent); text-align:center; font-size:.97rem;
+  }
+  .backlink{
+    margin-top:2.5rem; padding-top:1.5rem; border-top:1px solid var(--rule-soft);
+    font-size:.9rem; color:var(--ink-faint);
+  }
+  .backlink a{color:var(--agent);}
+
+  @media (max-width:34rem){
+    body{font-size:16px;}
+    .q{padding:1.4rem 1.2rem;}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;}}
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="eyebrow">BSC Tutorial · EP06</div>
+    <h1>隨堂測驗</h1>
+    <p class="sub">十題單選，考的是 LPU 這個定義——判準是什麼、數字怎麼來、鬆在哪裡。答完每一題會立刻告訴你對錯與理由，答錯不扣分，重點是看懂為什麼。</p>
+  </header>
+
+  <div class="bar" id="bar"></div>
+  <div class="meta">
+    <span id="counter">第 1 題 / 共 10 題</span>
+    <span class="hint">按 1–4 選答案　·　Enter 下一題</span>
+  </div>
+
+  <main id="stage"></main>
+
+  <p class="backlink">
+    忘記內容了？回去看
+    <a href="ep06.html"
+       data-remote="EP06_ARTIFACT_URL">EP06 教材</a>，或重看
+    <a href="https://youtu.be/GUo9CHOt1Cg" target="_blank" rel="noopener">教學影片 ↗</a>。
+  </p>
+
+</div>
+
+<script>
+// 發布在 claude.ai 時，同資料夾的相對連結不存在，改指向線上版本。
+(function () {
+  if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+  document.querySelectorAll('a[data-remote]').forEach(function (a) {
+    a.href = a.getAttribute('data-remote');
+    a.target = '_blank';
+    a.rel = 'noopener';
+  });
+})();
+</script>
+
+<script>
+(function () {
+  var QUIZ = [
+    {
+      q: "2011 年那篇論文為什麼不直接沿用解剖學上的 58 個神經氈當分析單位？",
+      opts: [
+        "因為神經氈的數量太多，網路分析跑不動",
+        "因為當年的染色技術還看不清楚神經氈之間的邊界，劃出來的分區不夠可靠",
+        "因為形態邊界不一定對應功能單位，等於用跟問題無關的準則先把腦切好",
+        "因為神經氈的命名在不同文獻裡不一致"
+      ],
+      a: 2,
+      why: "形態分區在解剖學上完全正確，問題是「正確」要看你問什麼問題。形態回答的是「外形是什麼樣子」，功能分析要問「怎麼運作」。而且後面所有的網路分析——節點、連結矩陣、模組——全部建立在這個切法上，切錯了會錯得看不出來。"
+    },
+    {
+      q: "LN 與 PN 的分類，是靠什麼資料做出來的？",
+      opts: [
+        "對位後，纖維在 58 個神經氈各佔多少 voxel，壓成一個向量",
+        "由研究人員逐顆檢視顯微影像，人工判讀並標註它總共跨越了哪幾個腦區",
+        "依據神經元使用的神經傳導物質分類",
+        "依據細胞本體的位置分類"
+      ],
+      a: 0,
+      why: "前面的工作已經把每顆神經元變成可以計算的東西：一個 58 維的分布向量。集中在一格就是 LN，跨越好幾格就是 PN。這一步讓「腦區」從一個要靠眼睛判斷的問題，變成可以在資料上跑的問題——但代價是纖維在區塊內部的走向、分岔全部遺失，而且不可回溯。"
+    },
+    {
+      q: "論文對 LPU 的完整定義有三個條件。下列哪一個「不是」其中之一？",
+      opts: [
+        "要有自己的 LN 族群",
+        "這些 LN 的纖維完全侷限在這個區域裡",
+        "至少有一條神經束與這個區域相接",
+        "這個區域的體積要大於某個下限"
+      ],
+      a: 3,
+      why: "三個條件是：自己的 LN 族群、纖維完全侷限、至少一條神經束相接。體積不在判準裡——而這正是論文自己指出的一個漏洞：OG 與 Nod 可能只是體積太小容不下額外的 LN，所以「hub」這個類別可能混進了兩種不同的東西。"
+    },
+    {
+      q: "LPU 偵測七步裡的第 7 步是「驗證該區域是否具有自身的長程神經束」。這一步為什麼重要？",
+      opts: [
+        "因為神經束的資料比 LN 的資料更精確",
+        "前六步都在 LN 的分布裡打轉，第 7 步用獨立的證據確認不是假象",
+        "因為論文需要湊足七個步驟",
+        "因為神經束的走向直接決定了 LPU 的邊界該畫在哪裡，前六步只是前置作業"
+      ],
+      a: 1,
+      why: "前六步是同一批資料的內部運算——熱點、分群、c 值都從 LN 的分布來。第 7 步跳出來，用束的走向（一個獨立的證據）確認前面找到的東西真的跟外界有連線。這一步讓整套判準不只是分群演算法的產物。光有在地迴路不夠，還要真的跟外界通話。"
+    },
+    {
+      q: "VLP 被切成背側與腹側兩個 LPU，是全腦唯一一個單一神經氈含兩個 LPU 的案例。課程為什麼特別強調它？",
+      opts: [
+        "因為 VLP 是果蠅腦裡體積最大的神經氈",
+        "因為它證明判準能發現傳統解剖切分遺漏的次結構",
+        "因為 VLP 的切分在後續的研究裡被證明是判準過度細分造成的假象",
+        "因為它是唯一一個同時屬於 LPU 和 hub 的區域"
+      ],
+      a: 1,
+      why: "這是整套判準最強的辯護。它在一個「看起來就是一塊」的神經氈裡切出兩個功能單位，而且有三項獨立證據：兩群 LN 的細胞本體位置分開、纖維投射分開、各有與不同夥伴溝通的特徵性長程束。換判準的收穫就在這裡。"
+    },
+    {
+      q: "41 個 LPU 之外，論文把四對找不到專屬 LN 的神經氈歸為 hub。關於 hub，論文自己提出了什麼可能性？",
+      opts: [
+        "它們可能只是尚未被完整取樣的區域，等資料補齊之後就會出現專屬的 LN",
+        "它們可能屬於還沒被命名的新腦區",
+        "它們的 LN 可能太細，光學顯微鏡看不到",
+        "其中的 OG 與 Nod 可能單純是體積太小，容不下額外的 LN"
+      ],
+      a: 3,
+      why: "如果這是真的，「沒有在地處理」就不是這兩個區域的性質，而是尺寸的後果——「hub」這個類別裡就混進了兩種東西：真的不做在地處理的轉運站，和想做但塞不下的小區域。判準沒辦法分開它們，因為判準只看「有沒有專屬 LN」，不看「為什麼沒有」。"
+    },
+    {
+      q: "有了 LPU 當節點之後，論文對連結矩陣做分群，浮現出聽覺、視覺、運動、嗅覺四個模組。這件事的驗證意義是什麼？",
+      opts: [
+        "分群從連結數字自己冒出來，演算法事前不知道功能標籤，卻對上了舊知識",
+        "它證明了 41 這個數字是正確的",
+        "它證明果蠅腦的資訊處理可以完整歸納成聽覺、視覺、運動、嗅覺這四種功能",
+        "它證明連結矩陣的計算沒有錯誤"
+      ],
+      a: 0,
+      why: "一個新判準最需要的就是這種證據：用新方法算出來的東西，能不能對上獨立累積的舊知識。研究團隊沒有事先告訴演算法哪些腦區跟聽覺有關。注意它證明的不是「41 是對的」——是「這套分區在功能上有意義」。"
+    },
+    {
+      q: "課程說「LPU 不是一個發現，是一個定義」。這句話的意思是什麼？",
+      opts: [
+        "LPU 是研究團隊憑主觀想像出來的概念，沒有對應到腦裡真實存在的結構",
+        "價值不在 41 多準，而在把「腦區是什麼」變成寫得出步驟的問題",
+        "LPU 只是換個名字稱呼神經氈",
+        "LPU 沒有實驗證據支持"
+      ],
+      a: 1,
+      why: "「會給出不同答案」不是缺點，正是它作為科學定義的資格——可操作、可重複、可被自己的資料推翻。相對地，如果一個概念換了資料也永遠給同一個答案，那它多半沒有在測任何東西。"
+    },
+    {
+      q: "論文摘要寫「six hubs」，正文列出的卻是四對神經氈（OPTU、Nod、OG、IDLP），也就是八個。知識庫怎麼處理這個矛盾？",
+      opts: [
+        "以摘要為準，因為摘要通常經過更多次校對，也是多數人引用時看的地方",
+        "以正文為準，因為正文有列出名字",
+        "取中間值，記為七個",
+        "標記待查證，寫明要回查 Figure 5C，引用時一併標註疑點"
+      ],
+      a: 3,
+      why: "知識庫的鐵則是「發現來源內部矛盾時標記待查證，不要自行選一個版本帶過」。這是同一篇論文內部的不一致，不是誰抄錯——在釐清之前，引用「6 hubs」時就該把這個疑點帶上。"
+    },
+    {
+      q: "課程列出的五個「鬆動處」——門檻沒做敏感度分析、hub 計數不一致、與 58 個神經氈的對應未列表、資訊損失不可回溯、連結是推論不是觀察。它們的共同來源是什麼？",
+      opts: [
+        "後續論文的批評與修正",
+        "大部分是論文作者自己寫在討論與限制裡的",
+        "知識庫維護者的推測",
+        "同行評審的意見公開之後才浮現的問題，作者當時並未察覺"
+      ],
+      a: 1,
+      why: "這一集只讀一篇論文，五條限制全部出自它自己的〈討論〉與〈問題與限制〉。值得學的正是這件事：一篇論文肯把「我這個數字對門檻多敏感沒測」「我的摘要跟正文對不起來」放進文本裡，讀者才有辦法正確使用它。操作型定義本來就該附上操作條件。"
+    }
+  ];
+
+  var LETTER = ["A", "B", "C", "D"];
+  var stage = document.getElementById("stage");
+  var bar = document.getElementById("bar");
+  var counter = document.getElementById("counter");
+  var i = 0, answered = false, correct = 0, misses = [];
+
+  QUIZ.forEach(function () {
+    bar.appendChild(document.createElement("i"));
+  });
+
+  function paintBar() {
+    [].forEach.call(bar.children, function (el, n) {
+      el.className = n < i ? (misses.some(function (m) { return m.n === n; }) ? "miss" : "done")
+                           : (n === i ? "now" : "");
+    });
+  }
+
+  function render() {
+    answered = false;
+    var item = QUIZ[i];
+    counter.textContent = "第 " + (i + 1) + " 題 / 共 " + QUIZ.length + " 題";
+    paintBar();
+
+    var box = document.createElement("section");
+    box.className = "q";
+
+    var h = document.createElement("h2");
+    h.textContent = item.q;
+    box.appendChild(h);
+
+    var list = document.createElement("div");
+    list.className = "opts";
+    item.opts.forEach(function (text, n) {
+      var b = document.createElement("button");
+      b.className = "opt";
+      b.type = "button";
+      b.innerHTML = '<span class="key">' + LETTER[n] + '</span><span></span>';
+      b.lastChild.textContent = text;
+      b.addEventListener("click", function () { choose(n, box, list); });
+      list.appendChild(b);
+    });
+    box.appendChild(list);
+
+    stage.innerHTML = "";
+    stage.appendChild(box);
+  }
+
+  function choose(n, box, list) {
+    if (answered) return;
+    answered = true;
+    var item = QUIZ[i];
+    var right = n === item.a;
+    if (right) correct++;
+    else misses.push({ n: i, picked: n });
+
+    [].forEach.call(list.children, function (el, k) {
+      el.disabled = true;
+      if (k === n) el.classList.add(right ? "pick-right" : "pick-wrong");
+      else if (k === item.a && !right) el.classList.add("reveal");
+      else el.classList.add("dim");
+    });
+
+    var fb = document.createElement("div");
+    fb.className = "fb" + (right ? "" : " no");
+    var v = document.createElement("span");
+    v.className = "verdict";
+    v.textContent = right ? "答對了" : "正確答案是 " + LETTER[item.a];
+    var p = document.createElement("p");
+    p.textContent = item.why;
+    fb.appendChild(v); fb.appendChild(p);
+    box.appendChild(fb);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    var go = document.createElement("button");
+    go.className = "go";
+    go.textContent = i === QUIZ.length - 1 ? "看結果" : "下一題";
+    go.addEventListener("click", next);
+    act.appendChild(go);
+    box.appendChild(act);
+    go.focus();
+    paintBar();
+  }
+
+  function next() {
+    if (i === QUIZ.length - 1) { results(); return; }
+    i++;
+    render();
+  }
+
+  function results() {
+    i = QUIZ.length;
+    paintBar();
+    counter.textContent = "已完成";
+
+    var pct = correct / QUIZ.length;
+    var verdict = pct === 1 ? "全對。這一集的重點你都掌握了。"
+      : pct >= 0.8 ? "掌握得不錯，看一下答錯的那幾題就完整了。"
+      : pct >= 0.5 ? "主要觀念有了，建議回頭重看第三幕與第四幕。"
+      : "建議重看一次影片，特別是「規則要從摩擦裡長出來」那一段。";
+
+    var wrap = document.createElement("div");
+
+    var sc = document.createElement("div");
+    sc.className = "score";
+    sc.innerHTML = '<div class="n"><b>' + correct + '</b><span class="of"> / ' + QUIZ.length + '</span></div>';
+    var vp = document.createElement("p");
+    vp.className = "verdict";
+    vp.textContent = verdict;
+    sc.appendChild(vp);
+
+    var act = document.createElement("div");
+    act.className = "actions";
+    act.style.justifyContent = "center";
+    var again = document.createElement("button");
+    again.className = "go";
+    again.textContent = "再測一次";
+    again.addEventListener("click", function () {
+      i = 0; correct = 0; misses = []; render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+    act.appendChild(again);
+    sc.appendChild(act);
+    wrap.appendChild(sc);
+
+    var rev = document.createElement("div");
+    rev.className = "review";
+    var h3 = document.createElement("h3");
+    h3.textContent = misses.length ? "答錯的題目" : "檢討";
+    rev.appendChild(h3);
+
+    if (!misses.length) {
+      var ok = document.createElement("div");
+      ok.className = "allgood";
+      ok.textContent = "沒有答錯的題目。";
+      rev.appendChild(ok);
+    } else {
+      misses.forEach(function (m) {
+        var item = QUIZ[m.n];
+        var d = document.createElement("div");
+        d.className = "miss-item";
+        var q = document.createElement("p");
+        q.className = "qq";
+        q.textContent = (m.n + 1) + ". " + item.q;
+        var a = document.createElement("p");
+        a.className = "ans";
+        a.innerHTML = "你選了 " + LETTER[m.picked] + "，正確答案是 <b>" +
+                      LETTER[item.a] + "</b>。";
+        var w = document.createElement("p");
+        w.className = "ans";
+        w.style.marginTop = ".5rem";
+        w.textContent = item.why;
+        d.appendChild(q); d.appendChild(a); d.appendChild(w);
+        rev.appendChild(d);
+      });
+    }
+    wrap.appendChild(rev);
+
+    stage.innerHTML = "";
+    stage.appendChild(wrap);
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (i >= QUIZ.length) return;
+    if (!answered && /^[1-4]$/.test(e.key)) {
+      var btns = stage.querySelectorAll(".opt");
+      var n = parseInt(e.key, 10) - 1;
+      if (btns[n]) { btns[n].click(); e.preventDefault(); }
+    } else if (answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+      var go = stage.querySelector("button.go");
+      if (go) { go.click(); e.preventDefault(); }
+    }
+  });
+
+  render();
+})();
+</script>

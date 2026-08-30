@@ -1,0 +1,1299 @@
+﻿1
+00:00:00,862 --> 00:00:03,219
+This episode reads exactly one paper:
+
+2
+00:00:03,324 --> 00:00:05,582
+the FlyCircuit paper from twenty eleven.
+
+3
+00:00:06,324 --> 00:00:08,569
+It is about one thing that paper proposed
+
+4
+00:00:08,624 --> 00:00:11,169
+— the L P U, the local processing unit.
+
+5
+00:00:11,912 --> 00:00:13,812
+What it does is turn "brain region" from
+
+6
+00:00:13,812 --> 00:00:16,074
+an anatomical noun into a definition that
+
+7
+00:00:16,074 --> 00:00:17,987
+can be run automatically, and that
+
+8
+00:00:17,987 --> 00:00:19,144
+can be overturned.
+
+9
+00:00:20,513 --> 00:00:22,358
+Why does this deserve a whole episode?
+
+10
+00:00:23,101 --> 00:00:25,313
+Because later papers open with "forty nine
+
+11
+00:00:25,313 --> 00:00:27,801
+nodes" and "L P U level modules", and
+
+12
+00:00:27,801 --> 00:00:29,933
+hardly anyone goes back and asks:
+
+13
+00:00:30,038 --> 00:00:31,976
+how were those units arrived at, and would
+
+14
+00:00:31,976 --> 00:00:33,796
+a different criterion change them?
+
+15
+00:00:34,538 --> 00:00:36,251
+That is exactly what you should check
+
+16
+00:00:36,251 --> 00:00:38,263
+first in any paper that uses "brain
+
+17
+00:00:38,263 --> 00:00:40,463
+region" as its unit, because how you cut
+
+18
+00:00:40,463 --> 00:00:42,276
+the brain up determines what structure you
+
+19
+00:00:42,276 --> 00:00:44,921
+can see. Seven lessons:
+
+20
+00:00:44,963 --> 00:00:47,176
+the problem, two kinds of neuron, the
+
+21
+00:00:47,176 --> 00:00:49,858
+definition, how it runs, what came out,
+
+22
+00:00:49,988 --> 00:00:52,088
+what you can do once you have units, and
+
+23
+00:00:52,088 --> 00:00:53,771
+where the definition is loose.
+
+24
+00:00:55,141 --> 00:00:58,091
+Lesson one. Who decides where a brain
+
+25
+00:00:58,091 --> 00:01:01,416
+region ends. Traditionally, brain regions
+
+26
+00:01:01,416 --> 00:01:03,128
+are marked out by the boundaries you can
+
+27
+00:01:03,128 --> 00:01:04,511
+see in a stained sample.
+
+28
+00:01:05,253 --> 00:01:07,228
+The fly brain has some fifty odd of these
+
+29
+00:01:07,228 --> 00:01:09,798
+blocks of dense fiber, called neuropils.
+
+30
+00:01:10,541 --> 00:01:12,553
+The standard brain in this paper resolves
+
+31
+00:01:12,553 --> 00:01:15,216
+fifty eight of them. The trouble is that a
+
+32
+00:01:15,216 --> 00:01:17,366
+boundary you can see does not necessarily
+
+33
+00:01:17,366 --> 00:01:19,261
+correspond to a functional unit.
+
+34
+00:01:20,003 --> 00:01:21,853
+Two neighbouring blocks may be two halves
+
+35
+00:01:21,853 --> 00:01:25,041
+of one circuit. One large block may hide
+
+36
+00:01:25,041 --> 00:01:27,398
+several small units working independently.
+
+37
+00:01:28,141 --> 00:01:30,003
+If what you want to know is how signals
+
+38
+00:01:30,003 --> 00:01:31,903
+flow through the brain, then cutting it up
+
+39
+00:01:31,903 --> 00:01:33,891
+by shape means you used a criterion
+
+40
+00:01:33,891 --> 00:01:35,691
+unrelated to your question before the
+
+41
+00:01:35,691 --> 00:01:37,248
+question was even asked.
+
+42
+00:01:37,991 --> 00:01:40,066
+And every network analysis after that is
+
+43
+00:01:40,066 --> 00:01:41,436
+built on the same cut.
+
+44
+00:01:42,178 --> 00:01:44,561
+Cut it wrong, and the error is invisible.
+
+45
+00:01:45,944 --> 00:01:48,732
+Lesson two. Before you can change
+
+46
+00:01:48,732 --> 00:01:50,744
+criteria, you need something to use as
+
+47
+00:01:50,744 --> 00:01:54,202
+one. The paper uses a very simple split.
+
+48
+00:01:54,944 --> 00:01:57,657
+An L N, a local neuron, stays entirely
+
+49
+00:01:57,657 --> 00:01:59,264
+inside one brain region.
+
+50
+00:02:00,007 --> 00:02:01,364
+Think of a city street.
+
+51
+00:02:02,107 --> 00:02:04,919
+A P N, a projection neuron, connects two
+
+52
+00:02:04,919 --> 00:02:07,769
+or more regions. Think of an interstate
+
+53
+00:02:07,769 --> 00:02:10,719
+highway. This split is possible because
+
+54
+00:02:10,719 --> 00:02:12,769
+the earlier work had already turned every
+
+55
+00:02:12,769 --> 00:02:14,444
+neuron into something you can compute
+
+56
+00:02:14,444 --> 00:02:17,519
+with. Once a neuron is registered into the
+
+57
+00:02:17,519 --> 00:02:19,982
+standard brain, how many voxels its fibers
+
+58
+00:02:19,982 --> 00:02:21,969
+occupy in each of the fifty eight blocks
+
+59
+00:02:21,969 --> 00:02:24,119
+is recorded, and compressed into a string
+
+60
+00:02:24,119 --> 00:02:27,182
+of numbers. Whether a neuron is local or
+
+61
+00:02:27,182 --> 00:02:28,969
+projecting is just the shape of that
+
+62
+00:02:28,969 --> 00:02:31,482
+string: concentrated in one bin, or
+
+63
+00:02:31,482 --> 00:02:32,752
+spread across several.
+
+64
+00:02:34,132 --> 00:02:36,314
+On screen is the paper's third figure.
+
+65
+00:02:37,057 --> 00:02:39,357
+Panels A to C follow one neuron as it is
+
+66
+00:02:39,357 --> 00:02:41,557
+cut out of a sample brain, registered into
+
+67
+00:02:41,557 --> 00:02:43,494
+the standard brain, and traced into a
+
+68
+00:02:43,494 --> 00:02:46,739
+skeleton. The panel that matters is D:
+
+69
+00:02:46,857 --> 00:02:49,144
+how many voxels this one neuron occupies
+
+70
+00:02:49,144 --> 00:02:51,214
+in each of twenty nine paired blocks.
+
+71
+00:02:51,957 --> 00:02:54,232
+From here on, every analysis happens in
+
+72
+00:02:54,232 --> 00:02:57,169
+that number space. Nothing goes back to
+
+73
+00:02:57,169 --> 00:03:00,157
+the original image. And the cost is right
+
+74
+00:03:00,157 --> 00:03:03,639
+here too. How a fiber runs inside a block,
+
+75
+00:03:03,694 --> 00:03:05,757
+where it branches, is discarded at this
+
+76
+00:03:05,757 --> 00:03:07,739
+step, and it cannot be recovered.
+
+77
+00:03:09,120 --> 00:03:12,427
+Lesson three. The criterion itself.
+
+78
+00:03:13,170 --> 00:03:15,120
+If a brain region holds a group of local
+
+79
+00:03:15,120 --> 00:03:17,295
+neurons of its own, interweaving inside
+
+80
+00:03:17,295 --> 00:03:19,320
+it, that means there is local processing
+
+81
+00:03:19,320 --> 00:03:21,170
+going on there, and it counts as an
+
+82
+00:03:21,170 --> 00:03:22,877
+independent processing unit.
+
+83
+00:03:23,620 --> 00:03:26,952
+An L P U. The intuition is this.
+
+84
+00:03:27,695 --> 00:03:29,732
+A place with only highways passing through
+
+85
+00:03:29,732 --> 00:03:32,090
+and no city streets is a transfer station,
+
+86
+00:03:32,182 --> 00:03:35,157
+not a city. Having a street network of its
+
+87
+00:03:35,157 --> 00:03:37,465
+own means whatever arrives gets worked on,
+
+88
+00:03:37,595 --> 00:03:39,277
+rather than passed straight through.
+
+89
+00:03:40,020 --> 00:03:42,095
+The full definition the paper writes down
+
+90
+00:03:42,095 --> 00:03:43,440
+has three conditions.
+
+91
+00:03:44,182 --> 00:03:46,195
+It has a local neuron population of its
+
+92
+00:03:46,195 --> 00:03:48,895
+own. Those fibers are completely
+
+93
+00:03:48,895 --> 00:03:50,352
+restricted to that region.
+
+94
+00:03:51,095 --> 00:03:53,415
+And at least one nerve tract touches it.
+
+95
+00:03:54,787 --> 00:03:56,737
+Stop here, because this is the most
+
+96
+00:03:56,737 --> 00:03:58,557
+important sentence in the episode.
+
+97
+00:03:59,300 --> 00:04:01,282
+The L P U is not a discovery.
+
+98
+00:04:02,025 --> 00:04:04,162
+It is a definition, and one that can be
+
+99
+00:04:04,162 --> 00:04:05,782
+overturned by its own data.
+
+100
+00:04:06,525 --> 00:04:08,400
+Its value is not in how accurate the
+
+101
+00:04:08,400 --> 00:04:10,420
+number forty one turns out to be.
+
+102
+00:04:11,162 --> 00:04:13,287
+It is in turning "what is a brain region"
+
+103
+00:04:13,287 --> 00:04:15,062
+from a question that needs an expert's
+
+104
+00:04:15,062 --> 00:04:16,975
+judgment into a question with steps you
+
+105
+00:04:16,975 --> 00:04:19,407
+can write down, a result you can compute,
+
+106
+00:04:19,525 --> 00:04:20,950
+and a different answer when the data
+
+107
+00:04:20,950 --> 00:04:23,887
+change. The last lesson will show that
+
+108
+00:04:23,887 --> 00:04:26,082
+"gives a different answer" is not a flaw.
+
+109
+00:04:26,825 --> 00:04:28,850
+It is precisely what qualifies it as a
+
+110
+00:04:28,850 --> 00:04:30,345
+scientific definition.
+
+111
+00:04:31,719 --> 00:04:34,694
+Lesson four. How do you actually find
+
+112
+00:04:34,694 --> 00:04:36,356
+these units among sixteen thousand
+
+113
+00:04:36,356 --> 00:04:39,244
+neurons? The paper writes it as seven
+
+114
+00:04:39,244 --> 00:04:42,494
+steps. Count how often local neurons pass
+
+115
+00:04:42,494 --> 00:04:43,639
+through each position.
+
+116
+00:04:44,381 --> 00:04:46,639
+Use a threshold to pick out the hot spots.
+
+117
+00:04:47,381 --> 00:04:49,476
+Cluster to decide the subdivisions.
+
+118
+00:04:50,219 --> 00:04:52,451
+Recruit the local neurons into each one.
+
+119
+00:04:53,194 --> 00:04:55,106
+Draw the boundary of each candidate from
+
+120
+00:04:55,106 --> 00:04:56,651
+where those neurons cluster.
+
+121
+00:04:57,394 --> 00:04:59,181
+Compute a value that describes how the
+
+122
+00:04:59,181 --> 00:05:01,101
+fibers are spread out inside it.
+
+123
+00:05:01,844 --> 00:05:03,869
+And last, check whether the region has
+
+124
+00:05:03,869 --> 00:05:05,651
+long range tracts of its own.
+
+125
+00:05:06,394 --> 00:05:08,226
+Two places are worth noticing.
+
+126
+00:05:08,969 --> 00:05:10,769
+The threshold in the second step can be
+
+127
+00:05:10,769 --> 00:05:12,719
+changed, and if you change it, the
+
+128
+00:05:12,719 --> 00:05:15,644
+boundaries move. The seventh step is the
+
+129
+00:05:15,644 --> 00:05:17,114
+one that steps outside.
+
+130
+00:05:17,856 --> 00:05:20,006
+The first six all move around inside the
+
+131
+00:05:20,006 --> 00:05:22,369
+same distribution; the seventh brings in
+
+132
+00:05:22,369 --> 00:05:24,356
+an independent kind of evidence, the
+
+133
+00:05:24,356 --> 00:05:26,744
+direction the tracts run, to confirm that
+
+134
+00:05:26,744 --> 00:05:28,469
+what the first six found is not a
+
+135
+00:05:28,469 --> 00:05:30,051
+statistical artifact.
+
+136
+00:05:31,426 --> 00:05:33,151
+This is the evidence the seventh step
+
+137
+00:05:33,151 --> 00:05:35,451
+uses: fifty eight bundles of fiber that
+
+138
+00:05:35,451 --> 00:05:38,071
+cross between regions along fixed paths.
+
+139
+00:05:38,814 --> 00:05:41,571
+Fourteen commissures, ten paired chiasms,
+
+140
+00:05:41,614 --> 00:05:43,084
+twelve paired connectives.
+
+141
+00:05:43,826 --> 00:05:46,201
+For a candidate unit to stand, at least
+
+142
+00:05:46,201 --> 00:05:47,721
+one of these has to touch it.
+
+143
+00:05:48,464 --> 00:05:50,776
+In other words, having a local circuit is
+
+144
+00:05:50,776 --> 00:05:53,164
+not enough. It also has to
+
+145
+00:05:53,164 --> 00:05:54,409
+talk to the outside.
+
+146
+00:05:55,782 --> 00:05:58,132
+The criterion produced one by-product that
+
+147
+00:05:58,132 --> 00:06:00,002
+is also its strongest defence.
+
+148
+00:06:00,744 --> 00:06:03,069
+A block called the V L P was split into a
+
+149
+00:06:03,069 --> 00:06:05,419
+back half and a front half — two separate
+
+150
+00:06:05,419 --> 00:06:08,344
+units. It is the only case in the whole
+
+151
+00:06:08,344 --> 00:06:10,752
+brain of two units inside a single block.
+
+152
+00:06:11,494 --> 00:06:13,044
+Three independent things support the
+
+153
+00:06:13,044 --> 00:06:15,969
+split. The cell bodies of the two groups
+
+154
+00:06:15,969 --> 00:06:17,527
+sit in separate places.
+
+155
+00:06:18,269 --> 00:06:20,864
+Their fibers project to separate targets.
+
+156
+00:06:21,607 --> 00:06:23,682
+And each has its own characteristic long
+
+157
+00:06:23,682 --> 00:06:25,519
+range tracts, talking to different
+
+158
+00:06:25,519 --> 00:06:28,227
+partners. Why does this matter?
+
+159
+00:06:28,969 --> 00:06:31,257
+Because if this criterion only rearranged
+
+160
+00:06:31,257 --> 00:06:33,219
+the fifty eight blocks, it would add no
+
+161
+00:06:33,219 --> 00:06:36,169
+information at all. Instead it cut two
+
+162
+00:06:36,169 --> 00:06:38,352
+working units out of a block that looks,
+
+163
+00:06:38,407 --> 00:06:40,139
+to the eye, like one thing.
+
+164
+00:06:40,882 --> 00:06:43,164
+That is the payoff for changing criteria.
+
+165
+00:06:44,546 --> 00:06:48,103
+Lesson five. What the criterion produced.
+
+166
+00:06:48,846 --> 00:06:50,141
+Across the whole brain:
+
+167
+00:06:50,183 --> 00:06:53,583
+forty one units. Nineteen pairs, plus
+
+168
+00:06:53,583 --> 00:06:55,096
+three unpaired ones sitting on the
+
+169
+00:06:55,096 --> 00:06:58,208
+midline. Four further pairs of blocks had
+
+170
+00:06:58,208 --> 00:07:00,596
+no local neurons of their own — only large
+
+171
+00:07:00,596 --> 00:07:02,571
+numbers of projecting terminals passing
+
+172
+00:07:02,571 --> 00:07:04,766
+through, and no local processing.
+
+173
+00:07:05,508 --> 00:07:07,266
+The paper calls those hubs.
+
+174
+00:07:08,008 --> 00:07:09,796
+And about two of them it raises a very
+
+175
+00:07:09,796 --> 00:07:12,208
+honest possibility: they may simply be too
+
+176
+00:07:12,208 --> 00:07:14,408
+small in volume to fit any extra local
+
+177
+00:07:14,408 --> 00:07:17,583
+neurons in. If that is right, then "no
+
+178
+00:07:17,583 --> 00:07:19,633
+local processing" is not a property of
+
+179
+00:07:19,633 --> 00:07:21,733
+those regions. It is a
+
+180
+00:07:21,733 --> 00:07:23,378
+consequence of their size.
+
+181
+00:07:24,765 --> 00:07:26,735
+This is the core figure of the episode.
+
+182
+00:07:27,478 --> 00:07:29,353
+The table of plus and minus signs in
+
+183
+00:07:29,353 --> 00:07:31,603
+column A is the most concentrated result
+
+184
+00:07:31,603 --> 00:07:34,578
+in the paper. It switches the criterion
+
+185
+00:07:34,578 --> 00:07:36,578
+for classifying a brain region from what
+
+186
+00:07:36,578 --> 00:07:38,103
+it looks like to whether it has local
+
+187
+00:07:38,103 --> 00:07:40,990
+neurons of its own. Panel B is where the
+
+188
+00:07:40,990 --> 00:07:44,340
+forty one units sit. Panel C is the four
+
+189
+00:07:44,340 --> 00:07:47,765
+pairs of hubs. Panel D overlays them, and
+
+190
+00:07:47,765 --> 00:07:49,848
+together they nearly fill the whole brain.
+
+191
+00:07:50,590 --> 00:07:52,928
+One aside: this figure is also the first
+
+192
+00:07:52,928 --> 00:07:54,885
+place to go when checking the numbers.
+
+193
+00:07:55,628 --> 00:07:57,623
+The last lesson comes back to it.
+
+194
+00:07:59,009 --> 00:08:02,109
+Lesson six. What you can do once you have
+
+195
+00:08:02,109 --> 00:08:05,366
+units. Counting a connection is direct.
+
+196
+00:08:06,109 --> 00:08:08,246
+If one projecting neuron has fibers in
+
+197
+00:08:08,246 --> 00:08:10,584
+region A and region B, that counts as a
+
+198
+00:08:10,584 --> 00:08:12,141
+connection between the two.
+
+199
+00:08:12,884 --> 00:08:15,021
+Tally every neuron and you get a matrix of
+
+200
+00:08:15,021 --> 00:08:17,229
+who connects to whom, and how densely.
+
+201
+00:08:17,971 --> 00:08:20,209
+Cluster that matrix, and four densely
+
+202
+00:08:20,209 --> 00:08:22,016
+interconnected families appear.
+
+203
+00:08:22,759 --> 00:08:24,204
+They match known function:
+
+204
+00:08:24,271 --> 00:08:26,641
+hearing, vision, movement, smell.
+
+205
+00:08:27,384 --> 00:08:28,934
+That result is itself a kind of
+
+206
+00:08:28,934 --> 00:08:31,759
+validation. The team did not tell the
+
+207
+00:08:31,759 --> 00:08:33,634
+algorithm in advance which regions have
+
+208
+00:08:33,634 --> 00:08:35,079
+anything to do with hearing.
+
+209
+00:08:35,821 --> 00:08:37,709
+Those groupings came out of the connection
+
+210
+00:08:37,709 --> 00:08:39,909
+numbers by themselves, and they agree with
+
+211
+00:08:39,909 --> 00:08:42,441
+decades of accumulated functional anatomy.
+
+212
+00:08:43,812 --> 00:08:45,520
+On screen is that matrix.
+
+213
+00:08:46,262 --> 00:08:48,237
+In panel A you can see that connections
+
+214
+00:08:48,237 --> 00:08:50,225
+within one half of the brain are visibly
+
+215
+00:08:50,225 --> 00:08:51,862
+denser than connections crossing the
+
+216
+00:08:51,862 --> 00:08:55,025
+midline. Brains prefer to process close to
+
+217
+00:08:55,025 --> 00:08:58,282
+home. Panels C and D are the clustering,
+
+218
+00:08:58,362 --> 00:08:59,962
+and the four colours are those four
+
+219
+00:08:59,962 --> 00:09:02,600
+functional families. Here is one
+
+220
+00:09:02,600 --> 00:09:04,345
+immediately usable example.
+
+221
+00:09:05,087 --> 00:09:07,012
+A search in the database returns about
+
+222
+00:09:07,012 --> 00:09:08,662
+four hundred neurons connecting the
+
+223
+00:09:08,662 --> 00:09:10,525
+auditory region with some twenty eight
+
+224
+00:09:10,525 --> 00:09:13,687
+other regions. Set aside the dense link
+
+225
+00:09:13,687 --> 00:09:15,450
+between the left and right auditory
+
+226
+00:09:15,450 --> 00:09:17,700
+regions, and about a fifth of them connect
+
+227
+00:09:17,700 --> 00:09:20,570
+on both sides to a region called C V L P.
+
+228
+00:09:21,312 --> 00:09:23,375
+So there is now a hypothesis you can take
+
+229
+00:09:23,375 --> 00:09:25,912
+into the lab: C V L P may be the next
+
+230
+00:09:25,912 --> 00:09:27,625
+station for processing auditory
+
+231
+00:09:27,625 --> 00:09:30,737
+information. A connectivity map does not
+
+232
+00:09:30,737 --> 00:09:33,625
+hand you the answer. But it turns a needle
+
+233
+00:09:33,625 --> 00:09:35,725
+in a haystack into "these few needles are
+
+234
+00:09:35,725 --> 00:09:37,045
+worth testing first".
+
+235
+00:09:38,432 --> 00:09:41,577
+Lesson seven. Back to that sentence:
+
+236
+00:09:41,657 --> 00:09:43,157
+this is a definition that can be
+
+237
+00:09:43,157 --> 00:09:44,777
+overturned by its own data.
+
+238
+00:09:45,519 --> 00:09:47,332
+Every item that follows is written in the
+
+239
+00:09:47,332 --> 00:09:49,469
+paper's own discussion and its own list of
+
+240
+00:09:49,469 --> 00:09:52,839
+limitations. First, the threshold.
+
+241
+00:09:53,582 --> 00:09:55,682
+The one in the second step, together with
+
+242
+00:09:55,682 --> 00:09:58,094
+the value computed in the sixth, sets the
+
+243
+00:09:58,094 --> 00:10:01,119
+boundaries. How sensitive the number forty
+
+244
+00:10:01,119 --> 00:10:02,832
+one is to that threshold was never
+
+245
+00:10:02,832 --> 00:10:05,707
+quantified. The authors say themselves
+
+246
+00:10:05,707 --> 00:10:07,394
+that some units may still be split
+
+247
+00:10:07,394 --> 00:10:10,827
+further. Second, how many hubs there are.
+
+248
+00:10:11,569 --> 00:10:13,382
+The summary at the front of the paper says
+
+249
+00:10:13,382 --> 00:10:17,007
+six. The main text lists four pairs, which
+
+250
+00:10:17,007 --> 00:10:20,094
+would be eight. One paper, not matching
+
+251
+00:10:20,094 --> 00:10:23,394
+itself. Third, the correspondence between
+
+252
+00:10:23,394 --> 00:10:25,294
+the forty one units and the fifty eight
+
+253
+00:10:25,294 --> 00:10:27,664
+anatomical blocks is never tabulated.
+
+254
+00:10:28,407 --> 00:10:30,507
+Fourth, the step that compressed neurons
+
+255
+00:10:30,507 --> 00:10:32,507
+into numbers threw away everything inside
+
+256
+00:10:32,507 --> 00:10:34,127
+a block, irreversibly.
+
+257
+00:10:34,869 --> 00:10:36,694
+The boundaries are drawn in a space that
+
+258
+00:10:36,694 --> 00:10:38,677
+has already lost that information.
+
+259
+00:10:39,419 --> 00:10:41,702
+And fifth, a connection here is inferred,
+
+260
+00:10:41,757 --> 00:10:44,719
+not observed. Fibers entering the same
+
+261
+00:10:44,719 --> 00:10:46,469
+region are presumed to have a chance of
+
+262
+00:10:46,469 --> 00:10:49,419
+touching. Whether a synapse is actually
+
+263
+00:10:49,419 --> 00:10:50,594
+there, and which way it
+
+264
+00:10:50,594 --> 00:10:52,064
+points, is unknown.
+
+265
+00:10:53,452 --> 00:10:55,627
+There is one more loose point, specific to
+
+266
+00:10:55,627 --> 00:10:58,589
+the hubs. The paper itself says two of
+
+267
+00:10:58,589 --> 00:11:00,627
+them may just be too small to fit extra
+
+268
+00:11:00,627 --> 00:11:03,714
+local neurons in. If that is right, the
+
+269
+00:11:03,714 --> 00:11:05,664
+category "hub" contains two different
+
+270
+00:11:05,664 --> 00:11:08,139
+things: genuine transfer stations that do
+
+271
+00:11:08,139 --> 00:11:10,514
+no local processing, and small regions
+
+272
+00:11:10,514 --> 00:11:12,384
+that would, but cannot fit it in.
+
+273
+00:11:13,127 --> 00:11:15,147
+The criterion cannot separate them,
+
+274
+00:11:15,202 --> 00:11:16,877
+because it only asks whether there are
+
+275
+00:11:16,877 --> 00:11:18,372
+local neurons of its own.
+
+276
+00:11:19,114 --> 00:11:20,697
+It never asks why not.
+
+277
+00:11:22,079 --> 00:11:23,954
+None of this says the L P U cannot be
+
+278
+00:11:23,954 --> 00:11:26,854
+trusted. It says the L P U is an
+
+279
+00:11:26,854 --> 00:11:29,279
+operational definition, and an operational
+
+280
+00:11:29,279 --> 00:11:31,192
+definition should come with its operating
+
+281
+00:11:31,192 --> 00:11:34,167
+conditions. Forty one is not the true
+
+282
+00:11:34,167 --> 00:11:35,999
+number of regions in a fly brain.
+
+283
+00:11:36,742 --> 00:11:38,142
+It is the result of running this
+
+284
+00:11:38,142 --> 00:11:40,454
+criterion, at this threshold, on this
+
+285
+00:11:40,454 --> 00:11:43,142
+data. Carry that sentence with you when
+
+286
+00:11:43,142 --> 00:11:45,117
+you cite it, and everything downstream
+
+287
+00:11:45,117 --> 00:11:48,079
+becomes more honest. The other thing worth
+
+288
+00:11:48,079 --> 00:11:50,017
+learning is where these limitations came
+
+289
+00:11:50,017 --> 00:11:52,924
+from. The authors wrote most of them.
+
+290
+00:11:53,667 --> 00:11:55,904
+A paper willing to put "I did not test how
+
+291
+00:11:55,904 --> 00:11:58,112
+sensitive this number is to my threshold",
+
+292
+00:11:58,242 --> 00:12:00,204
+and "my summary does not match my main
+
+293
+00:12:00,204 --> 00:12:03,217
+text", into its own pages, is a paper its
+
+294
+00:12:03,217 --> 00:12:05,324
+readers can actually use correctly.
+
+295
+00:12:06,691 --> 00:12:08,573
+Seven lessons about one term.
+
+296
+00:12:09,316 --> 00:12:11,261
+Here they are as three reflexes.
+
+297
+00:12:12,003 --> 00:12:14,941
+First. It is a definition, not a
+
+298
+00:12:14,941 --> 00:12:18,353
+discovery. Forty one is what one criterion
+
+299
+00:12:18,353 --> 00:12:19,998
+produced from one dataset.
+
+300
+00:12:20,741 --> 00:12:23,028
+Change the threshold, change the data, and
+
+301
+00:12:23,028 --> 00:12:25,773
+the number changes. Second.
+
+302
+00:12:26,516 --> 00:12:27,748
+Know what it measures.
+
+303
+00:12:28,491 --> 00:12:29,841
+It measures where there is local
+
+304
+00:12:29,841 --> 00:12:31,991
+processing, using the distribution of
+
+305
+00:12:31,991 --> 00:12:34,966
+local neurons. It is not measuring which
+
+306
+00:12:34,966 --> 00:12:37,066
+neurons belong to the same group, and it
+
+307
+00:12:37,066 --> 00:12:38,798
+is not measuring synapses.
+
+308
+00:12:39,541 --> 00:12:42,091
+Third. Nearly three quarters of the
+
+309
+00:12:42,091 --> 00:12:43,461
+neurons are not in it.
+
+310
+00:12:44,203 --> 00:12:46,278
+The local neurons that define these units
+
+311
+00:12:46,278 --> 00:12:48,203
+are only about twenty six percent of the
+
+312
+00:12:48,203 --> 00:12:51,266
+total. Most neurons in the brain project
+
+313
+00:12:51,266 --> 00:12:54,053
+across regions. They pass through these
+
+314
+00:12:54,053 --> 00:12:56,223
+boundaries and are not defined by them.
+
+315
+00:12:57,590 --> 00:12:59,023
+If you remember one thing:
+
+316
+00:12:59,140 --> 00:13:01,053
+how a term gets defined decides what you
+
+317
+00:13:01,053 --> 00:13:02,348
+can use it to answer.
+
+318
+00:13:03,090 --> 00:13:05,203
+For any concept you are about to take as a
+
+319
+00:13:05,203 --> 00:13:08,085
+unit of analysis, ask six things first.
+
+320
+00:13:08,828 --> 00:13:11,810
+How it is defined. From what data.
+
+321
+00:13:12,553 --> 00:13:15,923
+By what criterion. What numbers came out.
+
+322
+00:13:16,665 --> 00:13:19,215
+How it was tested. And where it is
+
+323
+00:13:19,215 --> 00:13:22,390
+currently loose. This episode walked one
+
+324
+00:13:22,390 --> 00:13:23,798
+term through all six.
+
+325
+00:13:24,540 --> 00:13:25,798
+See you next time.

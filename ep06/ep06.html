@@ -1,0 +1,1215 @@
+<meta charset="utf-8">
+<title>什麼是 LPU</title>
+<style>
+  :root {
+    --paper:      #F7F8F7;
+    --surface:    #FFFFFF;
+    --surface-2:  #EFF2F1;
+    --ink:        #16171A;
+    --ink-soft:   #576063;
+    --ink-faint:  #8A9496;
+    --rule:       #DCE1DF;
+    --rule-soft:  #E9EDEB;
+    --human:      #9A5B08;
+    --human-bg:   #FDF6EC;
+    --human-rule: #E3B678;
+    --agent:      #0C625F;
+    --agent-bg:   #EDF5F4;
+    --agent-rule: #7FBAB6;
+    --shadow:     0 1px 2px rgba(20,30,30,.05), 0 8px 24px rgba(20,30,30,.06);
+
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+             "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+    --sans:  "Noto Sans TC", "PingFang TC", "Microsoft JhengHei",
+             system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono:  "SF Mono", "Cascadia Mono", "JetBrains Mono", Consolas,
+             "Courier New", monospace;
+
+    --col: 40rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #101416;
+      --surface:    #171D1F;
+      --surface-2:  #1E2528;
+      --ink:        #E6EBEA;
+      --ink-soft:   #9DA9A9;
+      --ink-faint:  #788485;
+      --rule:       #2A3336;
+      --rule-soft:  #222A2D;
+      --human:      #E4A75C;
+      --human-bg:   #241C11;
+      --human-rule: #6E5124;
+      --agent:      #57C6BE;
+      --agent-bg:   #102422;
+      --agent-rule: #2C5D5A;
+      --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #101416;
+    --surface:    #171D1F;
+    --surface-2:  #1E2528;
+    --ink:        #E6EBEA;
+    --ink-soft:   #9DA9A9;
+    --ink-faint:  #788485;
+    --rule:       #2A3336;
+    --rule-soft:  #222A2D;
+    --human:      #E4A75C;
+    --human-bg:   #241C11;
+    --human-rule: #6E5124;
+    --agent:      #57C6BE;
+    --agent-bg:   #102422;
+    --agent-rule: #2C5D5A;
+    --shadow:     0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.78;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 58rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* ---------- 開場 ---------- */
+
+  .masthead {
+    padding: 5.5rem 0 3rem;
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .masthead h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 6vw, 3.9rem);
+    line-height: 1.08;
+    letter-spacing: -.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.12rem;
+    color: var(--ink-soft);
+    max-width: var(--col);
+    margin: 0;
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem 1.6rem;
+    font-family: var(--mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    margin-top: .6rem;
+  }
+
+  /* ---------- 通用文字 ---------- */
+
+  .lede, .prose { max-width: var(--col); }
+  .prose p { margin: 0 0 1.05rem; }
+  .prose p:last-child { margin-bottom: 0; }
+  .prose h3 {
+    font-family: var(--serif);
+    font-size: 1.18rem;
+    font-weight: 600;
+    margin: 2rem 0 .7rem;
+    letter-spacing: -.005em;
+  }
+  .prose h3:first-child { margin-top: 0; }
+  .prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.3rem; }
+  .prose li { margin-bottom: .4rem; }
+
+  /* 補充區塊 */
+  .digest {
+    max-width: var(--col);
+    margin: 0 0 1.6rem;
+    padding: 1.5rem 1.6rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .digest > .voice-label {
+    color: var(--ink-soft);
+    margin-bottom: 1.1rem;
+    padding-bottom: .7rem;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .digest h3 {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 1.7rem 0 .55rem;
+  }
+  .digest h3:first-of-type { margin-top: 0; }
+  .digest p { margin: 0 0 .8rem; }
+  .digest ul { margin: 0 0 .8rem; padding-left: 1.25rem; }
+  .digest li { margin-bottom: .38rem; }
+  .digest > :last-child { margin-bottom: 0; }
+  .digest blockquote {
+    margin: .9rem 0;
+    padding: .1rem 0 .1rem 1rem;
+    border-left: 2px solid var(--agent-rule);
+    color: var(--ink-soft);
+    font-style: normal;
+  }
+
+  /* 可收合版本 */
+  details.digest { padding: 0; }
+  details.digest > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1.05rem 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-radius: 4px;
+  }
+  details.digest > summary::-webkit-details-marker { display: none; }
+  details.digest > summary::marker { content: ""; }
+  details.digest > summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    color: var(--agent);
+    background: var(--paper);
+  }
+  details.digest[open] > summary::before { content: "\2212"; }
+  details.digest > summary:hover { color: var(--ink); }
+  details.digest > summary:hover::before { border-color: var(--agent-rule); }
+  details.digest > summary .hint {
+    margin-left: auto;
+    font-size: .68rem;
+    letter-spacing: .1em;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  details.digest[open] > summary {
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  details.digest[open] > summary .hint { display: none; }
+  .digest-body { padding: 1.4rem 1.6rem 1.5rem; }
+  .digest-body > :last-child { margin-bottom: 0; }
+  .digest-body h3:first-of-type { margin-top: 0; }
+  .digest-body pre.skill-src {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    background: var(--surface-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  strong { font-weight: 600; }
+  code {
+    font-family: var(--mono);
+    font-size: .86em;
+    background: var(--surface-2);
+    padding: .12em .38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+  a { color: var(--agent); text-underline-offset: .18em; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--agent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* ---------- 影片 ---------- */
+
+  .video {
+    margin: 3rem 0 0;
+    padding: 0;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #0d1113;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  a.video-frame { display: block; text-decoration: none; cursor: pointer; }
+  .video-frame > img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+    transition: transform .5s ease, filter .3s ease;
+  }
+  .video-frame .play {
+    position: absolute;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    width: 5.2rem; height: 5.2rem;
+    border-radius: 50%;
+    background: rgba(12, 18, 20, .62);
+    border: 2px solid rgba(255,255,255,.9);
+    display: grid; place-items: center;
+    transition: background .25s ease, transform .25s ease;
+  }
+  .video-frame .play::before {
+    content: "";
+    width: 0; height: 0;
+    margin-left: .35rem;
+    border-left: 1.35rem solid #fff;
+    border-top: .85rem solid transparent;
+    border-bottom: .85rem solid transparent;
+  }
+  .video-frame .play-label {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    padding: 2.6rem 1.4rem 1.1rem;
+    background: linear-gradient(to top, rgba(8,12,14,.85), rgba(8,12,14,0));
+    color: #fff;
+    font-size: .95rem;
+    letter-spacing: .02em;
+  }
+  .video-frame > iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    z-index: 2;
+  }
+  .video-frame.playing > img,
+  .video-frame.playing .play,
+  .video-frame.playing .play-label { display: none; }
+  .video-note {
+    margin-top: .5rem;
+    font-size: .82rem;
+    color: var(--ink-faint);
+  }
+  a.video-frame:hover > img { transform: scale(1.02); filter: brightness(.92); }
+  a.video-frame:hover .play { background: rgba(12,18,20,.85); transform: translate(-50%,-50%) scale(1.06); }
+  a.video-frame:focus-visible { outline: 3px solid var(--agent); outline-offset: 3px; }
+  .video figcaption {
+    margin-top: .85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem 1.2rem;
+    align-items: baseline;
+    font-size: .88rem;
+    color: var(--ink-faint);
+  }
+  .video figcaption b {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+
+  /* ---------- 圖例 ---------- */
+
+  .legend {
+    margin: 3rem 0 0;
+    padding: 1.4rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  }
+  .legend h2 {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+  }
+  .legend-item {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .swatch {
+    width: 3px;
+    align-self: stretch;
+    min-height: 2.6rem;
+    border-radius: 2px;
+    flex: none;
+  }
+  .swatch.h { background: var(--human); }
+  .swatch.a { background: var(--agent); }
+  .swatch.s { background: var(--ink-faint); }
+  .legend-item b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------- 目錄 ---------- */
+
+  .toc {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule-soft);
+  }
+  .toc h2 {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin: 0 0 1rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    columns: 2;
+    column-gap: 2.5rem;
+  }
+  .toc li {
+    break-inside: avoid;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .toc a {
+    display: flex;
+    gap: .9rem;
+    padding: .5rem 0;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: .95rem;
+  }
+  .toc a:hover { color: var(--agent); }
+  .toc .n {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--ink-faint);
+    flex: none;
+    padding-top: .12em;
+  }
+
+  /* ---------- 步驟 ---------- */
+
+  .step {
+    padding-top: 4.5rem;
+    scroll-margin-top: 1rem;
+  }
+  .step-head {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .9rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .step-num {
+    font-family: var(--mono);
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ink-faint);
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .step-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.45rem, 3vw, 1.95rem);
+    line-height: 1.22;
+    margin: 0;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+  }
+
+  /* 三種聲音 */
+
+  .voice {
+    margin: 0 0 1.5rem;
+    border-radius: 4px;
+    padding: 1.15rem 1.35rem;
+    max-width: var(--col);
+  }
+  .voice-label {
+    display: block;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    margin-bottom: .7rem;
+    font-weight: 600;
+  }
+  .voice p, .voice ol, .voice ul { margin: 0 0 .8rem; }
+  .voice > :last-child { margin-bottom: 0; }
+
+  .v-human {
+    background: var(--human-bg);
+    border-left: 3px solid var(--human);
+  }
+  .v-human .voice-label { color: var(--human); }
+  .v-human .cmd {
+    font-family: var(--mono);
+    font-size: .93rem;
+    line-height: 1.72;
+    white-space: pre-wrap;
+    color: var(--ink);
+    margin: 0;
+  }
+  .v-human code { background: rgba(154,91,8,.1); }
+
+  .v-agent {
+    background: var(--agent-bg);
+    border-left: 3px solid var(--agent);
+  }
+  .v-agent .voice-label { color: var(--agent); }
+  .v-agent code { background: rgba(12,98,95,.1); }
+  .v-agent ol, .v-agent ul {
+    padding-left: 1.3rem;
+  }
+  .v-agent li { margin-bottom: .45rem; }
+  .v-agent li:last-child { margin-bottom: 0; }
+
+  /* 工具盒 */
+
+  .tools {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .tools h3 {
+    margin: 0;
+    padding: .7rem 1.2rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tools dl {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .55rem 1rem;
+    align-items: baseline;
+    font-size: .93rem;
+  }
+  .tools dt {
+    font-family: var(--mono);
+    font-size: .85rem;
+    color: var(--ink);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .tools dd { margin: 0; color: var(--ink-soft); }
+
+  /* 出處標籤 —— EP02 專用 */
+
+  .tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: .64rem;
+    letter-spacing: .1em;
+    padding: .1em .5em;
+    border-radius: 2px;
+    vertical-align: .12em;
+    margin-right: .45rem;
+    white-space: nowrap;
+  }
+  .tag.given { background: var(--human-bg); color: var(--human); border: 1px solid var(--human-rule); }
+  .tag.hit   { background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-rule); }
+  .tag.conv  { background: var(--surface-2); color: var(--ink-faint); border: 1px solid var(--rule); }
+
+  .origin {
+    max-width: var(--col);
+    margin: 0 0 1.5rem;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+  }
+  .origin .voice-label { color: var(--ink-soft); }
+  .origin ul { margin: 0; padding-left: 0; list-style: none; }
+  .origin li {
+    margin-bottom: .6rem;
+    font-size: .95rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+  .origin li:last-child { margin-bottom: 0; }
+  .origin li b { color: var(--ink); font-weight: 600; }
+
+  /* 截圖 */
+
+  figure.shot {
+    margin: 2rem 0 1.8rem;
+    max-width: 52rem;
+  }
+  figure.shot .shot-label {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    font-family: var(--mono);
+    font-size: .68rem;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin-bottom: .6rem;
+  }
+  figure.shot .shot-label::before {
+    content: "";
+    width: 3px;
+    height: 1.05em;
+    border-radius: 2px;
+    background: var(--ink-faint);
+    flex: none;
+  }
+  /* 截圖以統一比例縮放（同一解析度截的，字才會一樣大），不強制撐滿版面 */
+  figure.shot img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  figure.shot figcaption {
+    margin-top: .75rem;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--ink-faint);
+    max-width: var(--col);
+  }
+  figure.shot figcaption b {
+    font-family: var(--mono);
+    font-size: .78rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+    font-weight: 600;
+  }
+
+  /* 教學重點 */
+
+  .point {
+    max-width: var(--col);
+    margin: 0;
+    padding: 1.15rem 1.35rem;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink);
+    border-radius: 4px;
+  }
+  .point .voice-label { color: var(--ink-soft); }
+  .point p { margin: 0 0 .7rem; }
+  .point p:last-child { margin-bottom: 0; }
+  .point.hero {
+    border-left-color: var(--human);
+    background: var(--human-bg);
+  }
+  .point.hero .voice-label { color: var(--human); }
+
+  /* ---------- 收尾 ---------- */
+
+  .closing {
+    margin-top: 5.5rem;
+    padding-top: 3rem;
+    border-top: 2px solid var(--ink);
+  }
+  .closing h2 {
+    font-family: var(--serif);
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+    font-weight: 600;
+    margin: 0 0 1.6rem;
+    letter-spacing: -.01em;
+  }
+  .closing h3 {
+    font-size: 1.02rem;
+    font-weight: 600;
+    margin: 2.2rem 0 .8rem;
+  }
+  .obs {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    margin: 1.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .obs li {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.25rem;
+    font-size: .95rem;
+    line-height: 1.68;
+    color: var(--ink-soft);
+  }
+  .obs b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+    margin-bottom: .3rem;
+  }
+
+  .table-wrap { overflow-x: auto; margin: 1.2rem 0 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: .93rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+    border-bottom: 1px solid var(--rule);
+  }
+  td:first-child { white-space: nowrap; font-family: var(--mono); font-size: .86rem; }
+  td:nth-child(2) { color: var(--ink-soft); }
+
+  .cta {
+    margin-top: 3rem;
+    padding: 1.7rem 1.8rem;
+    background: var(--agent-bg);
+    border: 1px solid var(--agent-rule);
+    border-radius: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .cta-text { max-width: 26rem; }
+  .cta h3 {
+    margin: 0 0 .35rem;
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cta p { margin: 0; font-size: .95rem; color: var(--ink-soft); line-height: 1.65; }
+  a.cta-btn {
+    flex: none;
+    display: inline-block;
+    background: var(--agent);
+    color: var(--paper);
+    font-weight: 600;
+    font-size: .97rem;
+    padding: .75rem 1.6rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: opacity .15s ease;
+  }
+  a.cta-btn:hover { opacity: .87; }
+  a.cta-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+  .next {
+    margin-top: 3rem;
+    padding: 1.4rem 1.5rem;
+    border: 1px dashed var(--rule);
+    border-radius: 4px;
+    max-width: var(--col);
+    color: var(--ink-soft);
+    font-size: .95rem;
+  }
+  .next b { color: var(--ink); }
+
+  @media (max-width: 40rem) {
+    body { font-size: 16px; }
+    .toc ol { columns: 1; }
+    .masthead { padding-top: 3.5rem; }
+    .voice, .tools, .point, .origin { padding-left: 1.05rem; padding-right: 1.05rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+  .voice.full { border-left-style: dashed; }
+  .closing ol.think { max-width: var(--col); padding-left: 1.4rem; display:flex; flex-direction:column; gap:.7rem; }
+  .closing ol.think li { line-height:1.7; color: var(--ink); }
+  .closing ol.think li::marker { font-family: var(--mono); color: var(--ink-faint); }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">BSC Tutorial · EP06</div>
+    <h1>什麼是 LPU</h1>
+    <p class="standfirst">
+      要分析腦，先要決定「腦區」是什麼。這一集<strong>只讀一篇論文</strong>：2011 年的 FlyCircuit paper，
+      講它提出的 <strong>LPU（local processing unit，區域處理單元）</strong>——它怎麼把腦區從一個解剖名詞，
+      換成一個可以自動跑、可以被推翻的操作型定義；41 這個數字怎麼來的；
+      以及論文自己說了這個定義鬆在哪裡。
+    </p>
+    <div class="meta-row">
+      <span>7 堂課</span>
+      <span>唯一來源：Chiang et al. 2011</span>
+      <span>Claude Code · Opus 5</span>
+      <span>承接 EP04 的做法</span>
+    </div>
+  </header>
+
+  <figure class="video">
+    <a class="video-frame" href="https://youtu.be/GUo9CHOt1Cg" target="_blank" rel="noopener">
+      <img src="assets/video-poster.jpg" alt="影片開頭畫面：什麼是 LPU">
+      <span class="play" aria-hidden="true"></span>
+      <span class="play-label">播放教學影片　·　10 分 25 秒　·　在 YouTube 開啟 ↗</span>
+    </a>
+    <figcaption><b>教學影片</b><span>先看影片建立整體概念，再往下讀七堂課的細節。</span></figcaption>
+  </figure>
+
+  <script>
+  (function () {
+    var ID = 'GUo9CHOt1Cg';
+    var box = document.querySelector('a.video-frame');
+    if (!box) return;
+    var servedOverHttp = /^https?:$/.test(location.protocol);
+    var blockedHost = /(^|\.)claude\.ai$/i.test(location.hostname);
+    if (!servedOverHttp || blockedHost) return;
+    box.addEventListener('click', function (e) {
+      if (box.classList.contains('playing')) return;
+      e.preventDefault();
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube.com/embed/' + ID + '?autoplay=1&rel=0';
+      f.title = '什麼是 LPU';
+      f.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+      f.referrerPolicy = 'strict-origin-when-cross-origin'; f.allowFullscreen = true;
+      var ok = false; f.addEventListener('load', function () { ok = true; });
+      box.appendChild(f); box.classList.add('playing');
+      setTimeout(function () { if (ok) return; f.remove(); box.classList.remove('playing');
+        var note = document.createElement('p'); note.className = 'video-note';
+        note.textContent = '這個環境不允許內嵌播放，請點封面在 YouTube 觀看。'; box.parentNode.appendChild(note); }, 3500);
+    });
+  })();
+  </script>
+
+  <section class="legend">
+    <h2>怎麼讀這一頁</h2>
+    <div class="legend-item"><span class="swatch h"></span><span><b>知識庫原文</b>從主題頁或條目照登的段落，一字未改——這是課程的素材。</span></div>
+    <div class="legend-item"><span class="swatch a"></span><span><b>數字與出處</b>這一課用到的關鍵數字，以及它們來自哪一篇條目的哪一節。</span></div>
+    <div class="legend-item"><span class="swatch s"></span><span><b>讀到這裡要記住</b>這一課的教學重點；<b>知識庫裡的圖</b>從條目挑出的原論文圖，標明條目與原圖編號。</span></div>
+  </section>
+
+  <section class="step" id="s00" style="border-top:none;padding-top:0;">
+    <div class="step-head"><span class="step-num">00</span><h2>為什麼要問「什麼是 LPU」</h2></div>
+    <div class="prose">
+      <p>EP04 用「FlyCircuit 資料庫」那一頁示範了主題頁怎麼變成一門課。這一集用同樣的做法，但換一個更窄、更硬的題目：
+      知識庫裡「腦區劃分」主題頁的核心概念——<strong>LPU</strong>。</p>
+      <p>為什麼值得專門一集？因為它是這條研究線裡最容易被當成背景知識滑過去的東西。
+      後面幾篇論文張口就是「49 個節點」「LPU 級模組」，但很少有人回頭問：<strong>這 41 個單位是怎麼定出來的？換一套判準會不會變？</strong>
+      而這正是讀任何一篇用「腦區」當單位的論文時，最該先確認的一件事——因為<strong>分區的方式會決定你看見什麼結構</strong>。</p>
+      <p>這一集<strong>只讀一篇論文</strong>：Chiang et al., <em>Current Biology</em> 2011。
+      素材是知識庫裡對應的條目 <code>2011-Chiang-FlyCircuit</code>，以及主題頁 <code>brain-region-parcellation</code> 中出自這篇論文的段落。
+      後續論文怎麼引用、怎麼修正 LPU，留給別集——這一集要做的是<strong>把一篇論文的一個概念讀到底</strong>。
+      頁尾有一張對照表說明每一課從哪裡來。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文 · 主題頁開頭</span>
+      <p>要分析腦，先要決定「腦區」是什麼。這一頁講這條研究線怎麼定義腦區、為什麼不直接沿用解剖學的分法、以及這個定義後來怎麼被自己的資料檢驗。</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>「腦區」聽起來像一個客觀存在的東西，其實是一個<strong>選擇</strong>。這一集從頭到尾都在講這個選擇怎麼做、代價是什麼。</p>
+    </aside>
+  </section>
+
+  <nav class="toc">
+    <h2>七堂課</h2>
+    <ol>
+      <li><a href="#s01"><span class="n">01</span><span>問題：腦區的邊界誰說了算</span></a></li>
+      <li><a href="#s02"><span class="n">02</span><span>兩種神經元：LN 與 PN</span></a></li>
+      <li><a href="#s03"><span class="n">03</span><span>LPU 的定義：有沒有自己的在地迴路</span></a></li>
+      <li><a href="#s04"><span class="n">04</span><span>怎麼跑出來的：七個步驟</span></a></li>
+      <li><a href="#s05"><span class="n">05</span><span>41 個 LPU 與四對 hub</span></a></li>
+      <li><a href="#s06"><span class="n">06</span><span>有了單位之後：連結矩陣與四個模組</span></a></li>
+      <li><a href="#s07"><span class="n">07</span><span>這個定義的邊界</span></a></li>
+    </ol>
+  </nav>
+
+  <!-- ============ 01 ============ -->
+  <section class="step" id="s01">
+    <div class="step-head"><span class="step-num">01</span><h2>問題：腦區的邊界誰說了算</h2></div>
+    <div class="prose">
+      <p>傳統上，腦區是靠<strong>染色看得見的形態邊界</strong>劃分的。果蠅腦有五十幾個神經氈（neuropil）——每一個都是纖維密集的區塊，邊界靠形態就辨認得出來，也有一套沿用多年的命名。2011 年那篇論文的標準腦就切出了 <strong>58 個</strong>形態上可區分的神經氈。</p>
+      <p>問題是：<strong>形態邊界不一定對應功能單位。</strong>兩個相鄰的神經氈可能是同一個處理迴路的兩半；一個大神經氈裡也可能藏著幾個獨立運作的小單位。</p>
+      <p>如果分析的目的是理解「訊號怎麼在腦裡流動」，用形態當分區標準，等於<strong>在問題還沒開始前，就用一個跟問題無關的準則把腦切好了</strong>。後面所有的網路分析都建立在這個切法上——節點是它、連結矩陣是它、模組也是它。切錯了，後面全部跟著錯，而且錯得看不出來。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文 · 主題頁</span>
+      <p>如果分析的目的是理解「訊號怎麼在腦裡流動」，用形態當分區標準，等於在問題還沒開始前就用一個跟問題無關的準則把腦切好了。這條研究線的做法是換一個可以自動化、可以驗證的判準。</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>這一課的重點不是「形態分區是錯的」——它在解剖學上完全正確。重點是<strong>「正確」要看你問什麼問題</strong>。
+      形態分區回答的是「長什麼樣」，功能分析要問的是「怎麼運作」。用前者的答案去回答後者，是這一整集要處理的錯位。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 02 ============ -->
+  <section class="step" id="s02">
+    <div class="step-head"><span class="step-num">02</span><h2>兩種神經元：LN 與 PN</h2></div>
+    <div class="prose">
+      <p>換判準之前，先要有可以拿來當判準的東西。2011 年論文用的是一個很簡單的分類：</p>
+      <ul>
+        <li><strong>LN（local neuron，區域神經元）</strong>——整條神經元都待在同一個腦區裡，像市內道路</li>
+        <li><strong>PN（projection neuron，投射神經元）</strong>——連接兩個以上的腦區，像城際公路</li>
+      </ul>
+      <p>這個分類為什麼做得到？因為前面的工作已經把每顆神經元變成了一個<strong>可以計算的東西</strong>：
+      每顆對位到標準腦之後，纖維在 58 個神經氈裡各佔多少 voxel 被記錄下來，壓成一個 58 維的向量。
+      一顆神經元是 LN 還是 PN，就是看這個向量的分布——集中在一格，還是跨越好幾格。</p>
+      <p>從這裡開始，「腦區」這件事變成了一個可以在資料上跑的問題，不再需要有人用眼睛看著切片判斷。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2011-Chiang-FlyCircuit · Figure 3</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig3.jpg" style="width:800px"
+           alt="2011 論文 Figure 3：樣本腦與分割出的神經元、對位到標準腦、骨架追蹤、以及該神經元在 29 對神經氈中的 voxel 分布長條圖">
+      <figcaption><b>看什麼</b>A 到 C 是一顆神經元從樣本腦被切出來、對位進標準腦、追蹤成骨架。
+      <strong>關鍵是 D</strong>：這顆神經元在左右兩側 29 對神經氈裡各佔多少 voxel——一顆神經元被壓縮成一個 58 維向量。
+      LN／PN 的分類、之後的 LPU 判準、連結矩陣，全部都在這個向量空間裡進行，不再回到原始影像。</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">數字與出處</span>
+      <ul>
+        <li>標準腦切分出 <strong>58 個</strong>形態上可區分的神經氈 —— 2011 條目〈方法·標準腦生成〉</li>
+        <li>空間分布編碼為 n 維統計分布（n＝神經氈數），是<strong>後續所有分群與連結統計的基礎資料結構</strong> —— 2011 條目〈方法·形態量化〉</li>
+        <li>在所有已對位的單一神經元中，約 <strong>26%</strong> 屬於 LPU-LN —— 2011 條目〈結果·LPU 與 hub〉</li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>條目的〈解讀〉在這張圖底下記了一句值得抄走的話：<strong>任何在這一步遺失的資訊，後續分析都無法取回</strong>——
+      纖維在同一神經氈內部的走向、分支拓撲、粗細變化，都在壓成向量時被丟掉了。
+      效率是這樣換來的，而代價會一路跟到最後的結論。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 03 ============ -->
+  <section class="step" id="s03">
+    <div class="step-head"><span class="step-num">03</span><h2>LPU 的定義：有沒有自己的在地迴路</h2></div>
+    <div class="prose">
+      <p>有了 LN 和 PN，判準就出來了：<strong>如果某個腦區裡有一群自己專屬的 LN 在裡面互相交織，代表這個區域有「在地」的資訊處理，它就是一個獨立的處理單位</strong>——LPU。</p>
+      <p>直覺是這樣：一個地方如果只有高速公路穿過、沒有市內道路，那它是轉運站，不是城市；
+      有自己的市內道路網，表示這裡的東西進來之後會被「加工」，而不是原封不動送出去。</p>
+      <p>論文寫下的完整定義有三個條件：</p>
+      <ol>
+        <li>具有<strong>自身的 LN 族群</strong></li>
+        <li>該族群的纖維<strong>完全侷限於此區域</strong></li>
+        <li>至少有<strong>一條神經束</strong>與之相接（也就是它要跟外界有明確的連線，不是孤島）</li>
+      </ol>
+      <p>反過來，有幾個腦區找不到專屬的 LN——只有大量過境的 PN 末梢，沒有在地處理。論文稱之為 <strong>hub（樞紐）</strong>。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文 · 主題頁</span>
+      <p>這個判準的意義在於：它把「腦區」從一個解剖名詞變成一個可操作的定義——給我一批對位好的神經元，跑一遍判準，區塊自己會出來。而且它有可證偽性：如果換一批資料、換個閾值，得到的 LPU 數量會變，那就代表這個數字是「當前解析度下的操作結果」，不是收斂的真值。</p>
+    </div>
+    <aside class="point hero">
+      <span class="voice-label">如果只記一件事，記這個</span>
+      <p><strong>LPU 不是一個發現，是一個定義——而且是一個能被自己的資料推翻的定義。</strong></p>
+      <p>它的價值不在於「41」這個數字有多準，在於它把「腦區是什麼」從一個要靠專家判斷的問題，
+      變成一個<strong>寫得出步驟、跑得出結果、換了資料會給出不同答案</strong>的問題。
+      第 07 課會看到，這個「會給出不同答案」不是缺點，正是它作為科學定義的資格。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 04 ============ -->
+  <section class="step" id="s04">
+    <div class="step-head"><span class="step-num">04</span><h2>怎麼跑出來的：七個步驟</h2></div>
+    <div class="prose">
+      <p>定義講完了，實際怎麼從一萬六千顆神經元裡把 LPU 找出來？論文的方法一節寫成七步：</p>
+    </div>
+    <div class="voice v-agent">
+      <span class="voice-label">LPU 偵測的七個步驟 · 2011 條目〈方法〉</span>
+      <ol>
+        <li>計算 LN 族群通過各 voxel 的次數</li>
+        <li>以<strong>五數綜合的上四分位數</strong>辨識熱點</li>
+        <li>以群聚分析決定次分區</li>
+        <li>將 LN 納入各次分區</li>
+        <li>由 LN 群集界定各候選 LPU 的邊界</li>
+        <li>計算 <strong>c 值</strong>以描述 LPU 內 LN 纖維的空間分布</li>
+        <li>驗證該區域是否具有自身的長程神經束</li>
+      </ol>
+    </div>
+    <div class="prose">
+      <p>這七步裡有兩個地方值得停一下。</p>
+      <p><strong>第 2 步的「上四分位數」是一個閾值。</strong>換一個數字，熱點的範圍就變，候選 LPU 的邊界跟著變。
+      論文沒有報告這個閾值的敏感度分析——第 07 課會回來談這件事。</p>
+      <p><strong>第 7 步是外部驗證。</strong>前六步都在 LN 的分布裡打轉，第 7 步跳出來要求「這個區域要有自己的長程神經束」——
+      用一個獨立的證據來源（束的走向）確認前六步找到的東西不是統計假象。這一步讓整套判準不只是分群演算法的產物。</p>
+      <p>還有一個副產品值得單獨講：<strong>VLP 被切成了背側和腹側兩個 LPU</strong>，是唯一一個單一神經氈內含兩個 LPU 的案例。
+      切分的依據有三項：兩群 LN 的胞體位置分離、纖維投射彼此分離、各自有與不同夥伴溝通的特徵性長程束。</p>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文 · 2011 條目〈討論〉</span>
+      <p>VLP 被切分為背腹兩個 LPU，證明此判準確實能發現傳統解剖切分所遺漏的次結構。反向而言，缺乏 LN 的 hub 也不再被當作與其他腦區同質的單位，而被識別為性質不同的轉運節點。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2011-Chiang-FlyCircuit · Figure 7</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig7.jpg" style="width:720px"
+           alt="2011 論文 Figure 7：全腦神經束圖譜，58 條沿固定路徑走行的跨區纖維束">
+      <figcaption><b>看什麼</b>這是第 7 步用到的證據：<strong>58 條</strong>沿固定路徑走行的跨區纖維束（14 條連合束、10 對交叉束、12 對聯絡束）。
+      一個候選 LPU 要成立，必須至少有一條這樣的束與它相接——<strong>光有在地迴路不夠，還要真的跟外界通話</strong>。</figcaption>
+    </figure>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>VLP 那個例子是整套判準最強的辯護：<strong>它找到了肉眼分不出來的東西</strong>。
+      如果 LPU 只是把 58 個神經氈重新排列組合，那它沒有增加任何資訊；
+      但它在一個「看起來就是一塊」的神經氈裡切出兩個功能單位，而且用三項獨立證據支持——這就是換判準的收穫。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 05 ============ -->
+  <section class="step" id="s05">
+    <div class="step-head"><span class="step-num">05</span><h2>41 個 LPU 與四對 hub</h2></div>
+    <div class="prose">
+      <p>判準跑完，全腦得到 <strong>41 個 LPU</strong>：19 對成對的神經氈，加 3 個位於中央、不成對的（PCB、FB、EB）。
+      那三個中央的比較特別——它們的 LN 多數發出雙側纖維，所以雖然結構上不成對，功能上仍是一個單位。</p>
+      <p>另外四對神經氈缺乏分離的 LN 族群，被歸為 hub：</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>hub</th><th>推測角色</th></tr></thead>
+        <tbody>
+          <tr><td>OPTU（視小葉柄）</td><td>主要的半球間溝通樞紐，含大量連合纖維</td></tr>
+          <tr><td>Nod（結節）</td><td>資訊關聯樞紐，容納大量同側 PN 末梢</td></tr>
+          <tr><td>OG（視小球）</td><td>同上</td></tr>
+          <tr><td>IDLP</td><td>形狀不規則，任一神經元的支配率低於 30%，可能是跨區通路</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>論文對其中兩個 hub 提了一個很誠實的可能性：<strong>OG 與 Nod 可能單純是體積太小，容不下額外的 LN</strong>。
+      如果是這樣，「沒有在地處理」就不是這兩個區域的性質，而是尺寸的後果。
+      這個觀察連著一個沒有答案的問題：<strong>形成一個必要的網路模體，最少需要幾顆 LN？</strong></p>
+      <p>把 LPU 和 hub 疊在一起，幾乎填滿整顆腦——這同時是取樣沒有大片空白的間接證據（與正文 93.03% 的 voxel 覆蓋率互相呼應）。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2011-Chiang-FlyCircuit · Figure 5（本集核心圖）</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig5.jpg" style="width:680px"
+           alt="2011 論文 Figure 5：各神經氈是否有分離的 LN 族群（＋／−表格）、推定 LPU 的空間分布、缺乏 LN 的 hub、兩者整合後填滿大部分腦區">
+      <figcaption><b>看什麼</b><strong>A 欄那張加減號表格是整篇最濃縮的結果</strong>——它把腦區的分類判準從「長什麼樣」換成「有沒有自己的 LN」。
+      B 是 41 個 LPU 的空間分布（顏色隨機指派給個別神經元），C 是四對 hub，D 是兩者疊起來、幾乎填滿整顆腦。
+      條目在這張圖底下記了一句提醒：<strong>摘要說的「6 hubs」與正文的「四對」要以這張圖逐項核對才能確定</strong>——第 07 課會回來。</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">數字與出處</span>
+      <ul>
+        <li><strong>41 個 LPU</strong>＝19 對成對神經氈 ＋ 3 個中央不成對（PCB、FB、EB） —— 2011 條目〈結果〉</li>
+        <li><strong>四對 hub</strong>：OPTU、Nod、OG、IDLP —— 同上；但摘要寫「6 hubs」，內部不一致</li>
+        <li>LPU-LN 佔所有已對位神經元的 <strong>26%</strong>——換句話說，<strong>近四分之三的神經元是跨區的 PN</strong>；LPU 是用那 26% 定義出來的</li>
+        <li>空間覆蓋：被至少三顆已對位神經元佔據的 voxel <strong>93.03%</strong>，完全未覆蓋 <strong>0.79%</strong></li>
+      </ul>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>hub 的存在比 LPU 更有意思。判準的設計本來只是要找出「哪些是處理單位」，
+      結果順便暴露了一批<strong>性質不同的區域</strong>——它們不是比較小的 LPU，是根本不做在地處理的轉運站。
+      一個好的判準除了給出你要的東西，還會告訴你哪些東西不屬於這一類。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 06 ============ -->
+  <section class="step" id="s06">
+    <div class="step-head"><span class="step-num">06</span><h2>有了單位之後：連結矩陣與四個模組</h2></div>
+    <div class="prose">
+      <p>LPU 定出來，網路分析的節點就有了。連結怎麼算？很直接：<strong>如果一顆 PN 的纖維同時進入 A 區和 B 區，就算 A 和 B 之間有一條連結</strong>。
+      把所有神經元統計一遍，得到一個「誰連誰、連多密」的矩陣。（注意 LPU-LN 全數被排除——它們定義上不跨區。）</p>
+      <p>對這個矩陣做階層式分群，浮現出<strong>四個密集互連的 LPU 家族</strong>，而且與已知功能吻合：<strong>聽覺、視覺、運動、嗅覺</strong>。</p>
+      <p>這個結果本身就是一種驗證：研究團隊<strong>並沒有事先告訴演算法哪些腦區跟聽覺有關</strong>，
+      這些分群是從連結數字裡自己長出來的，卻和幾十年累積的功能解剖學吻合。
+      判準是新的，答案卻對得上舊知識——這是新方法最需要的那種證據。</p>
+      <p>矩陣還透露兩件事：同側腦半球內部的連結密度明顯高於跨越左右的連結（大腦傾向就近處理）；
+      在感覺模組通往運動模組的路徑上，<strong>嗅覺模組比聽覺與視覺模組有更多直接連結</strong>。</p>
+    </div>
+    <figure class="shot">
+      <span class="shot-label">知識庫裡的圖 · 條目 2011-Chiang-FlyCircuit · Figure 6</span>
+      <img loading="lazy" decoding="async" src="assets/fig/chiang2011-fig6.jpg" style="width:760px"
+           alt="2011 論文 Figure 6：全腦跨區連結矩陣、分群結果、四個功能模組、58 個神經氈的連線圖、有限尺度分析曲線與連結數的冪次律分布">
+      <figcaption><b>看什麼</b>A 是連結矩陣（同側 RR／LL 象限明顯比對側 LR／RL 密）；C、D 是分群結果——
+      <strong>四個顏色就是聽覺、視覺、運動、嗅覺，而演算法事前並不知道這些標籤</strong>。
+      D 裡面那三個白／黃／灰框是常被忽略的細節：它們標出感覺模組通往運動模組的中繼節點，
+      也是「嗅覺直接連結較多」這項結論的資料來源。</figcaption>
+    </figure>
+    <div class="voice v-agent">
+      <span class="voice-label">一個立刻可用的應用案例 · 2011 條目〈結果〉</span>
+      <p>在 FlyCircuit 裡搜尋，找到約 <strong>400 顆</strong>連接 AMMC（聽覺區）與約 28 個腦區的神經元。
+      扣掉左右 AMMC 之間的高密度連結後，約 <strong>20%</strong> 的 AMMC 投射神經元雙側連往一個叫 <strong>CVLP</strong> 的區域。
+      於是有了一個可以拿去做實驗的假說：<strong>CVLP 可能是處理 AMMC 資訊的下一站</strong>。</p>
+      <p style="margin-top:.6rem;color:var(--ink-soft);">這就是有了 LPU 之後多出來的能力：連結圖不直接給答案，但它把「大海撈針」變成「這幾根針值得先測」。</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>第 06 課示範了一個定義的價值怎麼被證明：<strong>不是靠論證它有多合理，是靠它產出的結果能不能對上獨立的知識</strong>。
+      四個模組對上四種已知功能，是 LPU 這套判準拿到的第一張成績單。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 07 ============ -->
+  <section class="step" id="s07">
+    <div class="step-head"><span class="step-num">07</span><h2>這個定義的邊界</h2></div>
+    <div class="prose">
+      <p>最後一課回到第 03 課那句話：LPU 是一個<strong>能被自己的資料推翻</strong>的定義。
+      這不是外人的批評——以下每一條都寫在論文自己的〈討論〉與〈限制〉裡，知識庫的條目逐條記著。</p>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>鬆動處</th><th>怎麼回事</th><th>狀態</th></tr></thead>
+        <tbody>
+          <tr><td><strong>判準的閾值</strong></td><td>第 04 課第 2 步的「上四分位數」與第 6 步的 c 值決定了邊界。<strong>41 這個數字對閾值有多敏感，論文沒有量化</strong>；作者自承部分 LPU 仍可能被進一步細分——VLP 就是先例</td><td>未報告敏感度分析</td></tr>
+          <tr><td><strong>hub 到底幾個</strong></td><td>摘要載明「six hubs」，正文列出的卻是<strong>四對</strong>（OPTU、Nod、OG、IDLP）。四對應為八個，與摘要的六不符</td><td>⚠️ 同一篇論文內部不一致，需回查 Figure 5C 與補充資料</td></tr>
+          <tr><td><strong>與 58 個神經氈的對應</strong></td><td>41 個 LPU 與 58 個解剖神經氈之間的完整對應關係，論文未列表。Figure 5A 的加減號表格裡，部分項目（如 Cal、MB、Lat Tri）以合併形式計為 LPU</td><td>需逐項核對</td></tr>
+          <tr><td><strong>骨架化的資訊損失</strong></td><td>神經元壓縮成 58 維向量後，神經氈內部的分支拓撲、纖維走向、末梢密度分布<strong>全部遺失，且不可回溯</strong>。LPU 的邊界是在這個已經損失資訊的空間裡畫出來的</td><td>方法的固有代價</td></tr>
+          <tr><td><strong>「連結」是推論不是觀察</strong></td><td>第 06 課的連結矩陣建立在共域推論上：兩顆神經元的纖維進入同一神經氈，就推定有接觸機會。<strong>實際突觸的有無、方向、數量都未知</strong>，所得為無向圖</td><td>光學解析度的天花板</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="voice v-human">
+      <span class="voice-label">知識庫原文 · 2011 條目〈問題與限制〉</span>
+      <p>LPU 判準的邊界模糊。判準依賴「LN 纖維互相交織」的數學定義與 c 值，但作者自承部分 LPU 仍可能被進一步細分（如 VLP 的先例）。因此 41 這個數字應視為當前解析度下的操作結果，而非收斂的真值。</p>
+    </div>
+    <div class="prose">
+      <p>還有一個 hub 專屬的鬆動處，第 05 課提過：論文自己說 <strong>OG 與 Nod 可能單純是體積太小，容不下額外的 LN</strong>。
+      如果是這樣，「hub」這個類別裡就混進了兩種不同的東西——真的不做在地處理的轉運站，和<strong>想做但塞不下</strong>的小區域。
+      判準沒有辦法分開它們，因為判準只看「有沒有專屬 LN」，不看「為什麼沒有」。</p>
+    </div>
+    <aside class="point">
+      <span class="voice-label">讀到這裡要記住</span>
+      <p>這張表不是在說 LPU 不可信。<strong>它是在說 LPU 是一個操作型定義，而操作型定義本來就該附上操作條件。</strong>
+      「41」不是果蠅腦的真值，是「用這套判準、這個閾值、這批資料，跑出來的結果」。
+      引用它的時候把這句話帶上，後面所有的分析都會比較誠實。</p>
+      <p>另外值得學的是這些限制的來源：<strong>大部分是作者自己寫的</strong>。一篇論文肯把「我這個數字對閾值多敏感沒測」
+      「我的摘要跟正文對不起來」放進文本裡，讀者才有辦法正確使用它。</p>
+    </aside>
+  </section>
+
+  <!-- ============ 收尾 ============ -->
+  <section class="closing">
+    <h2>這一門課學到什麼</h2>
+
+    <div class="prose">
+      <p>七堂課講一個名詞。不是講它多重要，是講<strong>它是怎麼被定義出來的、用什麼資料、什麼判準、跑出什麼數字、後來被怎麼檢驗、目前鬆在哪裡</strong>。
+      這六件事，任何一個你要拿來當分析單位的概念都該問一遍。</p>
+    </div>
+
+    <h3>關於 LPU 的三個反射</h3>
+    <ul class="obs">
+      <li><b>它是定義，不是發現</b>「41 個 LPU」是一套判準在一批資料上的輸出。換閾值、換資料，數字會變——這是它作為操作型定義的性質，不是瑕疵。</li>
+      <li><b>知道它在測什麼</b>LPU 測的是「哪裡有在地處理」——用 LN 的分布定義。它沒有在測「哪些神經元屬於同一群」，也沒有在測突觸。用它回答別的問題之前，先回到判準看一眼。</li>
+      <li><b>近四分之三的神經元不在裡面</b>LPU-LN 只佔 26%。LPU 是用那 26% 畫出來的邊界，而腦裡多數神經元是跨區的 PN——它們穿過這些邊界，不受邊界定義。</li>
+    </ul>
+
+    <h3>思考題</h3>
+    <ol class="think">
+      <li>第 04 課第 2 步的閾值（上四分位數）如果改成中位數或第九十百分位，41 這個數字大概會往哪個方向變？要設計什麼分析才能回答「LPU 數量對閾值的敏感度」？</li>
+      <li>論文推測 OG 與 Nod「可能只是體積太小容不下額外的 LN」。如果這是真的，「hub」這個分類就混進了兩種不同的東西。你會怎麼把它們分開？</li>
+      <li>LPU 是用只佔 26% 的 LN 定義出來的，而近四分之三的神經元是跨區的 PN。如果改用 PN 的連結模式來劃分腦區，你預期得到的分區會跟 41 個 LPU 一致嗎？兩種分法各自在回答什麼問題？</li>
+    </ol>
+
+    <h3>這門課是怎麼從知識庫生出來的</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>課</th><th>素材來源</th><th>Agent 做了什麼</th></tr></thead>
+        <tbody>
+          <tr><td>00</td><td>主題頁引言</td><td>改寫成「為什麼專講一個名詞」</td></tr>
+          <tr><td>01</td><td>主題頁〈問題：腦區的邊界誰說了算〉</td><td>加「切錯了後面全跟著錯」的推論</td></tr>
+          <tr><td>02</td><td>2011 條目〈科普文·從神經元到區塊〉＋〈方法·形態量化〉</td><td>把 LN／PN 接上 58 維向量的資料結構；補條目〈解讀〉的警告</td></tr>
+          <tr><td>03</td><td>主題頁〈LPU：用有沒有在地迴路來分〉＋條目〈方法·操作型定義〉</td><td>三個條件列出來；加市內道路的比喻</td></tr>
+          <tr><td>04</td><td>條目〈方法〉七步 ＋〈討論〉VLP 案例</td><td>指出第 2 步是閾值、第 7 步是外部驗證；VLP 單獨拉出來講</td></tr>
+          <tr><td>05</td><td>條目〈結果·LPU 與 hub〉</td><td>hub 表格；26% 的伏筆留給第 07 課</td></tr>
+          <tr><td>06</td><td>條目〈結果·全腦連結圖〉＋ AMMC 應用案例</td><td>強調「演算法事前不知道功能標籤」這個驗證邏輯</td></tr>
+          <tr><td>07</td><td>條目〈問題與限制〉＋〈疑點與待追〉</td><td>整理成表；全部出自論文自己的自承</td></tr>
+          <tr><td>思考題</td><td>條目〈疑點與待追〉</td><td>挑三條改寫成問題</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="prose">
+      <p>跟 EP04 一樣的分工：<strong>Agent 攤開結構、連回出處、改寫口吻；人決定教什麼、多深、哪句是重點。</strong>
+      這一集人決定了三件事：把題目縮到單一概念、<strong>只讀 2011 那一篇</strong>、把「操作型定義」當成整集的主軸。</p>
+    </div>
+
+    <p style="color:var(--ink-soft);font-size:.92rem;max-width:var(--col);">
+      <b>圖片來源</b>　本頁四張圖全部取自 Chiang et al. 2011（知識庫條目 <code>2011-Chiang-FlyCircuit</code> 所擷取），各標原圖編號；
+      版權屬原出版社與作者（<em>Current Biology</em>／Elsevier），此處為教學引用。</p>
+
+    <div class="cta">
+      <div class="cta-text"><h3>檢驗一下</h3><p>十題單選，考的是 LPU 這個定義——判準是什麼、數字怎麼來、被怎麼檢驗、邊界在哪。答完每一題立刻告訴你對錯與理由。</p></div>
+      <a class="cta-btn" href="ep06-quiz.html" data-remote="EP06_QUIZ_ARTIFACT_URL">開始測驗 →</a>
+    </div>
+
+    <script>
+    (function () {
+      if (!/(^|\.)claude\.ai$/i.test(location.hostname)) return;
+      document.querySelectorAll('a[data-remote]').forEach(function (a) {
+        a.href = a.getAttribute('data-remote'); a.target = '_blank'; a.rel = 'noopener';
+      });
+    })();
+    </script>
+  </section>
+
+</div>
